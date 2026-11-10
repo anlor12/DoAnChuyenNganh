@@ -1,0 +1,11 @@
+@model IEnumerable<DoAnCoSo.Models.BoSuuTap>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<script>
+    window.location.href = '@Url.Action("Index", "BoSuuTaps")';
+</script>
+<div class="p-4 text-center">
+    <p>Đang chuyển hướng sang trang Quản lý Bộ sưu tập...</p>
+    <a asp-controller="BoSuuTaps" asp-action="Index" class="btn btn-primary">Nhấn vào đây nếu không tự chuyển hướng</a>
+</div>

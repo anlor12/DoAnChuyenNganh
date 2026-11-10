@@ -1,0 +1,510 @@
+@model DoAnCoSo.Models.GioHang
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    decimal totalAmount = 0;
+}
+
+@section Styles {
+<style>
+    .cart-section {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 30px 16px 60px;
+    }
+    .cart-page-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+    }
+    .cart-table-wrap {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .cart-table th {
+        background: #fafafa;
+        padding: 14px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #777;
+        border-bottom: 1px solid #eee;
+    }
+    .cart-table td {
+        padding: 16px;
+        border-bottom: 1px solid #f5f5f5;
+        vertical-align: middle;
+    }
+    .cart-product-img {
+        width: 72px;
+        height: 72px;
+        border-radius: 6px;
+        object-fit: cover;
+        border: 1px solid #eee;
+        flex-shrink: 0;
+    }
+    .cart-product-img-placeholder {
+        width: 72px;
+        height: 72px;
+        border-radius: 6px;
+        background: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #aaa;
+    }
+    .cart-product-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111;
+        margin: 0 0 4px;
+    }
+    .cart-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        background: #f2f2f2;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #444;
+        margin-right: 4px;
+    }
+    .cart-price {
+        font-size: 14px;
+        font-weight: 600;
+        color: #444;
+    }
+    .cart-subtotal {
+        font-size: 15px;
+        font-weight: 800;
+        color: #c8102e;
+    }
+    .cart-qty-input {
+        width: 54px;
+        height: 36px;
+        text-align: center;
+        border: 1.5px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+    .btn-cart-remove {
+        background: transparent;
+        border: none;
+        color: #999;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 4px;
+        transition: color 0.2s;
+    }
+    .btn-cart-remove:hover { color: #c8102e; }
+    .cart-summary {
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 24px;
+    }
+    .cart-summary-title {
+        font-size: 15px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #111;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 12px;
+    }
+    .cart-summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        font-size: 13px;
+    }
+    .cart-summary-divider {
+        border-top: 1px solid #eee;
+        margin: 16px 0;
+    }
+    .cart-summary-total-label {
+        font-size: 15px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .cart-summary-total-val {
+        font-size: 20px;
+        font-weight: 800;
+        color: #c8102e;
+    }
+    .btn-checkout {
+        display: block;
+        width: 100%;
+        padding: 14px;
+        background: #0a0a0a;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: background 0.2s;
+        margin-bottom: 10px;
+    }
+    .btn-checkout:hover { background: #333; color: #fff; }
+    .btn-continue-shop {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        border: 1.5px solid #111;
+        color: #111;
+        text-align: center;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        text-decoration: none;
+    }
+    .btn-continue-shop:hover { background: #f0f0f0; color: #111; }
+
+    /* Mobile Card Transformation */
+    @@media (max-width: 768px) {
+        .cart-section { padding: 20px 12px 60px; }
+        .cart-table thead { display: none !important; }
+        .cart-table, .cart-table tbody, .cart-table tr, .cart-table td {
+            display: block !important;
+            width: 100% !important;
+        }
+        .cart-table tr {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .cart-table td {
+            padding: 6px 0 !important;
+            border: none !important;
+        }
+        .cart-table td.cart-col-remove {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: auto !important;
+        }
+        .cart-mobile-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+    }
+</style>
+}
+
+<div class="cart-section">
+    <h1 class="cart-page-title">Giỏ hàng</h1>
+
+    @if (Model == null || Model.ChiTietGioHangs == null || !Model.ChiTietGioHangs.Any())
+    {
+        <div class="cart-empty text-center py-5">
+            <div class="cart-empty-icon mb-3">
+                <i class="fas fa-shopping-bag fa-3x text-muted"></i>
+            </div>
+            <div class="cart-empty-title fw-bold fs-5 mb-2">Giỏ hàng của bạn đang trống</div>
+            <p class="cart-empty-text text-muted mb-4">Hãy khám phá bộ sưu tập mới nhất của chúng tôi.</p>
+            <a href="/SanPham?sapXep=moi_nhat" class="btn btn-dark px-4 py-2 text-uppercase fw-bold" style="font-size: 13px;">
+                Khám phá ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <div class="cart-table-wrap">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Sản phẩm</th>
+                                <th>Biến thể</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th>Thành tiền</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.ChiTietGioHangs)
+                            {
+                                var sanPham = item.BienTheSanPham?.SanPham;
+                                var price = sanPham?.Gia ?? 0;
+                                var subtotal = price * item.SoLuong;
+                                totalAmount += subtotal;
+
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3 pe-4">
+                                            @if (!string.IsNullOrEmpty(sanPham?.HinhAnh))
+                                            {
+                                                <img src="@sanPham.HinhAnh" alt="@sanPham.TenSanPham" class="cart-product-img" />
+                                            }
+                                            else
+                                            {
+                                                <div class="cart-product-img-placeholder">
+                                                    <i class="fas fa-image"></i>
+                                                </div>
+                                            }
+                                            <div>
+                                                <p class="cart-product-name">@(sanPham?.TenSanPham ?? "Sản phẩm")</p>
+                                                <span style="font-size:11px; color:#aaa; letter-spacing:1px; text-transform:uppercase;">@(sanPham?.LoaiSanPham?.TenLoaiSanPham ?? "")</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="d-md-none text-muted small me-1">Phân loại:</span>
+                                            @if (item.BienTheSanPham != null)
+                                            {
+                                                <span class="cart-badge">@item.BienTheSanPham.KichCo</span>
+                                                <span class="cart-badge">@item.BienTheSanPham.MauSac</span>
+                                            }
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-between d-md-block">
+                                            <span class="d-md-none text-muted small">Đơn giá:</span>
+                                            <span class="cart-price">@price.ToString("N0") ₫</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-between d-md-block">
+                                            <span class="d-md-none text-muted small">Số lượng:</span>
+                                            <form asp-action="UpdateQuantity" asp-controller="Cart" method="post"
+                                                  style="display:inline-flex; align-items:center;">
+                                                <input type="hidden" name="maChiTietGioHang" value="@item.MaChiTietGioHang" />
+                                                <input type="number" name="soLuong" value="@item.SoLuong"
+                                                       min="1" class="cart-qty-input"
+                                                       onchange="this.form.submit()" />
+                                            </form>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center justify-content-between d-md-block">
+                                            <span class="d-md-none fw-bold small">Thành tiền:</span>
+                                            <span class="cart-subtotal">@subtotal.ToString("N0") ₫</span>
+                                        </div>
+                                    </td>
+                                    <td class="cart-col-remove">
+                                        <form asp-action="RemoveFromCart" asp-controller="Cart" method="post" style="display:inline;">
+                                            <input type="hidden" name="maChiTietGioHang" value="@item.MaChiTietGioHang" />
+                                            <button type="submit" class="btn-cart-remove" title="Xóa sản phẩm">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Continue shopping -->
+                <div class="mt-4">
+                    <a href="/SanPham" style="font-size:11px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#0a0a0a; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                        <i class="fas fa-arrow-left"></i> Tiếp tục mua sắm
+                    </a>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                @{
+                    var vipTier = ViewBag.VipTier as DoAnCoSo.Models.VipTier;
+                    decimal vipDiscount = ViewBag.VipDiscount != null ? (decimal)ViewBag.VipDiscount : 0;
+                    var vipStatus = ViewBag.VipStatus as DoAnCoSo.Models.VipStatusViewModel;
+                    var eligibleGift = ViewBag.EligibleGift as DoAnCoSo.Models.KhuyenMai;
+                    var activeGifts = ViewBag.ActiveGifts as List<DoAnCoSo.Models.KhuyenMai>;
+                    decimal finalEstimate = totalAmount - vipDiscount;
+                    if (finalEstimate < 0) finalEstimate = 0;
+                }
+
+                <!-- VIP DISCOUNT WIDGET -->
+                @if (vipTier != null && vipStatus != null)
+                {
+                    <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-crown text-warning fs-5"></i>
+                                <span class="fw-bold text-uppercase small" style="letter-spacing: 1px;">@vipTier.TenHang</span>
+                            </div>
+                            <span class="badge bg-danger rounded-pill px-2 py-1 fw-bold">Giảm @vipTier.PhanTramGiam%</span>
+                        </div>
+
+                        <div class="small text-white-50 mb-2">
+                            Đơn hàng của bạn được chiết khấu ngay <strong class="text-white">@vipTier.PhanTramGiam% (-@vipDiscount.ToString("N0") ₫)</strong>
+                        </div>
+
+                        @if (vipStatus.NextTier != null)
+                        {
+                            <div class="progress mb-2" style="height: 6px; background: rgba(255,255,255,0.15);">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: @vipStatus.ProgressPercent%;" aria-valuenow="@vipStatus.ProgressPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center text-white-50" style="font-size: 11px;">
+                                <span>Mua thêm <strong class="text-warning">@vipStatus.AmountToNextTier.ToString("N0") ₫</strong></span>
+                                <span>Lên @vipStatus.NextTier.TenHang (Giảm @vipStatus.NextTier.PhanTramGiam%)</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- FREESHIP PROGRESS BAR (UPSELL LOGISTICS) -->
+                @{
+                    decimal freeshipThreshold = 500000m;
+                    decimal neededForFreeship = freeshipThreshold - totalAmount;
+                    int freeshipPercent = (int)Math.Clamp((totalAmount / freeshipThreshold) * 100, 0, 100);
+                }
+                <div class="card border-0 shadow-sm rounded-3 mb-3 p-3" style="background: #f0fdf4; border: 1px solid #bbf7d0 !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold small text-success">
+                            <i class="fas fa-truck me-1"></i>Miễn phí vận chuyển
+                        </span>
+                        @if (neededForFreeship <= 0)
+                        {
+                            <span class="badge bg-success" style="font-size: 10px;">ĐỦ ĐIỀU KIỆN FREESHIP 0₫</span>
+                        }
+                        else
+                        {
+                            <span class="small text-muted" style="font-size: 11px;">Thiếu @neededForFreeship.ToString("N0") ₫</span>
+                        }
+                    </div>
+                    <div class="progress" style="height: 6px; background: #dcfce7;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @freeshipPercent%"></div>
+                    </div>
+                    <div class="mt-2 text-muted" style="font-size: 11px;">
+                        @if (neededForFreeship <= 0)
+                        {
+                            <span class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Đơn hàng đạt từ 500k được miễn phí ship toàn quốc!</span>
+                        }
+                        else
+                        {
+                            <span>Mua thêm <strong class="text-success">@neededForFreeship.ToString("N0") ₫</strong> để được <strong>FREESHIP 0₫</strong> toàn quốc!</span>
+                        }
+                    </div>
+                </div>
+
+                <!-- GIFT PROMOTION NOTIFICATION -->
+                @if (eligibleGift != null)
+                {
+                    <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-3 p-3">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-gift text-danger fs-5"></i>
+                            <span class="fw-bold text-danger text-uppercase small">Quà tặng kèm theo đơn</span>
+                        </div>
+                        <div class="small fw-semibold text-dark mb-1">
+                            @eligibleGift.QuaTangKem
+                        </div>
+                        <small class="text-muted d-block" style="font-size: 11px;">
+                            (Đơn đạt từ @eligibleGift.GiaTriDonToiThieu.ToString("N0") ₫ - Quà được tự động đóng gói cùng đơn hàng)
+                        </small>
+                    </div>
+                }
+                else if (activeGifts != null && activeGifts.Any())
+                {
+                    var nextGift = activeGifts.FirstOrDefault(g => totalAmount < g.GiaTriDonToiThieu);
+                    if (nextGift != null)
+                    {
+                        decimal moreNeeded = nextGift.GiaTriDonToiThieu - totalAmount;
+                        <div class="alert alert-warning border-0 shadow-sm rounded-3 mb-3 p-3">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="fas fa-gift text-warning fs-5"></i>
+                                <span class="fw-bold text-dark text-uppercase small">Cơ hội nhận quà tặng</span>
+                            </div>
+                            <div class="small text-dark">
+                                Mua thêm <strong>@moreNeeded.ToString("N0") ₫</strong> để nhận ngay quà tặng: <strong>@nextGift.QuaTangKem</strong>!
+                            </div>
+                        </div>
+                    }
+                }
+
+                <div class="cart-summary">
+                    <div class="cart-summary-title">Tóm tắt đơn hàng</div>
+
+                    <div class="cart-summary-row">
+                        <span class="cart-summary-label">Tạm tính (@Model.ChiTietGioHangs.Sum(c => c.SoLuong) sản phẩm)</span>
+                        <span class="cart-summary-value">@totalAmount.ToString("N0") ₫</span>
+                    </div>
+
+                    @if (vipDiscount > 0 && vipTier != null)
+                    {
+                        <div class="cart-summary-row text-danger fw-bold">
+                            <span class="cart-summary-label">Chiết khấu VIP (@vipTier.PhanTramGiam%)</span>
+                            <span class="cart-summary-value">-@vipDiscount.ToString("N0") ₫</span>
+                        </div>
+                    }
+
+                    @if (eligibleGift != null)
+                    {
+                        <div class="cart-summary-row text-danger fw-bold">
+                            <span class="cart-summary-label">Quà tặng kèm</span>
+                            <span class="cart-summary-value text-success" style="font-size: 11px;">MIỄN PHÍ</span>
+                        </div>
+                    }
+
+                    <div class="cart-summary-row">
+                        <span class="cart-summary-label">Phí giao hàng</span>
+                        <span style="font-size:12px; font-weight:700; color:#2e7d32; text-transform:uppercase; letter-spacing:1px;">Miễn phí</span>
+                    </div>
+
+                    <div class="cart-summary-divider"></div>
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4">
+                        <span class="cart-summary-total-label">Tổng cộng</span>
+                        <span class="cart-summary-total-val">@finalEstimate.ToString("N0") ₫</span>
+                    </div>
+
+                    <a href="/Cart/Checkout" class="btn-checkout">
+                        <span><i class="fas fa-lock me-2"></i>Tiến hành thanh toán</span>
+                    </a>
+                    <a href="/SanPham" class="btn-continue-shop">Tiếp tục mua sắm</a>
+
+                    <!-- Trust badges -->
+                    <div class="mt-4 pt-4" style="border-top:1px solid #f0f0f0;">
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:10px; font-size:12px; color:#888;">
+                                <i class="fas fa-shield-alt" style="color:#0a0a0a;"></i>
+                                Thanh toán bảo mật
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px; font-size:12px; color:#888;">
+                                <i class="fas fa-undo" style="color:#0a0a0a;"></i>
+                                Đổi trả trong 30 ngày
+                            </div>
+                            <div style="display:flex; align-items:center; gap:10px; font-size:12px; color:#888;">
+                                <i class="fas fa-truck" style="color:#0a0a0a;"></i>
+                                Giao hàng toàn quốc
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

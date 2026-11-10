@@ -1,0 +1,107 @@
+﻿@model IEnumerable<DoAnCoSo.Models.ChiTietDonHang>
+
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
+
+<div class="content-card">
+
+    <div class="content-card-header">
+        <div>
+            <h4 class="content-title">Chi tiết đơn hàng</h4>
+            <div class="content-note">Quản lý sản phẩm, số lượng và đơn giá trong từng đơn hàng</div>
+        </div>
+
+        <div class="header-actions">
+            <a asp-action="Create" class="btn-add">
+                <i class="bi bi-plus-lg"></i>
+                Thêm chi tiết
+            </a>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-responsive">
+            <table class="table custom-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width:120px;">Mã CT</th>
+                        <th style="width:120px;">Mã đơn</th>
+                        <th>Sản phẩm</th>
+                        <th style="width:100px;">Size</th>
+                        <th style="width:120px;">Màu</th>
+                        <th style="width:120px;">Số lượng</th>
+                        <th style="width:150px;">Đơn giá</th>
+                        <th class="text-center" style="width:140px;">Thao tác</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="code-badge">#@item.MaChiTietDonHang</span>
+                                </td>
+
+                                <td>
+                                    <span class="code-badge">#@item.MaDonHang</span>
+                                </td>
+
+                                <td class="fw-bold">
+                                    @item.BienTheSanPham?.SanPham?.TenSanPham
+                                </td>
+
+                                <td>
+                                    <span class="mini-badge">@item.BienTheSanPham?.KichCo</span>
+                                </td>
+
+                                <td>
+                                    <span class="mini-badge">@item.BienTheSanPham?.MauSac</span>
+                                </td>
+
+                                <td class="fw-bold">
+                                    @item.SoLuong
+                                </td>
+
+                                <td class="fw-bold text-price">
+                                    @item.DonGia.ToString("N0") VNĐ
+                                </td>
+
+                                <td>
+                                    <div class="action-group">
+                                        <a asp-action="Edit" asp-route-id="@item.MaChiTietDonHang"
+                                           class="btn-action btn-edit" title="Sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <a asp-action="Delete" asp-route-id="@item.MaChiTietDonHang"
+                                           class="btn-action btn-delete" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <i class="bi bi-card-checklist"></i>
+                                    <h6>Chưa có chi tiết đơn hàng</h6>
+                                    <p>Hãy thêm dữ liệu chi tiết đơn hàng để quản lý sản phẩm trong từng đơn.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+</div>

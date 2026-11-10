@@ -1,0 +1,795 @@
+@model DoAnCoSo.Models.GioHang
+@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = "Thanh toán";
+    var nguoiDung = ViewBag.NguoiDung as DoAnCoSo.Models.NguoiDung;
+    decimal totalAmount = Model.ChiTietGioHangs?.Sum(c => c.SoLuong * (c.BienTheSanPham?.SanPham?.Gia ?? 0)) ?? 0;
+    
+    var vipTier = ViewBag.VipTier as DoAnCoSo.Models.VipTier;
+    decimal vipDiscount = ViewBag.VipDiscount != null ? (decimal)ViewBag.VipDiscount : 0;
+    var eligibleGift = ViewBag.EligibleGift as DoAnCoSo.Models.KhuyenMai;
+    string? appliedPromo = ViewBag.AppliedPromoCode as string;
+
+    var carriers = ViewBag.Carriers as List<DoAnCoSo.Services.ShippingCarrier> ?? DoAnCoSo.Services.ShippingService.Carriers;
+    decimal defaultShippingFee = ViewBag.DefaultShippingFee != null ? (decimal)ViewBag.DefaultShippingFee : 0;
+    bool isFreeShip = ViewBag.IsFreeShip != null && (bool)ViewBag.IsFreeShip;
+    string freeShipReason = ViewBag.FreeShipReason as string ?? "";
+    decimal freeShippingThreshold = ViewBag.FreeShippingThreshold != null ? (decimal)ViewBag.FreeShippingThreshold : 500000m;
+
+    decimal payableAfterVip = totalAmount - vipDiscount + defaultShippingFee;
+    if (payableAfterVip < 0) payableAfterVip = 0;
+}
+
+<div class="container mt-5">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h2 class="fw-bold mb-0">Tiến hành thanh toán</h2>
+        <a href="/Cart" class="text-dark small fw-bold text-decoration-none">
+            <i class="fas fa-arrow-left me-1"></i> Quay lại giỏ hàng
+        </a>
+    </div>
+    
+    @if (TempData["CheckoutError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["CheckoutError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Cột thông tin giao hàng & Vận chuyển -->
+        <div class="col-md-7">
+            @if (nguoiDung == null)
+            {
+                <div class="card border-0 mb-4 rounded-4 shadow-sm" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white;">
+                    <div class="card-body p-4">
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.15);">
+                                    <svg width="22" height="22" viewBox="0 0 48 48">
+                                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold mb-1 text-white">Đăng nhập 1-chạm để giảm rơi rụng đơn &amp; tích lũy VIP!</h6>
+                                    <p class="text-white-50 small mb-0">
+                                        Nhận ngay <strong class="text-warning">+10.000 điểm</strong> vào ví và hoàn 1% tổng tiền đơn hoàn tất.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                <a asp-controller="Auth" asp-action="GoogleLogin" asp-route-returnUrl="/Cart/Checkout" class="btn btn-light fw-bold rounded-pill px-3 py-2 btn-sm text-dark shadow-sm">
+                                    <i class="fab fa-google text-danger me-1"></i> Google 1-Chạm
+                                </a>
+                                <a asp-controller="Auth" asp-action="FacebookLogin" asp-route-returnUrl="/Cart/Checkout" class="btn btn-outline-light rounded-pill px-3 py-2 btn-sm">
+                                    <i class="fab fa-facebook-f text-primary me-1"></i> Facebook
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-light border shadow-sm rounded-4 mb-3 d-flex align-items-center justify-content-between p-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
+                            <i class="fas fa-check-circle me-1"></i>Đã đăng nhập
+                        </span>
+                        <span class="small text-muted">Tài khoản: <strong>@nguoiDung.HoTen</strong> (@nguoiDung.TaiKhoan?.Email)</span>
+                    </div>
+                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill small">
+                        <i class="fas fa-coins me-1"></i>@nguoiDung.DiemTichLuy.ToString("N0") điểm
+                    </span>
+                </div>
+            }
+
+            <div class="card shadow-sm border-0 mb-4 rounded-4">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>Thông tin nhận hàng
+                </div>
+                <div class="card-body p-4">
+                    <form asp-controller="Cart" asp-action="ProcessCheckout" method="post" id="checkoutForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="diemSuDung" id="formDiemSuDung" value="0" />
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Họ tên người nhận</label>
+                            <input type="text" class="form-control rounded-3 bg-light" value="@(nguoiDung?.HoTen ?? "Khách hàng")" readonly />
+                            <small class="text-muted">Để thay đổi họ tên, vui lòng vào Hồ sơ cá nhân.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="soDienThoaiNhan" class="form-label fw-bold">Số điện thoại nhận hàng <span class="text-danger">*</span></label>
+                            <input type="text" name="soDienThoaiNhan" id="soDienThoaiNhan" class="form-control rounded-3" value="@(nguoiDung?.TaiKhoan?.SoDienThoai)" required placeholder="Nhập số điện thoại" />
+                        </div>
+                        <!-- ĐỊA CHỈ GIAO HÀNG ĐA CẤP (TỈNH / HUYỆN / XÃ / SỐ NHÀ) -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-map-marked-alt text-primary me-1"></i>Địa chỉ nhận hàng (Theo cấp Tỉnh / Huyện / Xã) <span class="text-danger">*</span>
+                            </label>
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted mb-1">Tỉnh / Thành phố</label>
+                                    <select name="tinhThanh" id="selTinhThanh" class="form-select rounded-3" onchange="onProvinceChanged()" required>
+                                        <option value="">-- Chọn Tỉnh/Thành --</option>
+                                        @foreach (var p in (ViewBag.Provinces as List<string> ?? DoAnCoSo.Services.ShippingService.Provinces))
+                                        {
+                                            <option value="@p" selected="@(p == "Hà Nội")">@p</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted mb-1">Quận / Huyện</label>
+                                    <select name="quanHuyen" id="selQuanHuyen" class="form-select rounded-3" onchange="onDistrictChanged()" required>
+                                        <option value="Quận Đống Đa" selected>Quận Đống Đa</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small text-muted mb-1">Phường / Xã</label>
+                                    <select name="phuongXa" id="selPhuongXa" class="form-select rounded-3" onchange="updateFullAddress()" required>
+                                        <option value="Phường Láng Hạ" selected>Phường Láng Hạ</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label small text-muted mb-1">Số nhà, ngõ/ngách, tên đường chi tiết</label>
+                                <input type="text" id="inputSoNha" class="form-control rounded-3" placeholder="VD: Số 12, Ngõ 98 Thái Hà" value="@(nguoiDung?.DiaChi ?? "Số 12 Thái Hà")" oninput="updateFullAddress()" required />
+                            </div>
+                            <input type="hidden" name="diaChiGiaoHang" id="diaChiGiaoHang" value="@(nguoiDung?.DiaChi ?? "Số 12 Thái Hà, Phường Láng Hạ, Quận Đống Đa, Hà Nội")" />
+                            <small class="text-muted d-block mt-1" id="fullAddressPreview" style="font-size: 11.5px;">
+                                <i class="fas fa-map-pin text-danger me-1"></i>Địa chỉ đầy đủ: <strong id="lblFullAddress">@(nguoiDung?.DiaChi ?? "Số 12 Thái Hà, Phường Láng Hạ, Quận Đống Đa, Hà Nội")</strong>
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ghiChu" class="form-label fw-bold">Ghi chú đơn hàng (tuỳ chọn)</label>
+                            <textarea name="ghiChu" id="ghiChu" class="form-control rounded-3" rows="2" placeholder="Ghi chú thêm cho người bán hoặc bưu tá giao hàng (VD: Giao giờ hành chính)"></textarea>
+                        </div>
+
+                        <!-- 1. ĐƠN VỊ VẬN CHUYỂN (LOGISTICS) -->
+                        <div class="mb-4 pt-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold mb-0">
+                                    <i class="fas fa-truck text-primary me-2"></i>Đơn vị vận chuyển <span class="text-danger">*</span>
+                                </label>
+                                @if (isFreeShip)
+                                {
+                                    <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                                        <i class="fas fa-gift me-1"></i>ĐƯỢC FREESHIP 0₫
+                                    </span>
+                                }
+                            </div>
+                            <div class="row g-2" id="carrierListWrapper">
+                                @foreach (var carrier in carriers)
+                                {
+                                    var feeForCarrier = isFreeShip ? 0 : carrier.BaseFee;
+                                    <div class="col-md-4">
+                                        <input type="radio" class="btn-check carrier-radio" name="donViVanChuyen" id="carrier_@carrier.Code" value="@carrier.Code" data-fee="@feeForCarrier" data-name="@carrier.Name" data-time="@carrier.EstimatedTime" @(carrier.Code == "GHTK" ? "checked" : "") onchange="updateShippingFee(this)" />
+                                        <label class="btn btn-outline-secondary text-start w-100 p-3 rounded-3 h-100 position-relative" for="carrier_@carrier.Code" style="border-width: 1.5px;">
+                                            <div class="fw-bold text-dark small">@carrier.Name</div>
+                                            <div class="text-muted carrier-est-time" id="est_time_@carrier.Code" style="font-size: 11px;">@carrier.EstimatedTime</div>
+                                            <div class="mt-2 fw-bold text-danger carrier-fee-display" id="fee_display_@carrier.Code" style="font-size: 12px;">
+                                                @(feeForCarrier == 0 ? "MIỄN PHÍ (0₫)" : feeForCarrier.ToString("N0") + " ₫")
+                                            </div>
+                                            <small class="text-success d-block mt-1 font-monospace carrier-arrival-date" id="arrival_@carrier.Code" style="font-size: 10px;">
+                                                <i class="fas fa-calendar-check me-1"></i>Dự kiến giao: @DateTime.Now.AddDays(2).ToString("dd/MM")
+                                            </small>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                            <div class="small mt-2" id="shippingPolicyNotice">
+                                @if (isFreeShip)
+                                {
+                                    <span class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>@freeShipReason</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted"><i class="fas fa-info-circle me-1 text-primary"></i>Đơn hàng từ @freeShippingThreshold.ToString("N0")₫ hoặc VIP Bạch Kim sẽ được <strong>Miễn phí vận chuyển</strong>. Cước phí được tự động tính theo tuyến địa lý người nhận.</span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- 2. PHƯƠNG THỨC THANH TOÁN (PAYMENT GATEWAYS) -->
+                        <div class="mb-3 pt-3 border-top">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-credit-card text-success me-2"></i>Phương thức thanh toán <span class="text-danger">*</span>
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="phuongThucThanhToan" id="pm_cod" value="COD" checked autocomplete="off" />
+                                    <label class="btn btn-outline-dark w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 border-2 rounded-3 text-center" for="pm_cod">
+                                        <i class="fas fa-box-open fa-lg mb-2 text-primary"></i>
+                                        <span class="fw-bold" style="font-size: 11px;">COD</span>
+                                        <small class="text-muted" style="font-size: 10px;">Khi nhận hàng</small>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="phuongThucThanhToan" id="pm_ck" value="ChuyenKhoan" autocomplete="off" />
+                                    <label class="btn btn-outline-dark w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 border-2 rounded-3 text-center" for="pm_ck">
+                                        <i class="fas fa-university fa-lg mb-2 text-success"></i>
+                                        <span class="fw-bold" style="font-size: 11px;">VIETQR</span>
+                                        <small class="text-muted" style="font-size: 10px;">Chuyển khoản 24/7</small>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="phuongThucThanhToan" id="pm_vnpay" value="VNPAY" autocomplete="off" />
+                                    <label class="btn btn-outline-dark w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 border-2 rounded-3 text-center" for="pm_vnpay">
+                                        <i class="fas fa-qrcode fa-lg mb-2 text-danger"></i>
+                                        <span class="fw-bold" style="font-size: 11px;">VNPAY</span>
+                                        <small class="text-muted" style="font-size: 10px;">ATM / QR / Visa</small>
+                                    </label>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <input type="radio" class="btn-check" name="phuongThucThanhToan" id="pm_momo" value="MOMO" autocomplete="off" />
+                                    <label class="btn btn-outline-dark w-100 py-3 d-flex flex-column align-items-center justify-content-center h-100 border-2 rounded-3 text-center" for="pm_momo">
+                                        <i class="fas fa-wallet fa-lg mb-2" style="color: #a50064;"></i>
+                                        <span class="fw-bold" style="font-size: 11px;">VÍ MOMO</span>
+                                        <small class="text-muted" style="font-size: 10px;">Quét mã ví MoMo</small>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột Tóm tắt đơn hàng -->
+        <div class="col-md-5">
+            <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-4">
+                <div class="card-header bg-dark text-white fw-bold py-3">
+                    <i class="fas fa-receipt me-2"></i>Đơn hàng của bạn (@Model.ChiTietGioHangs?.Count sản phẩm)
+                </div>
+                <div class="card-body p-4 bg-light">
+                    <!-- DANH SÁCH SẢN PHẨM -->
+                    <ul class="list-group list-group-flush mb-3 bg-transparent">
+                        @foreach (var item in Model.ChiTietGioHangs!)
+                        {
+                            var sanPham = item.BienTheSanPham?.SanPham;
+                            var price = sanPham?.Gia ?? 0;
+                            var subtotal = price * item.SoLuong;
+
+                            <li class="list-group-item d-flex justify-content-between lh-sm bg-transparent px-0 border-bottom">
+                                <div>
+                                    <h6 class="my-0 fw-bold">@(sanPham?.TenSanPham)</h6>
+                                    <small class="text-muted">Kích cỡ: @item.BienTheSanPham?.KichCo | Màu: @item.BienTheSanPham?.MauSac | SL: @item.SoLuong</small>
+                                </div>
+                                <span class="fw-semibold text-dark">@subtotal.ToString("N0") ₫</span>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- QUÀ TẶNG KÈM THEO ĐƠN -->
+                    @if (eligibleGift != null)
+                    {
+                        <div class="p-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded-3 mb-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-gift text-danger fs-5"></i>
+                                <div>
+                                    <div class="fw-bold text-danger small text-uppercase">Quà tặng kèm theo đơn hàng:</div>
+                                    <div class="small fw-bold text-dark">@eligibleGift.QuaTangKem</div>
+                                    <small class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>Hoàn toàn MIỄN PHÍ</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- MÃ KHUYẾN MÃI BOX -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Mã khuyến mãi / Voucher</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control text-uppercase" id="promoCodeInput" value="@appliedPromo" placeholder="Nhập mã khuyến mãi" aria-label="Mã khuyến mãi">
+                            <button class="btn btn-outline-dark fw-bold" type="button" id="applyPromoBtn" onclick="applyPromo()">Áp dụng</button>
+                        </div>
+                        <div id="promoMessage" class="mt-2 small"></div>
+                    </div>
+
+                    <!-- ĐIỂM TÍCH LŨY THÀNH VIÊN BOX (LOYALTY POINTS) -->
+                    <div class="p-3 bg-warning bg-opacity-10 border border-warning border-opacity-50 rounded-3 mb-3" id="loyaltyPointsBox">
+                        @if (nguoiDung != null)
+                        {
+                            var userPoints = nguoiDung.DiemTichLuy;
+                            var maxDiemChoPhep = (int)Math.Floor((totalAmount - vipDiscount) * 0.5m);
+                            var diemKhaDung = Math.Min(userPoints, maxDiemChoPhep);
+
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-coins text-warning fs-5"></i>
+                                    <div>
+                                        <span class="fw-bold small text-dark">Điểm thưởng thành viên:</span>
+                                        <span class="badge bg-warning text-dark fw-bold ms-1" id="currentPointsBadge">@userPoints.ToString("N0") điểm</span>
+                                    </div>
+                                </div>
+                                <span class="badge bg-light text-dark border border-warning" style="font-size: 11px;">1 điểm = 1 ₫</span>
+                            </div>
+
+                            @if (userPoints > 0)
+                            {
+                                <div class="form-check form-switch mb-2">
+                                    <input class="form-check-input" type="checkbox" id="chkUsePoints" onchange="toggleUsePoints()">
+                                    <label class="form-check-label small fw-semibold text-dark" for="chkUsePoints">
+                                        Dùng điểm thưởng giảm trừ đơn hàng (khả dụng: <strong class="text-danger">@diemKhaDung.ToString("N0")</strong> điểm)
+                                    </label>
+                                </div>
+
+                                <div class="d-none mt-2" id="pointsInputWrap">
+                                    <div class="input-group input-group-sm mb-2">
+                                        <span class="input-group-text bg-white small"><i class="fas fa-coins text-warning"></i></span>
+                                        <input type="number" class="form-control fw-bold text-danger" id="inputPoints" 
+                                               value="@diemKhaDung" min="0" max="@diemKhaDung" step="1000" 
+                                               oninput="updatePointsDiscount()" placeholder="Nhập số điểm muốn dùng">
+                                        <button class="btn btn-warning fw-bold text-dark px-3" type="button" onclick="updatePointsDiscount()">
+                                            <i class="fas fa-check me-1"></i>Áp dụng
+                                        </button>
+                                    </div>
+                                    <!-- CÁC NÚT CHỌN NHANH ĐIỂM -->
+                                    <div class="d-flex flex-wrap gap-1 mb-2">
+                                        @if (diemKhaDung >= 10000)
+                                        {
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setExactPoints(10000)">10.000đ</button>
+                                        }
+                                        @if (diemKhaDung >= 20000)
+                                        {
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setExactPoints(20000)">20.000đ</button>
+                                        }
+                                        @if (diemKhaDung >= 50000)
+                                        {
+                                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 rounded-pill small" onclick="setExactPoints(50000)">50.000đ</button>
+                                        }
+                                        <button type="button" class="btn btn-xs btn-warning text-dark py-0 px-2 rounded-pill small fw-bold" onclick="setExactPoints(@diemKhaDung)">Dùng tối đa (@diemKhaDung.ToString("N0")đ)</button>
+                                    </div>
+                                </div>
+                                <div class="small text-muted" style="font-size: 11px;">
+                                    <i class="fas fa-info-circle me-1"></i>Tối đa khấu trừ 50% giá trị đơn hàng theo quy định tích điểm.
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="small text-muted mb-2">
+                                    Bạn đang có <strong>0 điểm thưởng</strong>. Hãy đặt hàng hoặc nhận điểm thử nghiệm bên dưới để trải nghiệm:
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-dark fw-bold w-100" id="btnNhanDiemTest" onclick="topUpTestPoints()">
+                                    <i class="fas fa-gift text-warning me-1"></i>Nhận ngay 50.000 điểm trải nghiệm (Test)
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-coins text-warning fs-5"></i>
+                                <div class="small">
+                                    <a href="/Account/Login?returnUrl=/Cart/Checkout" class="fw-bold text-dark text-decoration-underline">Đăng nhập tài khoản</a> để tích luỹ và dùng điểm thưởng trừ tiền đơn hàng!
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <hr />
+
+                    <!-- BẢNG TÍNH TIỀN -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tạm tính:</span>
+                        <span class="fw-semibold">@totalAmount.ToString("N0") ₫</span>
+                    </div>
+
+                    <!-- CHIẾT KHẤU VIP -->
+                    @if (vipTier != null && vipDiscount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-2 text-danger">
+                            <span>
+                                <i class="fas fa-crown text-warning me-1"></i>Chiết khấu VIP (@vipTier.TenHang - @vipTier.PhanTramGiam%):
+                            </span>
+                            <span class="fw-bold">-@vipDiscount.ToString("N0") ₫</span>
+                        </div>
+                    }
+
+                    <!-- GIẢM GIÁ PROMO -->
+                    <div class="d-flex justify-content-between mb-2 text-danger d-none" id="discountRow">
+                        <span>Mã giảm giá (<span id="promoCodeBadge"></span>):</span>
+                        <span class="fw-bold" id="discountAmount">-0 ₫</span>
+                    </div>
+
+                    <!-- TRỪ ĐIỂM THƯỞNG LOYALTY -->
+                    <div class="d-flex justify-content-between mb-2 text-warning d-none" id="pointsDiscountRow">
+                        <span>
+                            <i class="fas fa-coins me-1"></i>Trừ điểm thưởng (<span id="pointsBadge">0</span> điểm):
+                        </span>
+                        <span class="fw-bold text-dark" id="pointsAmount">-0 ₫</span>
+                    </div>
+
+                    <!-- PHÍ GIAO HÀNG -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Phí giao hàng:</span>
+                        <span class="fw-bold @(defaultShippingFee == 0 ? "text-success" : "text-dark")" id="shippingFeeText">
+                            @(defaultShippingFee == 0 ? "Miễn phí (0₫)" : defaultShippingFee.ToString("N0") + " ₫")
+                        </span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-baseline mb-4 mt-3 pt-3 border-top">
+                        <span class="fs-5 fw-bold">Tổng thanh toán:</span>
+                        <div class="text-end">
+                            <span class="fs-6 text-muted text-decoration-line-through d-none" id="originalPrice">@payableAfterVip.ToString("N0") ₫</span>
+                            <div class="fs-3 fw-bold text-danger" id="finalPrice" 
+                                 data-base-price="@(totalAmount - vipDiscount)" 
+                                 data-shipping-fee="@defaultShippingFee" 
+                                 data-promo-discount="0"
+                                 data-points-discount="0">
+                                @payableAfterVip.ToString("N0") ₫
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="button" id="btnSubmitOrder" class="btn btn-dark btn-lg fw-bold rounded-3 shadow" onclick="if(window.submitOrder){window.submitOrder(this);}else{var f=document.getElementById('checkoutForm');if(f&&f.reportValidity()){this.disabled=true;f.submit();}}">
+                            <i class="fas fa-check-circle me-2"></i>ĐẶT HÀNG NGAY
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const cartSubtotal = @((long)totalAmount);
+        const vipLevel = @(vipTier?.Level ?? 1);
+
+        function updateFullAddress() {
+            var prov = document.getElementById('selTinhThanh').value.trim();
+            var dist = document.getElementById('selQuanHuyen').value.trim();
+            var ward = document.getElementById('selPhuongXa').value.trim();
+            var street = document.getElementById('inputSoNha').value.trim();
+
+            var full = [];
+            if (street) full.push(street);
+            if (ward) full.push(ward);
+            if (dist) full.push(dist);
+            if (prov) full.push(prov);
+
+            var fullStr = full.join(', ');
+            document.getElementById('diaChiGiaoHang').value = fullStr;
+            var lbl = document.getElementById('lblFullAddress');
+            if (lbl) lbl.innerText = fullStr || 'Vui lòng chọn địa chỉ';
+        }
+
+        function onProvinceChanged() {
+            var prov = document.getElementById('selTinhThanh').value;
+            var distSelect = document.getElementById('selQuanHuyen');
+            distSelect.innerHTML = '<option value="">Đang tải quận/huyện...</option>';
+
+            fetch('/api/Logistics/Districts?province=' + encodeURIComponent(prov))
+                .then(r => r.json())
+                .then(districts => {
+                    distSelect.innerHTML = '';
+                    districts.forEach(d => {
+                        var opt = document.createElement('option');
+                        opt.value = d;
+                        opt.innerText = d;
+                        distSelect.appendChild(opt);
+                    });
+                    onDistrictChanged();
+                })
+                .catch(() => {
+                    distSelect.innerHTML = '<option value="Quận / Huyện Trung tâm">Quận / Huyện Trung tâm</option>';
+                    onDistrictChanged();
+                });
+        }
+
+        function onDistrictChanged() {
+            var dist = document.getElementById('selQuanHuyen').value;
+            var wardSelect = document.getElementById('selPhuongXa');
+            wardSelect.innerHTML = '<option value="">Đang tải phường/xã...</option>';
+
+            fetch('/api/Logistics/Wards?district=' + encodeURIComponent(dist))
+                .then(r => r.json())
+                .then(wards => {
+                    wardSelect.innerHTML = '';
+                    wards.forEach(w => {
+                        var opt = document.createElement('option');
+                        opt.value = w;
+                        opt.innerText = w;
+                        wardSelect.appendChild(opt);
+                    });
+                    updateFullAddress();
+                    recalculateLogisticsFee();
+                })
+                .catch(() => {
+                    wardSelect.innerHTML = '<option value="Phường / Xã Trung tâm">Phường / Xã Trung tâm</option>';
+                    updateFullAddress();
+                    recalculateLogisticsFee();
+                });
+        }
+
+        function recalculateLogisticsFee() {
+            var prov = document.getElementById('selTinhThanh').value;
+            var dist = document.getElementById('selQuanHuyen').value;
+            var activeRadio = document.querySelector('input[name="donViVanChuyen"]:checked');
+            var selectedCarrier = activeRadio ? activeRadio.value : 'GHTK';
+
+            var carriers = ['GHTK', 'GHN', 'VTP'];
+            carriers.forEach(cCode => {
+                fetch('/api/Logistics/CalculateFee', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        carrierCode: cCode,
+                        province: prov,
+                        district: dist,
+                        subtotal: cartSubtotal,
+                        vipLevel: vipLevel
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        var radio = document.getElementById('carrier_' + cCode);
+                        if (radio) radio.setAttribute('data-fee', data.fee);
+
+                        var feeDisplay = document.getElementById('fee_display_' + cCode);
+                        if (feeDisplay) {
+                            feeDisplay.innerText = data.fee === 0 ? 'MIỄN PHÍ (0₫)' : data.fee.toLocaleString('vi-VN') + ' ₫';
+                        }
+
+                        var estTime = document.getElementById('est_time_' + cCode);
+                        if (estTime) estTime.innerText = data.estimatedTime;
+
+                        var arrival = document.getElementById('arrival_' + cCode);
+                        if (arrival) arrival.innerHTML = '<i class="fas fa-calendar-check me-1"></i>Dự kiến giao: ' + data.estimatedDate;
+
+                        if (cCode === selectedCarrier) {
+                            var finalPriceElem = document.getElementById('finalPrice');
+                            var shippingFeeText = document.getElementById('shippingFeeText');
+                            finalPriceElem.setAttribute('data-shipping-fee', data.fee);
+
+                            if (data.fee === 0) {
+                                shippingFeeText.className = 'fw-bold text-success';
+                                shippingFeeText.innerText = 'Miễn phí (0₫)';
+                            } else {
+                                shippingFeeText.className = 'fw-bold text-dark';
+                                shippingFeeText.innerText = data.fee.toLocaleString('vi-VN') + ' ₫';
+                            }
+                            recalculateTotal();
+                        }
+                    }
+                })
+                .catch(err => console.error('Fee calc error:', err));
+            });
+        }
+
+        function updateShippingFee(radioElem) {
+            const fee = parseFloat(radioElem.getAttribute('data-fee')) || 0;
+            const finalPriceElem = document.getElementById('finalPrice');
+            const shippingFeeText = document.getElementById('shippingFeeText');
+            
+            finalPriceElem.setAttribute('data-shipping-fee', fee);
+            
+            if (fee === 0) {
+                shippingFeeText.className = 'fw-bold text-success';
+                shippingFeeText.innerText = 'Miễn phí (0₫)';
+            } else {
+                shippingFeeText.className = 'fw-bold text-dark';
+                shippingFeeText.innerText = fee.toLocaleString('vi-VN') + ' ₫';
+            }
+
+            recalculateTotal();
+        }
+
+        function recalculateTotal() {
+            const finalPriceElem = document.getElementById('finalPrice');
+            const basePrice = parseFloat(finalPriceElem.getAttribute('data-base-price')) || 0;
+            const shippingFee = parseFloat(finalPriceElem.getAttribute('data-shipping-fee')) || 0;
+            const promoDiscount = parseFloat(finalPriceElem.getAttribute('data-promo-discount')) || 0;
+            const pointsDiscount = parseFloat(finalPriceElem.getAttribute('data-points-discount')) || 0;
+
+            let total = basePrice - promoDiscount - pointsDiscount + shippingFee;
+            if (total < 0) total = 0;
+
+            finalPriceElem.innerText = total.toLocaleString('vi-VN') + ' ₫';
+        }
+
+        function toggleUsePoints() {
+            const chk = document.getElementById('chkUsePoints');
+            const wrap = document.getElementById('pointsInputWrap');
+            const input = document.getElementById('inputPoints');
+            const formDiemSuDung = document.getElementById('formDiemSuDung');
+            const row = document.getElementById('pointsDiscountRow');
+            const finalPriceElem = document.getElementById('finalPrice');
+
+            if (chk && chk.checked) {
+                if (wrap) wrap.classList.remove('d-none');
+                updatePointsDiscount();
+            } else {
+                if (wrap) wrap.classList.add('d-none');
+                if (formDiemSuDung) formDiemSuDung.value = '0';
+                if (row) row.classList.add('d-none');
+                if (finalPriceElem) finalPriceElem.setAttribute('data-points-discount', '0');
+                recalculateTotal();
+            }
+        }
+
+        function setExactPoints(pts) {
+            const chk = document.getElementById('chkUsePoints');
+            const input = document.getElementById('inputPoints');
+            if (chk && !chk.checked) {
+                chk.checked = true;
+                const wrap = document.getElementById('pointsInputWrap');
+                if (wrap) wrap.classList.remove('d-none');
+            }
+            if (input) {
+                input.value = pts;
+            }
+            updatePointsDiscount();
+        }
+
+        function updatePointsDiscount() {
+            const chk = document.getElementById('chkUsePoints');
+            const input = document.getElementById('inputPoints');
+            const formDiemSuDung = document.getElementById('formDiemSuDung');
+            const row = document.getElementById('pointsDiscountRow');
+            const badge = document.getElementById('pointsBadge');
+            const amount = document.getElementById('pointsAmount');
+            const finalPriceElem = document.getElementById('finalPrice');
+
+            if (!input) return;
+            let pts = parseInt(input.value) || 0;
+            const maxPts = parseInt(input.getAttribute('max')) || 0;
+            if (pts > maxPts) {
+                pts = maxPts;
+                input.value = maxPts;
+            }
+            if (pts < 0) {
+                pts = 0;
+                input.value = 0;
+            }
+
+            if (chk && !chk.checked) {
+                pts = 0;
+            }
+
+            if (formDiemSuDung) formDiemSuDung.value = pts;
+            if (badge) badge.innerText = pts.toLocaleString('vi-VN');
+            if (amount) amount.innerText = '-' + pts.toLocaleString('vi-VN') + ' ₫';
+
+            if (pts > 0) {
+                if (row) row.classList.remove('d-none');
+                if (finalPriceElem) finalPriceElem.setAttribute('data-points-discount', pts);
+            } else {
+                if (row) row.classList.add('d-none');
+                if (finalPriceElem) finalPriceElem.setAttribute('data-points-discount', '0');
+            }
+            recalculateTotal();
+        }
+
+        function topUpTestPoints() {
+            const btn = document.getElementById('btnNhanDiemTest');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang nhận điểm...';
+            }
+
+            fetch('/KhachHangs/NhanDiemTestAjax', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Đã nhận thành công 50.000 điểm thưởng!');
+                    location.reload();
+                } else {
+                    alert(data.message || 'Không thể nhận điểm lúc này.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-gift text-warning me-1"></i>Nhận ngay 50.000 điểm trải nghiệm (Test)';
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Lỗi khi kết nối máy chủ.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-gift text-warning me-1"></i>Nhận ngay 50.000 điểm trải nghiệm (Test)';
+                }
+            });
+        }
+
+        function submitOrder(btn) {
+            const form = document.getElementById('checkoutForm');
+            if (!form) return;
+            if (!form.reportValidity()) return;
+
+            // Đảm bảo đồng bộ chính xác số điểm dùng vào formDiemSuDung bên trong form
+            const chk = document.getElementById('chkUsePoints');
+            const input = document.getElementById('inputPoints');
+            const formDiemSuDung = document.getElementById('formDiemSuDung');
+            let pts = 0;
+            if (chk && chk.checked && input) {
+                pts = parseInt(input.value) || 0;
+                const maxPts = parseInt(input.getAttribute('max')) || 0;
+                if (pts > maxPts) pts = maxPts;
+                if (pts < 0) pts = 0;
+            }
+            if (formDiemSuDung) {
+                formDiemSuDung.value = pts;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ĐANG XỬ LÝ ĐẶT HÀNG...';
+            }
+            form.submit();
+        }
+
+        function applyPromo() {
+            var code = document.getElementById('promoCodeInput').value.trim();
+            var msgDiv = document.getElementById('promoMessage');
+            var finalPriceElem = document.getElementById('finalPrice');
+
+            if (!code) {
+                msgDiv.innerHTML = '<span class="text-danger">Vui lòng nhập mã khuyến mãi.</span>';
+                return;
+            }
+
+            msgDiv.innerHTML = '<span class="text-muted"><i class="fas fa-spinner fa-spin"></i> Đang kiểm tra mã...</span>';
+
+            fetch('/Cart/ApplyPromoCode', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(code)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    msgDiv.innerHTML = '<span class="text-success fw-bold"><i class="fas fa-check-circle"></i> ' + data.message + '</span>';
+                    
+                    var discountAmount = data.discountAmount;
+                    finalPriceElem.setAttribute('data-promo-discount', discountAmount);
+
+                    document.getElementById('promoCodeBadge').innerText = data.code;
+                    document.getElementById('discountRow').classList.remove('d-none');
+                    document.getElementById('discountAmount').innerText = '-' + discountAmount.toLocaleString('vi-VN') + ' ₫';
+                    
+                    recalculateTotal();
+                    
+                    document.getElementById('promoCodeInput').disabled = true;
+                    document.getElementById('applyPromoBtn').disabled = true;
+                    document.getElementById('applyPromoBtn').innerText = 'Đã áp dụng';
+                } else {
+                    msgDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> ' + data.message + '</span>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                msgDiv.innerHTML = '<span class="text-danger">Lỗi kết nối máy chủ. Vui lòng thử lại.</span>';
+            });
+        }
+
+        window.submitOrder = submitOrder;
+        window.toggleUsePoints = toggleUsePoints;
+        window.updatePointsDiscount = updatePointsDiscount;
+        window.setExactPoints = setExactPoints;
+        window.topUpTestPoints = topUpTestPoints;
+        window.updateShippingFee = updateShippingFee;
+        window.onProvinceChanged = onProvinceChanged;
+        window.onDistrictChanged = onDistrictChanged;
+        window.updateFullAddress = updateFullAddress;
+        window.recalculateLogisticsFee = recalculateLogisticsFee;
+        window.recalculateTotal = recalculateTotal;
+        window.applyPromo = applyPromo;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            updateFullAddress();
+        });
+    </script>
+}

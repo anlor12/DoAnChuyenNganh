@@ -1,0 +1,6 @@
+@model int
+
+<a href="/Cart" class="nav-action-btn-custom position-relative cart-badge-link" title="Giỏ hàng">
+    <i class="fas fa-shopping-bag"></i>
+    <span class="cart-badge-count-custom @(Model > 0 ? "" : "d-none")" id="globalCartCountBadge">@Model</span>
+</a>

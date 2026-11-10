@@ -1,0 +1,176 @@
+@model DoAnCoSo.Models.BaiViet
+
+@{
+    ViewData["Title"] = "Thêm bài viết mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-wrapper p-4">
+    <!-- BREADCRUMB & HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Bài viết</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thêm mới</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0" style="color: #1e293b; font-size: 24px;">
+                <i class="bi bi-file-earmark-plus text-primary me-2"></i>Thêm bài viết mới
+            </h2>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary px-3 py-2 rounded-3">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+        <div class="row g-4">
+            <!-- MAIN CONTENT COLUMN -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label asp-for="TieuDe" class="form-label fw-bold">Tiêu đề bài viết <span class="text-danger">*</span></label>
+                            <input asp-for="TieuDe" id="postTitle" class="form-control form-control-lg rounded-3" placeholder="Nhập tiêu đề bài viết cuốn hút..." required />
+                            <span asp-validation-for="TieuDe" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Slug" class="form-label fw-bold">Đường dẫn thân thiện (Slug)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted small">/BaiViet/ChiTiet/</span>
+                                <input asp-for="Slug" id="postSlug" class="form-control rounded-end-3" placeholder="tu-dong-sinh-theo-tieu-de" />
+                            </div>
+                            <span asp-validation-for="Slug" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TomTat" class="form-label fw-bold">Tóm tắt ngắn (Excerpt)</label>
+                            <textarea asp-for="TomTat" rows="3" class="form-control rounded-3" placeholder="Mô tả súc tích nội dung bài viết, hiển thị ở thẻ tóm tắt và kết quả tìm kiếm..."></textarea>
+                            <span asp-validation-for="TomTat" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="NoiDung" class="form-label fw-bold">Nội dung chi tiết (Hỗ trợ HTML) <span class="text-danger">*</span></label>
+                            <textarea asp-for="NoiDung" id="postContent" rows="14" class="form-control rounded-3 font-monospace" placeholder="<p>Soạn thảo nội dung bài viết...</p>" required></textarea>
+                            <span asp-validation-for="NoiDung" class="text-danger small"></span>
+                            <div class="form-text small text-muted">
+                                <i class="bi bi-info-circle me-1"></i> Có thể sử dụng các thẻ HTML như &lt;h2&gt;, &lt;p&gt;, &lt;img&gt;, &lt;ul&gt;, &lt;strong&gt; để định dạng bài viết chuyên nghiệp.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR SETTINGS COLUMN -->
+            <div class="col-lg-4">
+                <!-- PUBLISH SETTINGS CARD -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white fw-bold py-3">
+                        <i class="bi bi-gear-fill me-2 text-primary"></i>Cài đặt đăng bài
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="mb-3">
+                            <label asp-for="ChuyenMuc" class="form-label fw-bold">Chuyên mục bài viết</label>
+                            <select asp-for="ChuyenMuc" class="form-select rounded-3">
+                                <option value="Xu hướng thời trang">Xu hướng thời trang</option>
+                                <option value="Mẹo hay thời trang">Mẹo hay thời trang</option>
+                                <option value="Phong cách sống">Phong cách sống</option>
+                                <option value="Bộ sưu tập mới">Bộ sưu tập mới</option>
+                                <option value="Tin tức & Sự kiện">Tin tức & Sự kiện</option>
+                            </select>
+                            <span asp-validation-for="ChuyenMuc" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="TacGia" class="form-label fw-bold">Tác giả</label>
+                            <input asp-for="TacGia" class="form-control rounded-3" placeholder="Tên tác giả..." />
+                            <span asp-validation-for="TacGia" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="NoiBat" class="form-check-input" type="checkbox" id="checkNoiBat" />
+                            <label class="form-check-label fw-semibold" for="checkNoiBat">
+                                <i class="bi bi-star-fill text-warning me-1"></i> Đặt làm bài viết nổi bật (Ghim đầu trang)
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-4">
+                            <input asp-for="TrangThai" class="form-check-input" type="checkbox" id="checkTrangThai" checked />
+                            <label class="form-check-label fw-semibold" for="checkTrangThai">
+                                <i class="bi bi-check-circle-fill text-success me-1"></i> Xuất bản ngay (Hiển thị cho khách hàng)
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3">
+                                <i class="bi bi-cloud-arrow-up-fill me-2"></i>Lưu và Đăng bài
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEATURED IMAGE CARD -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white fw-bold py-3">
+                        <i class="bi bi-image me-2 text-primary"></i>Hình ảnh đại diện
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-3">
+                            <div class="border border-2 border-dashed rounded-4 p-3 bg-light d-flex align-items-center justify-content-center" style="min-height: 180px; overflow:hidden;">
+                                <img id="imagePreview" src="/images/news_office_gentleman.png" alt="Preview" class="img-fluid rounded-3 object-fit-cover w-100" style="max-height: 220px;" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3 text-start">
+                            <label class="form-label small fw-bold">Chọn tệp ảnh từ máy tính:</label>
+                            <input type="file" name="anhDaiDienFile" id="anhDaiDienInput" class="form-control rounded-3" accept="image/*" onchange="previewFile(this)" />
+                        </div>
+
+                        <div class="text-start">
+                            <label asp-for="HinhAnh" class="form-label small fw-bold">Hoặc dán URL ảnh trực tuyến:</label>
+                            <input asp-for="HinhAnh" id="hinhAnhUrl" class="form-control rounded-3" placeholder="https://..." oninput="previewUrl(this.value)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    // Auto-generate slug from title
+    document.getElementById('postTitle').addEventListener('input', function() {
+        var title = this.value;
+        var slug = title.toLowerCase().trim()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d").replace(/Đ/g, "D")
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-');
+        document.getElementById('postSlug').value = slug;
+    });
+
+    function previewFile(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('imagePreview').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function previewUrl(url) {
+        if (url && url.length > 5) {
+            document.getElementById('imagePreview').src = url;
+        }
+    }
+</script>
+}

@@ -1,0 +1,1417 @@
+@model IEnumerable<DoAnCoSo.Models.SanPham>
+@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = "Tất cả sản phẩm";
+
+    var tuKhoa = ViewBag.TuKhoa as string;
+    var maLoai = ViewBag.MaLoai as int?;
+    var giaMin = ViewBag.GiaMin as decimal?;
+    var giaMax = ViewBag.GiaMax as decimal?;
+    var sapXep = ViewBag.SapXep as string;
+    var gioiTinh = ViewBag.GioiTinh as string;
+    var loaiSanPhams = ViewBag.LoaiSanPhams as IEnumerable<DoAnCoSo.Models.LoaiSanPham>;
+
+    bool dangLoc = !string.IsNullOrWhiteSpace(tuKhoa) || maLoai.HasValue || giaMin.HasValue || giaMax.HasValue || !string.IsNullOrWhiteSpace(gioiTinh);
+    var userSession = Context.Session.GetString("AdminUser");
+}
+
+@section Styles {
+<style>
+    /* ==================== AI RECOMMENDATION CARD ==================== */
+    .ai-recommendation-card {
+        background: #141624;
+        border-radius: 8px;
+        position: relative;
+        padding: 24px 30px;
+        color: #fff;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .ai-recommendation-glow {
+        display: none;
+    }
+
+    .ai-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #0dcaf0;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .ai-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+    .ai-desc {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 0;
+        max-width: 500px;
+        line-height: 1.4;
+    }
+
+    .ai-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px 20px;
+        background: #fff;
+        color: #111;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+
+    .ai-btn:hover {
+        background: #f0f0f0;
+    }
+
+    /* ==================== PAGE LAYOUT ==================== */
+    .shop-layout {
+        display: flex;
+        gap: 0;
+        min-height: calc(100vh - 120px);
+    }
+
+    /* ==================== SIDEBAR FILTER ==================== */
+    .filter-sidebar {
+        width: 280px;
+        min-width: 280px;
+        background: #fff;
+        border-right: 1px solid #eee;
+        padding: 28px 24px;
+        position: sticky;
+        top: 0;
+        height: calc(100vh - 80px);
+        overflow-y: auto;
+        box-shadow: 2px 0 12px rgba(0,0,0,0.04);
+    }
+
+    .filter-sidebar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .filter-sidebar::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+
+    .sidebar-title {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #111;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sidebar-title i {
+        font-size: 14px;
+        color: #888;
+    }
+
+    .filter-group {
+        margin-bottom: 22px;
+    }
+
+    .filter-group-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #888;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .filter-search-wrap {
+        position: relative;
+    }
+
+    .filter-search-wrap .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+        font-size: 13px;
+        pointer-events: none;
+    }
+
+    .filter-search-wrap input {
+        width: 100%;
+        padding: 10px 14px 10px 36px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.2s;
+        background: #fafafa;
+        box-sizing: border-box;
+    }
+
+    .filter-search-wrap input:focus {
+        border-color: #111;
+        background: #fff;
+    }
+
+    .filter-select, .filter-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        background: #fafafa;
+        transition: border-color 0.2s;
+        height: 40px;
+        box-sizing: border-box;
+    }
+
+    .filter-select:focus, .filter-input:focus {
+        border-color: #111;
+        background: #fff;
+    }
+
+    .filter-price-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .filter-price-wrap .sep {
+        color: #aaa;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .filter-price-wrap .filter-input {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .filter-btn {
+        width: 100%;
+        padding: 11px 20px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        white-space: nowrap;
+    }
+
+    .filter-btn:hover { background: #333; }
+    .filter-btn:active { transform: scale(0.97); }
+
+    .filter-btn-reset {
+        width: 100%;
+        padding: 10px 18px;
+        background: transparent;
+        color: #666;
+        border: 1.5px solid #ddd;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        margin-top: 8px;
+        box-sizing: border-box;
+    }
+
+    .filter-btn-reset:hover { border-color: #999; color: #333; }
+
+    .filter-divider {
+        border: none;
+        border-top: 1px solid #f0f0f0;
+        margin: 20px 0;
+    }
+
+    /* ==================== ACTIVE FILTERS ==================== */
+    .active-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .active-filters-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        width: 100%;
+        margin-bottom: 4px;
+    }
+
+    .filter-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 20px;
+        padding: 3px 10px;
+        font-size: 12px;
+        color: #333;
+    }
+
+    .filter-tag a {
+        color: #888;
+        text-decoration: none;
+        font-size: 10px;
+        line-height: 1;
+        transition: color 0.15s;
+    }
+
+    .filter-tag a:hover { color: #c00; }
+
+    /* ==================== MAIN CONTENT ==================== */
+    .products-main {
+        flex: 1;
+        min-width: 0;
+        padding: 28px 32px 60px;
+        background: #fafafa;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: #111;
+    }
+
+    .result-count {
+        font-size: 13px;
+        color: #888;
+    }
+
+    .sort-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sort-wrap label {
+        font-size: 12px;
+        color: #888;
+        white-space: nowrap;
+    }
+
+    .sort-select {
+        padding: 7px 14px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 13px;
+        outline: none;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    /* ==================== PRODUCT CARD ==================== */
+    .product-card {
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+        transition: box-shadow 0.25s, transform 0.25s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        transform: translateY(-3px);
+    }
+
+    .product-card-img-wrap {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 3/4;
+        background: #f8f8f8;
+    }
+
+    .product-card-img-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.4s ease;
+    }
+
+    .product-card:hover .product-card-img-wrap img {
+        transform: scale(1.06);
+    }
+
+    .product-card-body {
+        padding: 14px 16px 10px;
+        flex: 1;
+    }
+
+    .product-card-category {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 4px;
+    }
+
+    .product-card-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #111;
+        margin-bottom: 6px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .product-card-price {
+        font-size: 15px;
+        font-weight: 700;
+        color: #c8102e;
+    }
+
+    .product-card-footer {
+        padding: 10px 16px 16px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-view-detail {
+        flex: 1;
+        padding: 9px 12px;
+        background: transparent;
+        border: 1.5px solid #111;
+        color: #111;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-view-detail:hover {
+        background: #111;
+        color: #fff;
+    }
+
+    .btn-add-cart {
+        padding: 9px 14px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-add-cart:hover { background: #333; }
+    .btn-add-cart:active { transform: scale(0.95); }
+    .btn-add-cart:disabled { background: #ccc; cursor: not-allowed; }
+
+    /* ==================== EMPTY STATE ==================== */
+    .empty-state-wrap {
+        text-align: center;
+        padding: 80px 20px;
+        color: #aaa;
+    }
+
+    .empty-state-wrap i {
+        font-size: 56px;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    .empty-state-wrap h5 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-wrap p {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    /* ==================== MOBILE TOGGLE ==================== */
+    .sidebar-toggle {
+        display: none;
+        position: fixed;
+        bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+        left: 16px;
+        z-index: 1040;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        background: #111;
+        color: #fff;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        transition: background 0.2s;
+    }
+
+    .sidebar-toggle:hover { background: #333; }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        z-index: 150;
+    }
+
+    @@media (max-width: 992px) {
+        .filter-sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            height: 100vh;
+            z-index: 160;
+            transition: left 0.3s ease;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+        }
+
+        .filter-sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-overlay.open {
+            display: block;
+        }
+
+        .sidebar-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .products-main {
+            padding: 20px 16px 60px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .products-main {
+            padding: 16px 12px 60px;
+        }
+    }
+
+    /* ==================== PROMO BANNER (MINIMALIST LUXURY) ==================== */
+    .promo-banner {
+        background: #f8f8f8;
+        border-radius: 8px;
+        padding: 24px 30px;
+        margin-bottom: 30px;
+        position: relative;
+        color: #111;
+        border: 1px solid #111;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .promo-banner-glow { display: none; }
+
+    .promo-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .promo-text { flex: 1; min-width: 250px; }
+
+    .promo-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #111;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+    }
+
+    .promo-title {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+    }
+
+    .promo-desc {
+        font-size: 11px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .promo-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .promo-countdown { display: flex; gap: 6px; }
+
+    .countdown-item {
+        text-align: center;
+        background: #fff;
+        border: 1px solid #111;
+        border-radius: 4px;
+        padding: 6px 10px;
+        min-width: 46px;
+    }
+
+    .countdown-value {
+        display: block;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1;
+        color: #111;
+    }
+
+    .countdown-label {
+        display: block;
+        font-size: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #777;
+        margin-top: 4px;
+    }
+
+    .promo-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #111;
+        color: #fff;
+        padding: 10px 24px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        width: 100%;
+    }
+
+    .promo-discount-badge {
+        position: absolute;
+        top: -1px;
+        right: 40px;
+        background: #fff;
+        color: #111;
+        width: 60px;
+        height: 70px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: 6px;
+        border: 1px solid #111;
+        border-top: none;
+        clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+    }
+
+    .promo-discount-badge .discount-number {
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .promo-discount-badge .discount-label {
+        font-size: 8px;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+
+    @@media (max-width: 992px) {
+        .promo-banner { padding: 28px 30px; }
+        .promo-title { font-size: 26px; }
+    }
+
+    @@media (max-width: 768px) {
+        .promo-banner { padding: 28px 20px; }
+        .promo-content { flex-direction: column; text-align: center; }
+        .promo-desc { margin: 0 auto 10px; }
+        .promo-right { width: 100%; }
+        .promo-discount-badge {
+            position: relative;
+            top: auto;
+            right: auto;
+            margin: 0 auto 16px;
+            width: 70px;
+            height: 80px;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+            animation: none;
+        }
+    }
+</style>
+}
+
+<!-- ===================== FASHION STORE STYLE FULL-WIDTH DYNAMIC CATEGORY BANNER ===================== -->
+@{
+    var currentCat = ViewBag.CurrentCategory as DoAnCoSo.Models.LoaiSanPham;
+    
+    // Default banner content when no specific category is selected
+    string catTitle = "Hàng Mới Về";
+    string catSubTitle = "FASHION STORE | HÀNG MỚI VỀ";
+    string catDesc = "Khám phá các sản phẩm hàng mới về tại FASHION STORE đa dạng kiểu dáng từ hiện đại đến truyền thống, bạn có thể dễ dàng lựa chọn sản phẩm theo phong cách riêng với chất liệu mềm mại, thoáng mát, phom dáng vừa ý.";
+    string bannerImg = "/images/banner_hang_moi_ve.jpg";
+
+    if (currentCat != null)
+    {
+        catTitle = currentCat.TenLoaiSanPham;
+        catSubTitle = "FASHION STORE | " + currentCat.TenLoaiSanPham.ToUpper();
+        if (!string.IsNullOrWhiteSpace(currentCat.MoTa))
+        {
+            catDesc = currentCat.MoTa;
+        }
+        else
+        {
+            catDesc = $"{currentCat.TenLoaiSanPham} FASHION STORE đa dạng kiểu dáng từ hiện đại đến truyền thống, bạn có thể dễ dàng lựa chọn một mẫu sản phẩm theo phong cách riêng với chất liệu mềm mại, thoáng mát, phom dáng vừa ý tại FASHION STORE.";
+        }
+
+        string catNameLower = currentCat.TenLoaiSanPham.ToLower();
+        if (!string.IsNullOrWhiteSpace(currentCat.HinhAnh) && !currentCat.HinhAnh.Contains("news_lotus_fabric.png"))
+        {
+            bannerImg = currentCat.HinhAnh;
+        }
+        else if (catNameLower.Contains("quần"))
+        {
+            bannerImg = "/images/news_smart_active.png";
+        }
+        else if (catNameLower.Contains("giày") || catNameLower.Contains("phụ kiện"))
+        {
+            bannerImg = "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=1600&q=80";
+        }
+        else
+        {
+            bannerImg = "/images/banner_hang_moi_ve.jpg";
+        }
+    }
+}
+
+<div class="w-100 position-relative category-hero-section overflow-hidden mb-4" 
+     style="min-height: 420px; background-image: url('@bannerImg'); background-size: cover; background-position: center; display: flex; align-items: center; transition: all 0.5s ease-in-out;">
+    
+    <!-- Semi-transparent overlay for high image readability -->
+    <div class="position-absolute top-0 start-0 w-100 h-100" style="background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.35) 100%); z-index: 1;"></div>
+
+    <!-- Top Brand Title Watermark (Left-aligned & compact) -->
+    <div class="position-absolute top-0 start-0 text-start ps-4 ps-lg-5 pt-3 pt-md-4 w-100" style="z-index: 2; pointer-events: none;">
+        <h2 style="font-family: 'Montserrat', sans-serif; font-size: clamp(1rem, 1.4vw, 1.35rem); font-weight: 800; letter-spacing: 4px; color: rgba(255, 255, 255, 0.95); text-transform: uppercase; text-shadow: 0 2px 12px rgba(0,0,0,0.7); margin-bottom: 0;">
+            @catSubTitle
+        </h2>
+    </div>
+
+    <!-- Left Overlay Card matching user screenshot -->
+    <div class="container-fluid px-4 px-lg-5 position-relative" style="z-index: 3;">
+        <div class="row">
+            <div class="col-12 col-md-7 col-lg-5">
+                <div class="category-banner-card p-4 p-md-5 rounded-4 shadow-lg" 
+                     style="background: rgba(40, 40, 40, 0.65); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.22); color: #fff;">
+                    <h1 class="fw-bold mb-3" style="font-family: 'Montserrat', sans-serif; font-size: clamp(24px, 3.5vw, 36px); letter-spacing: -0.5px; line-height: 1.25; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+                        @catTitle
+                    </h1>
+                    <p class="mb-0" style="font-size: 13.5px; line-height: 1.65; color: rgba(255, 255, 255, 0.9); font-weight: 400;">
+                        @catDesc
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== BREADCRUMBS & PILLS ===================== -->
+<div class="container-fluid px-4 px-lg-5 mb-3">
+    <div style="font-family: var(--font-primary); font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #555;">
+        <a href="/" style="color: #111; text-decoration: none;">TRANG CHỦ</a> 
+        <span class="mx-2 text-muted">&gt;</span> 
+        <a href="/SanPham" style="color: #111; text-decoration: none;">HÀNG MỚI VỀ</a>
+        @if (currentCat != null)
+        {
+            var ancestorList = new List<DoAnCoSo.Models.LoaiSanPham>();
+            var parent = currentCat.LoaiCha;
+            while (parent != null)
+            {
+                ancestorList.Insert(0, parent);
+                parent = parent.LoaiCha;
+            }
+            foreach (var anc in ancestorList)
+            {
+                <span class="mx-2 text-muted">&gt;</span> 
+                <a href="/SanPham?maLoai=@anc.MaLoaiSanPham" style="color: #111; text-decoration: none;">@anc.TenLoaiSanPham.ToUpper()</a>
+            }
+            <span class="mx-2 text-muted">&gt;</span> 
+            <span style="color: #888;">@currentCat.TenLoaiSanPham.ToUpper()</span>
+        }
+    </div>
+</div>
+
+<!-- Category Pills row (Horizontal scrollable on mobile, flex on desktop) -->
+<div class="container-fluid px-3 px-lg-5 mb-4 mt-3">
+    <div class="filter-pills-scroll-container">
+        <a href="/SanPham" class="filter-pill-item @(maLoai == null && string.IsNullOrEmpty(sapXep) && !giaMax.HasValue ? "active" : "")">TẤT CẢ</a>
+        <a href="/SanPham?sapXep=moi_nhat" class="filter-pill-item @(sapXep == "moi_nhat" ? "active" : "")">🔥 HÀNG MỚI VỀ</a>
+        <a href="/SanPham?sapXep=ban_chay" class="filter-pill-item @(sapXep == "ban_chay" ? "active" : "")">BỘ SƯU TẬP</a>
+        <a href="/SanPham?giaMax=200000" class="filter-pill-item @(giaMax == 200000 ? "active" : "")">GIÁ TỐT</a>
+        @if (loaiSanPhams != null)
+        {
+            var parentCats = loaiSanPhams.Where(c => c.MaLoaiCha == null).ToList();
+            foreach (var pCat in parentCats)
+            {
+                var children = loaiSanPhams.Where(c => c.MaLoaiCha == pCat.MaLoaiSanPham).ToList();
+                <a href="/SanPham?maLoai=@pCat.MaLoaiSanPham" class="filter-pill-item @(maLoai == pCat.MaLoaiSanPham ? "active" : "") fw-bold">@pCat.TenLoaiSanPham.ToUpper()</a>
+                foreach (var cCat in children)
+                {
+                    <a href="/SanPham?maLoai=@cCat.MaLoaiSanPham" class="filter-pill-item @(maLoai == cCat.MaLoaiSanPham ? "active" : "")" style="font-size: 11px;">@cCat.TenLoaiSanPham.ToUpper()</a>
+                }
+            }
+        }
+    </div>
+</div>
+
+<!-- ===================== MOBILE TOGGLE ===================== -->
+<button class="sidebar-toggle" id="sidebarToggle" title="Bộ lọc">
+    <i class="fas fa-sliders-h"></i>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ===================== SHOP LAYOUT ===================== -->
+<div class="container-fluid px-4 px-lg-5">
+<div class="row">
+
+    <!-- ========== SIDEBAR FILTER (ACCORDION STYLE) ========== -->
+    <aside class="col-lg-2 d-none d-lg-block pe-4" id="filterSidebar">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold m-0" style="font-size: 15px; letter-spacing: 0.5px;">BỘ LỌC</h5>
+            <i class="fas fa-chevron-up text-secondary" style="font-size: 12px;"></i>
+        </div>
+
+        <form method="get" action="/SanPham" id="filterForm">
+            <!-- Danh mục sản phẩm (Phân cấp 3 tầng) -->
+            <div class="border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseCategory" style="cursor: pointer;">
+                    <span class="fw-bold" style="font-size: 14px;">Danh mục sản phẩm</span>
+                    <i class="fas fa-chevron-down text-secondary" style="font-size: 12px;"></i>
+                </div>
+                <div class="collapse show mt-3" id="collapseCategory">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="maLoai" value="" id="cat_all" @(maLoai == null ? "checked" : "") onchange="this.form.submit();">
+                        <label class="form-check-label @(maLoai == null ? "fw-bold text-dark" : "text-secondary")" for="cat_all" style="font-size: 13px;">
+                            Tất cả danh mục
+                        </label>
+                    </div>
+                    @if (loaiSanPhams != null)
+                    {
+                        var parentCats = loaiSanPhams.Where(c => c.MaLoaiCha == null).ToList();
+                        foreach (var pCat in parentCats)
+                        {
+                            var children = loaiSanPhams.Where(c => c.MaLoaiCha == pCat.MaLoaiSanPham).ToList();
+                            var isParentChecked = maLoai == pCat.MaLoaiSanPham;
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="maLoai" value="@pCat.MaLoaiSanPham" id="cat_@pCat.MaLoaiSanPham" @(isParentChecked ? "checked" : "") onchange="this.form.submit();">
+                                    <label class="form-check-label @(isParentChecked ? "fw-bold text-dark" : "text-dark")" for="cat_@pCat.MaLoaiSanPham" style="font-size: 13.5px; font-weight: 700;">
+                                        @pCat.TenLoaiSanPham.ToUpper() @(children.Any() ? "(Tất cả)" : "")
+                                    </label>
+                                </div>
+                                @if (children.Any())
+                                {
+                                    <div class="ps-3 border-start ms-2 mt-1 mb-2">
+                                        @foreach (var cCat in children)
+                                        {
+                                            var isChildChecked = maLoai == cCat.MaLoaiSanPham;
+                                            var grandChildren = loaiSanPhams.Where(c => c.MaLoaiCha == cCat.MaLoaiSanPham).ToList();
+                                            <div class="form-check mb-1">
+                                                <input class="form-check-input" type="radio" name="maLoai" value="@cCat.MaLoaiSanPham" id="cat_@cCat.MaLoaiSanPham" @(isChildChecked ? "checked" : "") onchange="this.form.submit();">
+                                                <label class="form-check-label @(isChildChecked ? "fw-bold text-primary" : "text-secondary")" for="cat_@cCat.MaLoaiSanPham" style="font-size: 12.5px; font-weight: @(grandChildren.Any() ? "600" : "normal");">
+                                                    @cCat.TenLoaiSanPham @(grandChildren.Any() ? "(Tất cả)" : "")
+                                                </label>
+                                            </div>
+                                            @if (grandChildren.Any())
+                                            {
+                                                <div class="ps-3 border-start ms-2 mb-2">
+                                                    @foreach (var gCat in grandChildren)
+                                                    {
+                                                        var isGrandChecked = maLoai == gCat.MaLoaiSanPham;
+                                                        <div class="form-check mb-1">
+                                                            <input class="form-check-input" type="radio" name="maLoai" value="@gCat.MaLoaiSanPham" id="cat_@gCat.MaLoaiSanPham" @(isGrandChecked ? "checked" : "") onchange="this.form.submit();">
+                                                            <label class="form-check-label @(isGrandChecked ? "fw-bold text-primary" : "text-muted")" for="cat_@gCat.MaLoaiSanPham" style="font-size: 11.5px;">
+                                                                ↳ @gCat.TenLoaiSanPham
+                                                            </label>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Kiểu cổ áo -->
+            <div class="border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseCollar" style="cursor: pointer;">
+                    <span class="fw-bold" style="font-size: 14px;">Kiểu cổ áo</span>
+                    <i class="fas fa-chevron-down text-secondary" style="font-size: 12px;"></i>
+                </div>
+                <div class="collapse mt-3" id="collapseCollar">
+                    @foreach (var collar in new[] { "Cổ bẻ", "Cổ tròn", "Cổ trụ", "Cổ tim", "Cổ tàu" })
+                    {
+                        var isChecked = ViewBag.KieuCoAo != null && ((List<string>)ViewBag.KieuCoAo).Contains(collar);
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="kieuCoAo" value="@collar" id="collar_@collar" @(isChecked ? "checked" : "")>
+                            <label class="form-check-label" for="collar_@collar" style="font-size: 13px;">@collar</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Màu sắc -->
+            <div class="border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseColor" style="cursor: pointer;">
+                    <span class="fw-bold" style="font-size: 14px;">Màu sắc</span>
+                    <i class="fas fa-chevron-down text-secondary" style="font-size: 12px;"></i>
+                </div>
+                <div class="collapse mt-3" id="collapseColor">
+                    @foreach (var color in new[] { "Đen", "Trắng", "Xanh navy", "Xám", "Nâu", "Đỏ", "Be", "Xanh dương" })
+                    {
+                        var isChecked = ViewBag.MauSac != null && ((List<string>)ViewBag.MauSac).Contains(color);
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="mauSac" value="@color" id="color_@color" @(isChecked ? "checked" : "")>
+                            <label class="form-check-label" for="color_@color" style="font-size: 13px;">@color</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Chất liệu -->
+            <div class="border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseMaterial" style="cursor: pointer;">
+                    <span class="fw-bold" style="font-size: 14px;">Chất liệu</span>
+                    <i class="fas fa-chevron-down text-secondary" style="font-size: 12px;"></i>
+                </div>
+                <div class="collapse mt-3" id="collapseMaterial">
+                    @foreach (var material in new[] { "Cotton", "Linen", "Bamboo", "Polyester", "Spandex", "Lụa" })
+                    {
+                        var isChecked = ViewBag.ChatLieu != null && ((List<string>)ViewBag.ChatLieu).Contains(material);
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="chatLieu" value="@material" id="material_@material" @(isChecked ? "checked" : "")>
+                            <label class="form-check-label" for="material_@material" style="font-size: 13px;">@material</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Form dáng -->
+            <div class="border-bottom py-3">
+                <div class="d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#collapseForm" style="cursor: pointer;">
+                    <span class="fw-bold" style="font-size: 14px;">Form dáng</span>
+                    <i class="fas fa-chevron-down text-secondary" style="font-size: 12px;"></i>
+                </div>
+                <div class="collapse mt-3" id="collapseForm">
+                    @foreach (var fit in new[] { "Slim fit", "Regular fit", "Loose fit", "Oversize" })
+                    {
+                        var isChecked = ViewBag.FormDang != null && ((List<string>)ViewBag.FormDang).Contains(fit);
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" name="formDang" value="@fit" id="fit_@fit" @(isChecked ? "checked" : "")>
+                            <label class="form-check-label" for="fit_@fit" style="font-size: 13px;">@fit</label>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Kích cỡ -->
+            <div class="py-3">
+                <div class="d-flex justify-content-between align-items-center mb-3" data-bs-toggle="collapse" data-bs-target="#collapseSize" style="cursor: pointer;">
+                    <span class="fw-bold" style="font-size: 14px;">Kích cỡ</span>
+                    <i class="fas fa-chevron-down text-secondary" style="font-size: 12px;"></i>
+                </div>
+                <div class="collapse show" id="collapseSize">
+                    <div class="row g-2">
+                        <!-- Size Grid -->
+                        @foreach (var size in new[] { "XS", "S", "M", "L", "XL", "XXL", "29", "30", "31", "32", "33", "34", "35", "36", "38", "39", "40", "41", "42", "43", "M2/32" })
+                        {
+                            var isChecked = ViewBag.KichCo != null && ((List<string>)ViewBag.KichCo).Contains(size);
+                            <div class="col-4">
+                                <label class="w-100 m-0">
+                                    <input type="checkbox" name="kichCo" value="@size" class="d-none" @(isChecked ? "checked" : "") onchange="this.nextElementSibling.classList.toggle('bg-dark'); this.nextElementSibling.classList.toggle('text-white');" />
+                                    <div class="text-center py-2 @(isChecked ? "bg-dark text-white" : "")" style="background: #f8f8f8; font-size: 12px; cursor: pointer; transition: background 0.2s; border: 1px solid #eee; border-radius: 4px;">@size</div>
+                                </label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" placeholder="Tìm kiếm..." class="form-control mb-2" style="font-size: 13px;" />
+                <button type="submit" class="btn btn-dark w-100" style="font-size: 13px; font-weight: 600; padding: 10px;">Áp Dụng Lọc</button>
+                <a href="/SanPham" class="btn btn-outline-secondary w-100 mt-2" style="font-size: 12px;">Xóa bộ lọc</a>
+            </div>
+        </form>
+    </aside>
+    <!-- ========== PRODUCT GRID ========== -->
+    <main class="col-lg-10">
+
+        <div class="section-header">
+            <div>
+                <span class="section-title">
+                    @if (dangLoc)
+                    {
+                        <text>Kết quả tìm kiếm</text>
+                    }
+                    else
+                    {
+                        <text>Tất cả sản phẩm</text>
+                    }
+                </span>
+                <span class="result-count" style="margin-left: 12px;">
+                    Tìm thấy <strong>@Model.Count()</strong> sản phẩm
+                </span>
+            </div>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-search fs-1 text-muted mb-3"></i>
+                <h5 class="fw-bold">Không tìm thấy sản phẩm nào</h5>
+                <p class="text-muted">Hãy thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm khác.</p>
+                <a href="/SanPham" class="btn btn-outline-dark mt-2">Xem tất cả sản phẩm</a>
+            </div>
+        }
+        else
+        {
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-3 g-4 mb-5">
+                @foreach (var item in Model)
+                {
+                    <div class="col">
+                        <div class="card border-0 h-100 product-card-wrap" style="background: transparent;">
+                            <div class="position-relative product-card-thumb" style="overflow: hidden; border-radius: 4px;">
+                                <!-- Wishlist Heart Icon -->
+                                <button type="button" class="btn btn-light rounded-circle shadow-sm position-absolute wishlist-toggle-btn" 
+                                        onclick="toggleWishlist(event, @item.MaSanPham, this)" 
+                                        data-product-id="@item.MaSanPham"
+                                        title="Lưu vào danh sách yêu thích" 
+                                        style="top: 10px; right: 10px; width: 36px; height: 36px; z-index: 3; padding: 0;">
+                                    <i class="far fa-heart text-secondary"></i>
+                                </button>
+                                
+                                <a href="/SanPham/Details/@item.MaSanPham" class="d-block">
+                                    <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/no-image.png" : item.HinhAnh)"
+                                         alt="@item.TenSanPham"
+                                         class="w-100"
+                                         loading="lazy" style="aspect-ratio: 3/4; object-fit: cover;" />
+                                </a>
+
+                                <!-- Nút thêm nhanh vào giỏ hàng khi hover -->
+                                <button type="button" class="btn btn-dark w-100 rounded-0 py-2 quick-add-to-cart position-absolute bottom-0 start-0 product-quick-add"
+                                        onclick="event.stopPropagation(); addToCart(@item.MaSanPham, @(item.BienTheSanPhams?.FirstOrDefault()?.MaBienThe ?? 0))" 
+                                        data-product-id="@item.MaSanPham" 
+                                        data-variant-id="@(item.BienTheSanPhams?.FirstOrDefault()?.MaBienThe ?? 0)" 
+                                        style="font-size: 11px; font-weight: 700; letter-spacing: 0.5px; opacity: 0; transition: opacity 0.25s, transform 0.25s; transform: translateY(10px); z-index: 2;">
+                                    <i class="fas fa-shopping-bag me-1"></i> THÊM VÀO GIỎ
+                                </button>
+                            </div>
+                            <div class="card-body px-0 py-3">
+                                <!-- Dynamic Color Swatches -->
+                                @{
+                                    var distinctColors = item.BienTheSanPhams?
+                                        .Where(b => !string.IsNullOrEmpty(b.MauSac))
+                                        .Select(b => b.MauSac!)
+                                        .Distinct()
+                                        .Take(5)
+                                        .ToList();
+                                }
+                                @if (distinctColors != null && distinctColors.Any())
+                                {
+                                    <div class="d-flex align-items-center gap-1 mb-2">
+                                        @foreach (var colorName in distinctColors)
+                                        {
+                                            var cLower = colorName.ToLower();
+                                            var hexColor = cLower.Contains("đen") ? "#111111" :
+                                                           cLower.Contains("trắng") ? "#f8fafc" :
+                                                           cLower.Contains("than") || cLower.Contains("navy") ? "#1e293b" :
+                                                           cLower.Contains("dương") || cLower.Contains("biển") ? "#2563eb" :
+                                                           cLower.Contains("xám") || cLower.Contains("ghi") ? "#94a3b8" :
+                                                           cLower.Contains("nâu") || cLower.Contains("bò") ? "#78350f" :
+                                                           cLower.Contains("đỏ") ? "#dc2626" :
+                                                           cLower.Contains("be") || cLower.Contains("kem") ? "#fef08a" :
+                                                           cLower.Contains("vàng") ? "#eab308" :
+                                                           cLower.Contains("rêu") || cLower.Contains("lá") ? "#15803d" : "#cbd5e1";
+
+                                            <span class="rounded-circle border d-inline-block" style="width: 12px; height: 12px; background-color: @hexColor;" title="@colorName"></span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="mb-2" style="height: 12px;"></div>
+                                }
+
+                                <a href="/SanPham/Details/@item.MaSanPham" class="text-decoration-none text-dark">
+                                    <h6 class="fw-bold mb-1 text-truncate" style="font-size: 13px; text-transform: uppercase;" title="@item.TenSanPham">@item.TenSanPham</h6>
+                                </a>
+                                <div style="font-size: 13px; color: #555; font-weight: 600;">@item.Gia.ToString("N0") ₫</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </main>
+</div>
+</div>
+
+<!-- AI Recommendation Modal -->
+<div class="modal fade" id="aiRecModal" tabindex="-1" aria-labelledby="aiRecModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-0 border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white rounded-0">
+                <h5 class="modal-title fw-bold text-uppercase" id="aiRecModalLabel" style="font-size:14px; letter-spacing:1px;">
+                    <i class="fas fa-robot me-2 text-info"></i>Tư vấn vóc dáng từ Google Gemini AI
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="background:#fdfdfd;">
+                <!-- Loading State -->
+                <div id="aiRecLoading" class="text-center py-5">
+                    <div class="spinner-border text-dark mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h6 class="fw-bold">AI đang phân tích chỉ số cơ thể...</h6>
+                    <p class="text-muted small mb-0">Quá trình này có thể mất vài giây. Vui lòng đợi trong giây lát.</p>
+                </div>
+
+                <!-- Error/Warning State (Need Profile Update) -->
+                <div id="aiRecUpdateProfile" class="text-center py-4 d-none">
+                    <div class="mb-3 text-warning">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5 class="fw-bold">Chưa có thông số cơ thể!</h5>
+                    <p class="text-muted small mx-auto" style="max-width: 450px;">
+                        Để AI có thể tư vấn style và size chính xác nhất, vui lòng cập nhật thông tin chiều cao và cân nặng trong hồ sơ cá nhân của bạn.
+                    </p>
+                    <a href="/KhachHangs/Profile" class="btn btn-dark rounded-0 mt-2 px-4 py-2" style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px;">
+                        Cập nhật hồ sơ số đo
+                    </a>
+                </div>
+
+                <!-- Success State -->
+                <div id="aiRecContent" class="d-none">
+                    <!-- Body Stats Summary -->
+                    <div class="p-3 bg-light border mb-4 d-flex justify-content-around align-items-center flex-wrap gap-2 text-center">
+                        <div>
+                            <small class="text-muted d-block text-uppercase" style="font-size:10px;">Giới tính</small>
+                            <span class="fw-bold" id="aiRecGender" style="font-size:15px;">-</span>
+                        </div>
+                        <div class="vr d-none d-sm-block"></div>
+                        <div>
+                            <small class="text-muted d-block text-uppercase" style="font-size:10px;">Chiều cao</small>
+                            <span class="fw-bold"><span id="aiRecHeight">-</span> cm</span>
+                        </div>
+                        <div class="vr d-none d-sm-block"></div>
+                        <div>
+                            <small class="text-muted d-block text-uppercase" style="font-size:10px;">Cân nặng</small>
+                            <span class="fw-bold"><span id="aiRecWeight">-</span> kg</span>
+                        </div>
+                        <div class="vr d-none d-sm-block"></div>
+                        <div>
+                            <small class="text-muted d-block text-uppercase" style="font-size:10px;">Size gợi ý</small>
+                            <span class="badge bg-dark rounded-0 px-3 py-2" id="aiRecSize" style="font-size:13px; font-weight:700;">-</span>
+                        </div>
+                    </div>
+
+                    <!-- AI Advice -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold border-bottom pb-2 mb-3 text-uppercase" style="font-size:12px; letter-spacing:1px; color:#555;">
+                            <i class="fas fa-comment-alt text-dark me-2"></i>Lời khuyên thời trang AI
+                        </h6>
+                        <div class="p-3 border-start border-dark border-3 bg-white shadow-sm rounded-1" id="aiRecAdviceText" style="font-size:13.5px; line-height:1.6; color:#333; font-style:italic;">
+                            -
+                        </div>
+                    </div>
+
+                    <!-- Recommended Products -->
+                    <div>
+                        <h6 class="fw-bold border-bottom pb-2 mb-3 text-uppercase" style="font-size:12px; letter-spacing:1px; color:#555;">
+                            <i class="fas fa-tags text-dark me-2"></i>Sản phẩm gợi ý cho vóc dáng của bạn
+                        </h6>
+                        <div class="row g-3" id="aiRecProductsList">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light rounded-0">
+                <button type="button" class="btn btn-secondary btn-sm rounded-0" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Mobile sidebar toggle
+    const sidebar = document.getElementById('filterSidebar');
+    const toggle = document.getElementById('sidebarToggle');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('open');
+        });
+    }
+
+    // Countdown Timer - set end date to 7 days from now
+    (function() {
+        if (!document.getElementById('countDays')) return;
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 7);
+        endDate.setHours(23, 59, 59, 0);
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = endDate - now;
+
+            if (diff <= 0) {
+                document.getElementById('countDays').textContent = '00';
+                document.getElementById('countHours').textContent = '00';
+                document.getElementById('countMins').textContent = '00';
+                document.getElementById('countSecs').textContent = '00';
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('countDays').textContent = String(days).padStart(2, '0');
+            document.getElementById('countHours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('countMins').textContent = String(mins).padStart(2, '0');
+            document.getElementById('countSecs').textContent = String(secs).padStart(2, '0');
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    })();
+
+    // ===== AI BODY RECOMMENDATION LOGIC =====
+    $(document).ready(function () {
+        $("#btnGetAiRec").on("click", function (e) {
+            e.preventDefault();
+            
+            // Show modal and loading state
+            var modal = new bootstrap.Modal(document.getElementById("aiRecModal"));
+            modal.show();
+            
+            $("#aiRecLoading").removeClass("d-none");
+            $("#aiRecUpdateProfile").addClass("d-none");
+            $("#aiRecContent").addClass("d-none");
+            
+            // Call API
+            $.ajax({
+                url: "/api/Ai/BodyRecommendation",
+                type: "POST",
+                contentType: "application/json",
+                success: function (res) {
+                    $("#aiRecLoading").addClass("d-none");
+                    
+                    if (res.success) {
+                        // Populate content
+                        $("#aiRecGender").text(res.gender);
+                        $("#aiRecHeight").text(res.height);
+                        $("#aiRecWeight").text(res.weight);
+                        $("#aiRecSize").text(res.recommendedSize);
+                        $("#aiRecAdviceText").html(res.advice.replace(/\n/g, "<br>"));
+                        
+                        // Populate products
+                        var html = "";
+                        if (res.products && res.products.length > 0) {
+                            res.products.forEach(function (p) {
+                                html += `
+                                    <div class="col-md-6">
+                                        <div class="card h-100 border rounded-0 d-flex flex-row overflow-hidden shadow-sm" style="transition: transform 0.2s;">
+                                            <div style="width: 100px; min-width: 100px; aspect-ratio: 3/4; overflow: hidden;">
+                                                <img src="${p.hinhAnh}" alt="${p.tenSanPham}" style="width:100%; height:100%; object-fit:cover;" />
+                                            </div>
+                                            <div class="p-3 d-flex flex-column justify-content-between flex-grow-1" style="min-width:0;">
+                                                <div>
+                                                    <small class="text-muted d-block text-uppercase" style="font-size:9px; letter-spacing:0.5px;">${p.loaiSanPham}</small>
+                                                    <h6 class="fw-bold text-truncate mb-1" style="font-size:12px;" title="${p.tenSanPham}">${p.tenSanPham}</h6>
+                                                    <div class="fw-bold text-danger mb-2" style="font-size:12.5px;">${p.gia.toLocaleString('vi-VN')} ₫</div>
+                                                    <div class="text-muted" style="font-size:11px; line-height:1.4; display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;" title="${p.reason}">
+                                                        <strong>Lý do gợi ý:</strong> ${p.reason}
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2 text-end">
+                                                    <a href="/SanPham/Details/${p.maSanPham}" class="btn btn-outline-dark btn-sm rounded-0 py-1 px-3" style="font-size:10px; font-weight:700; text-transform:uppercase;">Chi tiết</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        } else {
+                            html = `
+                                <div class="col-12 text-center p-4">
+                                    <i class="fas fa-box-open text-muted mb-3" style="font-size: 2rem;"></i>
+                                    <p class="text-muted small">Không tìm thấy sản phẩm nào phù hợp từ shop.</p>
+                                </div>
+                            `;
+                        }
+                        $("#aiRecProductsList").html(html);
+                        $("#aiRecContent").removeClass("d-none");
+                    } else if (res.needProfileUpdate) {
+                        $("#aiRecUpdateProfile").removeClass("d-none");
+                    } else {
+                        alert(res.message || "Đã xảy ra lỗi khi lấy gợi ý.");
+                        modal.hide();
+                    }
+                },
+                error: function (xhr) {
+                    $("#aiRecLoading").addClass("d-none");
+                    alert(xhr.responseJSON?.message || "Đã xảy ra lỗi kết nối với máy chủ.");
+                    modal.hide();
+                }
+            });
+        });
+    });
+
+    /* ===== WISHLIST TOGGLE ===== */
+    function getWishlist() {
+        try {
+            return JSON.parse(localStorage.getItem('fashion_wishlist') || '[]');
+        } catch {
+            return [];
+        }
+    }
+
+    function toggleWishlist(e, productId, btn) {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        var list = getWishlist();
+        var idx = list.indexOf(productId);
+        var icon = btn.querySelector('i');
+        if (idx > -1) {
+            list.splice(idx, 1);
+            if (icon) {
+                icon.className = 'far fa-heart text-secondary';
+            }
+            if (typeof showCartToast === 'function') {
+                showCartToast('Đã xóa sản phẩm khỏi danh sách yêu thích.', true);
+            }
+        } else {
+            list.push(productId);
+            if (icon) {
+                icon.className = 'fas fa-heart text-danger';
+            }
+            if (typeof showCartToast === 'function') {
+                showCartToast('Đã lưu sản phẩm vào danh sách yêu thích!', true);
+            }
+        }
+        localStorage.setItem('fashion_wishlist', JSON.stringify(list));
+    }
+
+    // Khởi tạo trạng thái icon Wishlist từ localStorage
+    document.addEventListener('DOMContentLoaded', function () {
+        var list = getWishlist();
+        document.querySelectorAll('.wishlist-toggle-btn').forEach(function (btn) {
+            var pid = parseInt(btn.getAttribute('data-product-id'));
+            if (list.includes(pid)) {
+                var icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-heart text-danger';
+            }
+        });
+    });
+</script>
+<style>
+    .product-card-thumb:hover .product-quick-add {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+    }
+    .wishlist-toggle-btn:hover {
+        background: #fff !important;
+        transform: scale(1.1);
+        transition: transform 0.2s;
+    }
+</style>
+}

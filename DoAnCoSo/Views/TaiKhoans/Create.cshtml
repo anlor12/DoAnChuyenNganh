@@ -1,0 +1,97 @@
+@model DoAnCoSo.Models.TaiKhoan
+
+@{
+    ViewData["Title"] = "Thêm tài khoản mới";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="content-card-header" style="margin-bottom: 25px;">
+        <div>
+            <h4 class="content-title">Tạo tài khoản quản trị</h4>
+            <div class="content-note">Nhập đầy đủ thông tin để cấp quyền tài khoản mới truy cập hệ thống</div>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div asp-validation-summary="All" class="status-badge status-red w-100 mb-3" style="display: none;"></div>
+
+    <form asp-action="Create" method="post">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="TenDangNhap" class="form-label">Tên đăng nhập</label>
+                <input asp-for="TenDangNhap" class="form-control" placeholder="Ví dụ: admin_sales" required />
+                <span asp-validation-for="TenDangNhap" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="MatKhau" class="form-label">Mật khẩu</label>
+                <input asp-for="MatKhau" type="password" class="form-control" placeholder="••••••••" required />
+                <span asp-validation-for="MatKhau" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="HoTen" class="form-label">Họ và tên chủ tài khoản</label>
+            <input asp-for="HoTen" class="form-control" placeholder="Ví dụ: Nguyễn Văn A" required />
+            <span asp-validation-for="HoTen" class="text-danger" style="font-size: 11px;"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="Email" class="form-label">Địa chỉ Email</label>
+                <input asp-for="Email" type="email" class="form-control" placeholder="name@luxuryfashion.com" required />
+                <span asp-validation-for="Email" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label asp-for="SoDienThoai" class="form-label">Số điện thoại liên lạc</label>
+                <input asp-for="SoDienThoai" class="form-control" placeholder="Ví dụ: 0912345678" />
+                <span asp-validation-for="SoDienThoai" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <label asp-for="VaiTro" class="form-label">Vai trò phân quyền</label>
+                <select asp-for="VaiTro" class="form-select" required>
+                    <option value="Quản trị viên">Quản trị viên (Toàn quyền quản lý)</option>
+                    <option value="Khách hàng">Khách hàng (Tài khoản Khách mua đồ)</option>
+                    <option value="Nhân viên">Nhân viên (Nhân viên vận hành)</option>
+                </select>
+                <span asp-validation-for="VaiTro" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <label asp-for="TrangThai" class="form-label">Trạng thái ban đầu</label>
+                <select asp-for="TrangThai" class="form-select" required>
+                    <option value="Hoạt động">Hoạt động (Được quyền đăng nhập)</option>
+                    <option value="Bị khóa">Bị khóa (Chặn đăng nhập tạm thời)</option>
+                </select>
+                <span asp-validation-for="TrangThai" class="text-danger" style="font-size: 11px;"></span>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3" style="border-top: 1px solid var(--line); padding-top: 25px;">
+            <a asp-action="Index" class="btn-back">Hủy bỏ</a>
+            <button type="submit" class="btn-add" style="min-height: 42px;">
+                <i class="bi bi-check2-circle"></i> Xác nhận lưu tài khoản
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Hiển thị khung validation summary nếu có lỗi
+        const validationSummary = document.querySelector('[asp-validation-summary]');
+        if (validationSummary && validationSummary.innerHTML.trim() !== "") {
+            validationSummary.style.display = "block";
+        }
+    </script>
+}

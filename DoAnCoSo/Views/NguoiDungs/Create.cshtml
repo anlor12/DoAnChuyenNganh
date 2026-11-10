@@ -1,0 +1,54 @@
+﻿@model DoAnCoSo.Models.NguoiDung
+
+@{
+    ViewData["Title"] = "Thêm người dùng";
+}
+
+<h2>Thêm người dùng</h2>
+
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="MaTaiKhoan" class="form-label">Tài khoản</label>
+        <select asp-for="MaTaiKhoan" asp-items="ViewBag.MaTaiKhoan" class="form-control">
+            <option value="">-- Chọn tài khoản --</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HoTen" class="form-label">Họ tên</label>
+        <input asp-for="HoTen" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="GioiTinh" class="form-label">Giới tính</label>
+        <input asp-for="GioiTinh" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="NgaySinh" class="form-label">Ngày sinh</label>
+        <input asp-for="NgaySinh" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DiaChi" class="form-label">Địa chỉ</label>
+        <input asp-for="DiaChi" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ChieuCao" class="form-label">Chiều cao</label>
+        <input asp-for="ChieuCao" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CanNang" class="form-label">Cân nặng</label>
+        <input asp-for="CanNang" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="AnhDaiDien" class="form-label">Ảnh đại diện</label>
+        <input asp-for="AnhDaiDien" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

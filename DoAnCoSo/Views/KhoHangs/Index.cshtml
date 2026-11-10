@@ -1,0 +1,174 @@
+@model IEnumerable<DoAnCoSo.Models.KhoHang>
+@{
+    ViewData["Title"] = "Quản lý Kho hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int totalStock = Model?.Sum(x => x.SoLuongTon) ?? 0;
+    int totalBatches = Model?.Count() ?? 0;
+    int lowStockCount = Model?.Count(x => x.SoLuongTon < 10) ?? 0;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + ACTION -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="SanPhams" asp-action="Index" class="v22-pill-tab">
+                📦 Danh sách sản phẩm
+            </a>
+            <a asp-controller="BienTheSanPhams" asp-action="Index" class="v22-pill-tab">
+                🎨 Biến thể SKU
+            </a>
+            <a asp-controller="LoaiSanPhams" asp-action="Index" class="v22-pill-tab">
+                🏷️ Quản lý danh mục
+            </a>
+            <a asp-controller="KhoHangs" asp-action="Index" class="v22-pill-tab active">
+                🏭 Quản lý kho hàng (@totalBatches)
+            </a>
+        </div>
+
+        <a asp-action="Create" class="v22-btn-primary" style="border-radius: 9999px;">
+            + Thêm Lô Kho Mới
+        </a>
+    </div>
+
+    <!-- 3 KPI METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng lượng tồn kho</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@totalStock.ToString("N0") <span style="font-size: 12px; font-weight: 500;" class="text-muted">sản phẩm</span></div>
+                </div>
+                <span class="font-mono badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 11px;">Khả dụng</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-sage p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-uppercase" style="font-size: 10px;">Lô hàng quản lý</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@totalBatches <span style="font-size: 12px; font-weight: 500;">bản ghi kho</span></div>
+                </div>
+                <span class="font-mono badge rounded-pill bg-dark text-white" style="font-size: 11px;">Đang theo dõi</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Cảnh báo sắp hết</span>
+                    <div class="font-display fw-bold @(lowStockCount > 0 ? "text-danger" : "text-muted")" style="font-size: 24px;">@lowStockCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">SKU &lt; 10</span></div>
+                </div>
+                <span class="font-mono badge rounded-pill @(lowStockCount > 0 ? "bg-danger text-white" : "bg-light text-muted border")" style="font-size: 11px;">
+                    @(lowStockCount > 0 ? "Cần nhập thêm" : "Đầy đủ")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE VIEW -->
+    <div class="v22-card overflow-hidden">
+        <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h3 class="font-display fw-bold mb-0.5" style="font-size: 15px;">Quản Lý Tồn Kho Theo Biến Thể Size &amp; Màu</h3>
+                <p class="text-muted mb-0" style="font-size: 11.5px;">Theo dõi số lượng tồn thực tế của từng SKU và lịch sử cập nhật</p>
+            </div>
+            <div class="d-flex align-items-center gap-2" style="width: 300px; max-width: 100%;">
+                <input type="text" id="searchInput" placeholder="Tìm sản phẩm kho..." class="v22-input py-1.5" style="font-size: 12px;" />
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="v22-table" id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm gốc</th>
+                        <th style="width: 100px;">Size</th>
+                        <th style="width: 120px;">Màu sắc</th>
+                        <th style="width: 130px;">Số lượng tồn</th>
+                        <th style="width: 160px;">Ngày cập nhật</th>
+                        <th>Ghi chú</th>
+                        <th style="width: 130px;" class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            var rawImg = !string.IsNullOrWhiteSpace(item.BienTheSanPham?.HinhAnh)
+                                ? item.BienTheSanPham.HinhAnh
+                                : item.BienTheSanPham?.SanPham?.HinhAnh;
+                            var prodImg = string.IsNullOrWhiteSpace(rawImg) || rawImg.Contains("ao-so-mi-trang.jpg.jpg")
+                                ? "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80"
+                                : rawImg;
+
+                            <tr class="inventory-row">
+                                <td>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <img src="@prodImg"
+                                             alt="Kho #@item.MaKhoHang"
+                                             class="v22-thumb"
+                                             style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; flex-shrink: 0;"
+                                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80';" />
+                                        <div>
+                                            <div class="fw-bold text-truncate" style="max-width: 260px;">@(item.BienTheSanPham?.SanPham?.TenSanPham ?? "Chưa liên kết sản phẩm")</div>
+                                            <div class="font-mono text-muted" style="font-size: 10px;">Lô kho #@item.MaKhoHang • BT #@item.MaBienThe</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill bg-light text-dark border font-mono fw-bold px-2.5 py-1">
+                                        @(item.BienTheSanPham?.KichCo ?? "—")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill bg-light text-dark border px-2.5 py-1">
+                                        @(item.BienTheSanPham?.MauSac ?? "—")
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="font-mono fw-bold @(item.SoLuongTon < 10 ? "text-danger" : "text-success")" style="font-size: 14px;">
+                                        @item.SoLuongTon
+                                    </span>
+                                </td>
+                                <td class="font-mono text-muted" style="font-size: 11px;">
+                                    @item.NgayCapNhat.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td>
+                                    <div class="clamp-2 text-muted" style="font-size: 11.5px; max-width: 240px;">
+                                        @(string.IsNullOrWhiteSpace(item.GhiChu) ? "Khởi tạo tồn kho ban đầu" : item.GhiChu)
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a asp-action="Edit" asp-route-id="@item.MaKhoHang" class="btn btn-sm btn-light border px-2 py-1" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaKhoHang" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">Chưa có dữ liệu tồn kho</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("searchInput")?.addEventListener("keyup", function () {
+            const keyword = this.value.toLowerCase();
+            document.querySelectorAll("#inventoryTable tbody tr").forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(keyword) ? "" : "none";
+            });
+        });
+    </script>
+}

@@ -1,0 +1,3996 @@
+﻿@inject DoAnCoSo.Data.ApplicationDbContext DbContext
+
+@{
+
+    var zaloConfig = DbContext.CauHinhHeThongs.FirstOrDefault(x => x.Key == "Zalo_Link");
+
+    var zaloLink = zaloConfig?.Value ?? "https://zalo.me/0901234567";
+
+    if (!string.IsNullOrEmpty(zaloLink) && !zaloLink.StartsWith("http") && System.Text.RegularExpressions.Regex.IsMatch(zaloLink, @"^[0-9]+$"))
+
+    {
+
+        zaloLink = "https://zalo.me/" + zaloLink;
+
+    }
+
+    var categories = DbContext.LoaiSanPhams.OrderBy(x => x.MaLoaiSanPham).ToList();
+
+    var userSession = Context.Session.GetString("AdminUser");
+
+    var vaiTro = Context.Session.GetString("VaiTro");
+
+    int cartCount = 0;
+
+    if (!string.IsNullOrEmpty(userSession))
+
+    {
+
+        var u = Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(DbContext.TaiKhoans, t => t.NguoiDung).FirstOrDefault(t => t.TenDangNhap == userSession);
+
+        if (u?.NguoiDung != null)
+
+        {
+
+            var c = Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.Include(DbContext.GioHangs, g => g.ChiTietGioHangs).FirstOrDefault(g => g.MaNguoiDung == u.NguoiDung.MaNguoiDung);
+
+            if (c != null && c.ChiTietGioHangs != null)
+
+            {
+
+                cartCount = c.ChiTietGioHangs.Sum(x => x.SoLuong);
+
+            }
+
+        }
+
+    }
+
+}
+
+<!DOCTYPE html>
+
+<html lang="vi">
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>@ViewData["Title"] — FASHION STORE</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap" rel="stylesheet" />
+
+    @await RenderSectionAsync("Styles", required: false)
+
+    <style>
+
+        /* Inline Chatbot Products Grid Style */
+
+        .chat-products-container {
+
+            margin-top: 10px;
+
+            background: #ffffff;
+
+            border: 1px solid #e5e5e5;
+
+            border-radius: 8px;
+
+            padding: 10px;
+
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+            width: 100%;
+
+            white-space: normal !important;
+
+            word-break: normal !important;
+
+            line-height: normal !important;
+
+            box-sizing: border-box;
+
+        }
+
+        .chat-products-title {
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            color: #111;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.5px;
+
+            border-bottom: 1px solid #f0f0f0;
+
+            padding-bottom: 6px;
+
+            margin-bottom: 8px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 6px;
+
+            white-space: normal !important;
+
+        }
+
+        .chat-products-list {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 8px;
+
+            white-space: normal !important;
+
+        }
+
+        .chat-product-item {
+
+            display: flex !important;
+
+            align-items: center !important;
+
+            gap: 10px !important;
+
+            padding: 8px !important;
+
+            background: #fafafa !important;
+
+            border-radius: 6px !important;
+
+            border: 1px solid #f0f0f0 !important;
+
+            transition: all 0.2s ease !important;
+
+            text-decoration: none !important;
+
+            color: inherit !important;
+
+            cursor: pointer !important;
+
+            white-space: normal !important;
+
+            box-sizing: border-box !important;
+
+        }
+
+        .chat-product-item:hover {
+
+            border-color: #111 !important;
+
+            background: #f4f4f5 !important;
+
+        }
+
+        .chat-product-img {
+
+            width: 52px !important;
+
+            height: 52px !important;
+
+            min-width: 52px !important;
+
+            min-height: 52px !important;
+
+            max-width: 52px !important;
+
+            max-height: 52px !important;
+
+            border-radius: 6px !important;
+
+            overflow: hidden !important;
+
+            flex-shrink: 0 !important;
+
+            border: 1px solid #e5e5e5 !important;
+
+            background: #ffffff !important;
+
+            display: flex !important;
+
+            align-items: center !important;
+
+            justify-content: center !important;
+
+            padding: 2px !important;
+
+            margin: 0 !important;
+
+            box-sizing: border-box !important;
+
+        }
+
+        .chat-product-img img {
+
+            width: 100% !important;
+
+            height: 100% !important;
+
+            max-width: 100% !important;
+
+            max-height: 100% !important;
+
+            object-fit: contain !important;
+
+            object-position: center !important;
+
+            display: block !important;
+
+            margin: 0 !important;
+
+            padding: 0 !important;
+
+            border-radius: 4px !important;
+
+            background: #ffffff !important;
+
+        }
+
+        .chat-product-info {
+
+            flex-grow: 1 !important;
+
+            min-width: 0 !important;
+
+            display: flex !important;
+
+            flex-direction: column !important;
+
+            justify-content: center !important;
+
+            gap: 2px !important;
+
+            white-space: normal !important;
+
+        }
+
+        .chat-product-name {
+
+            font-size: 11px !important;
+
+            font-weight: 700 !important;
+
+            margin: 0 !important;
+
+            color: #111 !important;
+
+            white-space: nowrap !important;
+
+            overflow: hidden !important;
+
+            text-overflow: ellipsis !important;
+
+            line-height: 1.3 !important;
+
+        }
+
+        .chat-product-cat {
+
+            font-size: 9px !important;
+
+            font-weight: 600 !important;
+
+            color: #888 !important;
+
+            text-transform: uppercase !important;
+
+            letter-spacing: 0.5px !important;
+
+            line-height: 1.2 !important;
+
+            white-space: nowrap !important;
+
+            overflow: hidden !important;
+
+            text-overflow: ellipsis !important;
+
+        }
+
+        .chat-product-price {
+
+            font-size: 11px !important;
+
+            font-weight: 700 !important;
+
+            color: #dc2626 !important;
+
+            line-height: 1.2 !important;
+
+            margin: 0 !important;
+
+        }
+
+        .chat-product-action {
+
+            font-size: 11px !important;
+
+            color: #111 !important;
+
+            padding: 5px 10px !important;
+
+            border: 1px solid #111 !important;
+
+            border-radius: 4px !important;
+
+            background: #fff !important;
+
+            font-weight: 700 !important;
+
+            white-space: nowrap !important;
+
+            transition: all 0.2s ease !important;
+
+            align-self: center !important;
+
+            flex-shrink: 0 !important;
+
+            text-align: center !important;
+
+        }
+
+        .chat-product-item:hover .chat-product-action {
+
+            background: #111 !important;
+
+            color: #fff !important;
+
+        }
+
+
+
+        /* ========================================================
+
+           DROPDOWN MENU ÁO, QUẦN & PHỤ KIỆN (DANH MỤC + BANNER FASHION)
+
+           ======================================================== */
+
+        .nav-dropdown-ao-panel,
+
+        .nav-dropdown-quan-panel,
+
+        .nav-dropdown-phukien-panel {
+
+            position: absolute;
+
+            top: 100%;
+
+            left: 0;
+
+            width: 580px;
+
+            background-color: #0b0b0b;
+
+            border: 1px solid rgba(255, 255, 255, 0.15);
+
+            border-radius: 8px;
+
+            padding: 16px 18px;
+
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 18px;
+
+            opacity: 0;
+
+            visibility: hidden;
+
+            transform: translateY(10px);
+
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+
+            z-index: 1050;
+
+            pointer-events: none;
+
+        }
+
+
+
+        .nav-dropdown-phukien-panel {
+
+            width: 630px;
+
+        }
+
+
+
+        /* Hover bridge: đảm bảo di chuột từ nút xuống menu không bị mất */
+
+        .nav-dropdown-ao-panel::before,
+
+        .nav-dropdown-quan-panel::before,
+
+        .nav-dropdown-phukien-panel::before {
+
+            content: '';
+
+            position: absolute;
+
+            top: -15px;
+
+            left: 0;
+
+            right: 0;
+
+            height: 15px;
+
+            background: transparent;
+
+        }
+
+
+
+        .nav-item-dropdown:hover .nav-dropdown-ao-panel,
+
+        .nav-item-dropdown:hover .nav-dropdown-quan-panel,
+
+        .nav-item-dropdown:hover .nav-dropdown-phukien-panel {
+
+            opacity: 1;
+
+            visibility: visible;
+
+            transform: translateY(0);
+
+            pointer-events: auto;
+
+        }
+
+
+
+        .nav-item-dropdown:hover .nav-dropdown-toggle i {
+
+            transform: rotate(180deg);
+
+        }
+
+
+
+        /* Cột danh mục */
+
+        .ao-dropdown-links,
+
+        .quan-dropdown-links {
+
+            flex: 0 0 210px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 2px;
+
+        }
+
+
+
+        .phukien-dropdown-links {
+
+            flex: 0 0 265px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 4px;
+
+        }
+
+
+
+        .ao-link-item,
+
+        .quan-link-item,
+
+        .phukien-link-item {
+
+            display: flex !important;
+
+            align-items: center;
+
+            padding: 6px 10px !important;
+
+            color: rgba(255, 255, 255, 0.85) !important;
+
+            font-size: 12.5px !important;
+
+            font-weight: 500 !important;
+
+            text-decoration: none !important;
+
+            letter-spacing: 0.3px !important;
+
+            border-radius: 4px;
+
+            transition: all 0.2s ease !important;
+
+            text-align: left !important;
+
+            white-space: nowrap;
+
+        }
+
+
+
+        .ao-link-item:hover,
+
+        .quan-link-item:hover,
+
+        .phukien-link-item:hover {
+
+            color: #ffffff !important;
+
+            background-color: rgba(255, 255, 255, 0.12) !important;
+
+            transform: translateX(3px);
+
+        }
+
+
+
+        .ao-link-item.ao-link-all,
+
+        .quan-link-item.quan-link-all,
+
+        .phukien-link-item.phukien-link-all {
+
+            color: #ffffff !important;
+
+            font-weight: 700 !important;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+            padding-bottom: 7px !important;
+
+            margin-bottom: 4px;
+
+            border-radius: 0;
+
+        }
+
+
+
+        /* Phụ kiện sub-columns */
+
+        .phukien-subgroups {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
+
+        }
+
+
+
+        .phukien-subgroup-head {
+
+            display: block;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            letter-spacing: 0.5px;
+
+            color: #f59e0b;
+
+            padding: 2px 6px 4px 6px;
+
+            margin-bottom: 3px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+            text-decoration: none;
+
+            text-transform: uppercase;
+
+        }
+
+
+
+        .phukien-subgroup-head.head-other {
+
+            color: #38bdf8;
+
+        }
+
+
+
+        .phukien-subgroup-head:hover {
+
+            color: #ffffff;
+
+        }
+
+
+
+        .phukien-subgroups .phukien-link-item {
+
+            padding: 4px 6px !important;
+
+            font-size: 11.5px !important;
+
+        }
+
+
+
+        /* Banner bên phải */
+
+        .ao-dropdown-banner,
+
+        .quan-dropdown-banner,
+
+        .phukien-dropdown-banner {
+
+            flex: 1;
+
+            min-width: 0;
+
+        }
+
+
+
+        .ao-banner-link,
+
+        .quan-banner-link,
+
+        .phukien-banner-link {
+
+            display: block;
+
+            border-radius: 6px;
+
+            overflow: hidden;
+
+            background: #ffffff;
+
+            border: 1px solid rgba(255, 255, 255, 0.1);
+
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+
+            text-decoration: none;
+
+            height: 150px;
+
+        }
+
+
+
+        .ao-banner-link:hover,
+
+        .quan-banner-link:hover,
+
+        .phukien-banner-link:hover {
+
+            transform: scale(1.02);
+
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+
+        }
+
+
+
+        .ao-banner-link img,
+
+        .quan-banner-link img,
+
+        .phukien-banner-link img {
+
+            width: 100%;
+
+            height: 100%;
+
+            object-fit: cover;
+
+            display: block;
+
+        }
+
+    
+        /* ========================================================
+           MEGA DROPDOWN KHÁM PHÁ (CHUẨN STYLE TẤT CẢ PHỤ KIỆN)
+           ======================================================== */
+        .nav-dropdown-khampha-panel {
+            position: absolute;
+            top: 100%;
+            left: auto;
+            right: 0;
+            width: 640px;
+            background-color: #0b0b0b;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 16px 18px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+            z-index: 1050;
+            pointer-events: none;
+        }
+
+        .nav-dropdown-khampha-panel::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: transparent;
+        }
+
+        .nav-item-dropdown:hover .nav-dropdown-khampha-panel {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .khampha-dropdown-links {
+            flex: 0 0 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .khampha-link-item {
+            display: flex !important;
+            align-items: center;
+            padding: 6px 10px !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            letter-spacing: 0.3px !important;
+            border-radius: 4px;
+            transition: all 0.2s ease !important;
+            text-align: left !important;
+            white-space: nowrap;
+        }
+
+        .khampha-link-item:hover {
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            transform: translateX(3px);
+        }
+
+        .khampha-link-item.khampha-link-all {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 7px !important;
+            margin-bottom: 4px;
+            border-radius: 0;
+            font-size: 12.5px !important;
+        }
+
+        .khampha-subgroups {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .khampha-subgroup-head {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #f59e0b;
+            padding: 2px 6px 4px 6px;
+            margin-bottom: 3px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .khampha-subgroup-head.head-other {
+            color: #38bdf8;
+        }
+
+        .khampha-subgroup-head:hover {
+            color: #ffffff;
+        }
+
+        .khampha-subgroups .khampha-link-item {
+            padding: 5px 6px !important;
+            font-size: 11.5px !important;
+        }
+
+        .khampha-dropdown-banner {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .khampha-banner-link {
+            display: block;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            text-decoration: none;
+            height: 155px;
+        }
+
+        .khampha-banner-link:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+        }
+
+        .khampha-banner-link img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+
+
+    <!-- ANNOUNCEMENT BAR (UPGRADED PROMO SLIDER) -->
+
+    <div class="announcement-bar-wrapper" id="promoBarWrapper">
+
+        <button class="promo-nav-btn prev-btn" id="promoPrevBtn" aria-label="Khuyến mãi trước">
+
+            <i class="fas fa-chevron-left"></i>
+
+        </button>
+
+        <div class="announcement-bar-slider" id="promoSlider">
+
+            <!-- Slide 1 -->
+
+            <div class="promo-slide active">
+
+                <span class="promo-text">🚚 Miễn phí vận chuyển toàn quốc cho đơn hàng từ 500.000đ</span>
+
+                <a href="/SanPham" class="promo-btn btn-bounce">Mua ngay <i class="fas fa-shopping-bag"></i></a>
+
+            </div>
+
+            <!-- Slide 2 -->
+
+            <div class="promo-slide">
+
+                <span class="promo-text">🔥 Đăng ký thành viên mới - Nhận ngay mã giảm 10%: <strong class="promo-code">NEW10</strong></span>
+
+                <button class="promo-btn btn-glow" id="btnCopyPromoCode" data-code="NEW10">Sao chép mã <i class="fas fa-copy"></i></button>
+
+            </div>
+
+            <!-- Slide 3 -->
+
+            <div class="promo-slide">
+
+                <span class="promo-text">⚡ Chương trình đồng giá hè săn deal hot chỉ từ 199.000đ</span>
+
+                <a href="/SanPham?sapXep=moi_nhat" class="promo-btn btn-gradient">Săn Deal <i class="fas fa-fire"></i></a>
+
+            </div>
+
+        </div>
+
+        <button class="promo-nav-btn next-btn" id="promoNextBtn" aria-label="Khuyến mãi tiếp theo">
+
+            <i class="fas fa-chevron-right"></i>
+
+        </button>
+
+    </div>
+
+
+
+    <!-- NAVBAR -->
+
+    <nav class="navbar-balenciaga" id="mainNav">
+
+        <div class="nav-inner">
+
+
+
+            <!-- Mobile Hamburger Button -->
+
+            <button class="nav-mobile-toggle d-flex d-lg-none" id="btnMobileMenuToggle" type="button" aria-label="Mở menu" onclick="toggleMobileDrawer(true)">
+
+                <i class="fas fa-bars"></i>
+
+            </button>
+
+
+
+            <!-- Logo -->
+
+            <a class="nav-brand" asp-controller="Home" asp-action="Index" style="display: flex; align-items: center; text-decoration: none; margin-right: 32px;">
+
+                <img src="/images/fashionstore/logo.svg" alt="FASHION STORE" style="height: 24px; width: auto;" />
+
+            </a>
+
+
+
+            <!-- Nav links -->
+
+            <ul class="nav-links-adidas d-none d-lg-flex" style="white-space: nowrap; flex-wrap: nowrap;">
+
+                <li><a href="/SanPham?sapXep=moi_nhat">HÀNG MỚI VỀ</a></li>
+
+                @{
+
+                    var aoParent = categories.FirstOrDefault(c => c.TenLoaiSanPham == "Áo");
+
+                    var quanParent = categories.FirstOrDefault(c => c.TenLoaiSanPham == "Quần");
+
+                    var phuKienParent = categories.FirstOrDefault(c => c.TenLoaiSanPham == "Phụ Kiện");
+
+
+
+                    var subAoList = aoParent != null 
+
+                        ? categories.Where(c => c.MaLoaiCha == aoParent.MaLoaiSanPham).OrderBy(c => c.TenLoaiSanPham).ToList()
+
+                        : new List<DoAnCoSo.Models.LoaiSanPham>();
+
+
+
+                    var subQuanList = quanParent != null 
+
+                        ? categories.Where(c => c.MaLoaiCha == quanParent.MaLoaiSanPham).OrderBy(c => c.TenLoaiSanPham).ToList()
+
+                        : new List<DoAnCoSo.Models.LoaiSanPham>();
+
+
+
+                    var giayParent = categories.FirstOrDefault(c => c.TenLoaiSanPham == "Giày");
+
+                    var subGiayList = giayParent != null 
+
+                        ? categories.Where(c => c.MaLoaiCha == giayParent.MaLoaiSanPham).OrderBy(c => c.TenLoaiSanPham).ToList()
+
+                        : new List<DoAnCoSo.Models.LoaiSanPham>();
+
+
+
+                    var subPhuKienKhacList = phuKienParent != null 
+
+                        ? categories.Where(c => c.MaLoaiCha == phuKienParent.MaLoaiSanPham && c.TenLoaiSanPham != "Giày").OrderBy(c => c.TenLoaiSanPham).ToList()
+
+                        : new List<DoAnCoSo.Models.LoaiSanPham>();
+
+                }
+
+                <!-- Dropdown Áo (Thiết kế: 5 mục như trước + Banner FASHION | ÁO) -->
+
+                <li class="nav-item-dropdown">
+
+                    <a href="/SanPham?maLoai=@(aoParent?.MaLoaiSanPham)" class="nav-dropdown-toggle">
+
+                        ÁO <i class="fas fa-chevron-down" style="font-size: 8px; margin-left: 3px; transition: transform 0.25s ease;"></i>
+
+                    </a>
+
+                    <div class="nav-dropdown-ao-panel">
+
+                        <!-- Danh mục 5 mục như trước bên trái -->
+
+                        <div class="ao-dropdown-links">
+
+                            <a href="/SanPham?maLoai=@(aoParent?.MaLoaiSanPham)" class="ao-link-item ao-link-all">
+
+                                <i class="fas fa-layer-group me-1 text-primary"></i> Tất cả sản phẩm Áo
+
+                            </a>
+
+                            @foreach (var cat in subAoList)
+
+                            {
+
+                                <a href="/SanPham?maLoai=@cat.MaLoaiSanPham" class="ao-link-item">
+
+                                    @cat.TenLoaiSanPham
+
+                                </a>
+
+                            }
+
+                        </div>
+
+
+
+                        <!-- Banner FASHION | ÁO bên phải -->
+
+                        <div class="ao-dropdown-banner">
+
+                            <a href="/SanPham?maLoai=@(aoParent?.MaLoaiSanPham)" class="ao-banner-link" title="Xem tất cả bộ sưu tập Áo FASHION">
+
+                                <img src="/images/fashionstore/mega_menu_ao_banner.png" alt="FASHION | ÁO" />
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </li>
+
+                <!-- Dropdown Quần (Thiết kế: Danh mục + Banner FASHION | QUẦN giống như Áo) -->
+
+                <li class="nav-item-dropdown">
+
+                    <a href="/SanPham?maLoai=@(quanParent?.MaLoaiSanPham)" class="nav-dropdown-toggle">
+
+                        QUẦN <i class="fas fa-chevron-down" style="font-size: 8px; margin-left: 3px; transition: transform 0.25s ease;"></i>
+
+                    </a>
+
+                    <div class="nav-dropdown-quan-panel">
+
+                        <!-- Danh mục Quần bên trái -->
+
+                        <div class="quan-dropdown-links">
+
+                            <a href="/SanPham?maLoai=@(quanParent?.MaLoaiSanPham)" class="quan-link-item quan-link-all">
+
+                                <i class="fas fa-layer-group me-1 text-primary"></i> Tất cả sản phẩm Quần
+
+                            </a>
+
+                            @foreach (var cat in subQuanList)
+
+                            {
+
+                                <a href="/SanPham?maLoai=@cat.MaLoaiSanPham" class="quan-link-item">
+
+                                    @cat.TenLoaiSanPham
+
+                                </a>
+
+                            }
+
+                        </div>
+
+
+
+                        <!-- Banner FASHION | QUẦN bên phải -->
+
+                        <div class="quan-dropdown-banner">
+
+                            <a href="/SanPham?maLoai=@(quanParent?.MaLoaiSanPham)" class="quan-banner-link" title="Xem tất cả bộ sưu tập Quần FASHION">
+
+                                <img src="/images/fashionstore/mega_menu_quan_banner.png" alt="FASHION | QUẦN" />
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </li>
+
+                <!-- Dropdown Phụ Kiện (Thiết kế: Giày Nam + Phụ Kiện Khác + Banner FASHION | PHỤ KIỆN) -->
+
+                <li class="nav-item-dropdown">
+
+                    <a href="/SanPham?maLoai=@(phuKienParent?.MaLoaiSanPham)" class="nav-dropdown-toggle">
+
+                        PHỤ KIỆN <i class="fas fa-chevron-down" style="font-size: 8px; margin-left: 3px; transition: transform 0.25s ease;"></i>
+
+                    </a>
+
+                    <div class="nav-dropdown-phukien-panel">
+
+                        <!-- Danh mục Phụ Kiện bên trái -->
+
+                        <div class="phukien-dropdown-links">
+
+                            <a href="/SanPham?maLoai=@(phuKienParent?.MaLoaiSanPham)" class="phukien-link-item phukien-link-all">
+
+                                <i class="fas fa-layer-group me-1 text-primary"></i> Tất cả Phụ Kiện
+
+                            </a>
+
+                            <div class="phukien-subgroups">
+
+                                <div class="phukien-subgroup-col">
+
+                                    <a href="/SanPham?maLoai=@(giayParent?.MaLoaiSanPham)" class="phukien-subgroup-head">
+
+                                        <i class="fas fa-shoe-prints me-1"></i> GIÀY NAM
+
+                                    </a>
+
+                                    @foreach (var cat in subGiayList)
+
+                                    {
+
+                                        <a href="/SanPham?maLoai=@cat.MaLoaiSanPham" class="phukien-link-item">@cat.TenLoaiSanPham</a>
+
+                                    }
+
+                                </div>
+
+                                <div class="phukien-subgroup-col">
+
+                                    <span class="phukien-subgroup-head head-other">
+
+                                        <i class="fas fa-gem me-1"></i> PHỤ KIỆN KHÁC
+
+                                    </span>
+
+                                    @foreach (var cat in subPhuKienKhacList)
+
+                                    {
+
+                                        <a href="/SanPham?maLoai=@cat.MaLoaiSanPham" class="phukien-link-item">@cat.TenLoaiSanPham</a>
+
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                        <!-- Banner FASHION | PHỤ KIỆN bên phải -->
+
+                        <div class="phukien-dropdown-banner">
+
+                            <a href="/SanPham?maLoai=@(phuKienParent?.MaLoaiSanPham)" class="phukien-banner-link" title="Xem tất cả bộ sưu tập Phụ Kiện FASHION">
+
+                                <img src="/images/fashionstore/mega_menu_phukien_banner.png" alt="FASHION | PHỤ KIỆN" />
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </li>
+
+                <li><a href="/SanPham">CHỈ BÁN ONLINE</a></li>
+
+                <li class="nav-item-dropdown">
+                    <a href="javascript:void(0)" class="nav-dropdown-toggle">
+                        KHÁM PHÁ <i class="fas fa-chevron-down" style="font-size: 8px; margin-left: 3px; transition: transform 0.25s ease;"></i>
+                    </a>
+                    <div class="nav-dropdown-khampha-panel">
+                        <!-- Danh mục Khám Phá bên trái -->
+                        <div class="khampha-dropdown-links">
+                            <a href="/Outfit" class="khampha-link-item khampha-link-all">
+                                <i class="fas fa-compass me-1 text-primary"></i> Tất cả Khám Phá
+                            </a>
+                            <div class="khampha-subgroups">
+                                <div class="khampha-subgroup-col">
+                                    <span class="khampha-subgroup-head">
+                                        <i class="fas fa-shoe-prints me-1"></i> TRẢI NGHIỆM
+                                    </span>
+                                    <a href="/Outfit" class="khampha-link-item" style="color: #ef4444 !important; font-weight: 600;">
+                                        <i class="fas fa-magic me-1 text-danger" style="font-size: 10px;"></i> PHỐI ĐỒ 3D
+                                    </a>
+                                    <a href="/SanPham?sapXep=gia_tang" class="khampha-link-item">
+                                        <i class="fas fa-tags me-1 text-warning" style="font-size: 10px;"></i> ƯU ĐÃI HOT
+                                    </a>
+                                    <a href="/SanPham?sapXep=moi_nhat" class="khampha-link-item">
+                                        <i class="fas fa-fire me-1 text-danger" style="font-size: 10px;"></i> HÀNG MỚI VỀ
+                                    </a>
+                                    <a href="/SanPham?sapXep=ban_chay" class="khampha-link-item">
+                                        <i class="fas fa-chart-line me-1 text-success" style="font-size: 10px;"></i> BÁN CHẠY
+                                    </a>
+                                </div>
+                                <div class="khampha-subgroup-col">
+                                    <span class="khampha-subgroup-head head-other">
+                                        <i class="fas fa-gem me-1"></i> THƯƠNG HIỆU
+                                    </span>
+                                    <a href="/BaiViet" class="khampha-link-item">
+                                        <i class="fas fa-feather-alt me-1 text-info" style="font-size: 10px;"></i> BÀI VIẾT
+                                    </a>
+                                    <a href="/Home/GioiThieu" class="khampha-link-item">
+                                        <i class="fas fa-landmark me-1 text-primary" style="font-size: 10px;"></i> GIỚI THIỆU
+                                    </a>
+                                    <a href="/BoSuuTaps" class="khampha-link-item">
+                                        <i class="fas fa-images me-1" style="font-size: 10px; color: #c084fc !important;"></i> BỘ SƯU TẬP
+                                    </a>
+                                    <a href="/SanPham" class="khampha-link-item">
+                                        <i class="fas fa-store me-1 text-secondary" style="font-size: 10px;"></i> TẤT CẢ SP
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Banner FASHION | KHÁM PHÁ bên phải -->
+                        <div class="khampha-dropdown-banner">
+                            <a href="/Outfit" class="khampha-banner-link" title="Khám phá Mix & Match 3D FASHION STORE">
+                                <img src="/images/fashionstore/mega_menu_khampha_banner.png" alt="FASHION | KHÁM PHÁ" />
+                            </a>
+                        </div>
+                    </div>
+                </li>
+
+            </ul>
+
+
+
+            <!-- Actions -->
+
+            <div class="nav-actions">
+
+
+
+                <!-- Mobile Quick Search -->
+
+                <button type="button" class="nav-action-btn-custom d-flex d-md-none" onclick="toggleMobileDrawer(true)" title="Tìm kiếm">
+
+                    <i class="fas fa-search"></i>
+
+                </button>
+
+
+
+                <!-- Search -->
+
+                <form action="/SanPham" method="get" class="nav-search-wrap d-none d-md-flex">
+
+                    <input type="text" name="tuKhoa" class="nav-search-input"
+
+                           placeholder="Tìm kiếm..."
+
+                           value="@Context.Request.Query["tuKhoa"]" />
+
+                    <button type="button" class="nav-search-camera-btn" id="visualSearchBtn" title="Tìm kiếm bằng hình ảnh">
+
+                        <i class="fas fa-camera"></i>
+
+                    </button>
+
+                    <button type="submit" class="nav-search-btn">
+
+                        <i class="fas fa-search"></i>
+
+                    </button>
+
+                </form>
+
+
+
+                <!-- Cart -->
+
+                @await Component.InvokeAsync("CartBadge")
+
+
+
+
+
+                @if (string.IsNullOrEmpty(userSession))
+
+                {
+
+                    <a href="/Auth/Login" class="nav-action-btn-custom" title="Đăng nhập / Đăng ký tài khoản">
+
+                        <i class="fas fa-user"></i>
+
+                    </a>
+
+                }
+
+                else
+
+                {
+
+                    <div class="nav-user-dropdown" id="navUserDropdown">
+
+                        <button type="button" class="nav-action-btn-custom" onclick="toggleUserMenu(event)" id="navUserBtn" title="Tài khoản: @userSession">
+
+                            <i class="fas fa-user"></i>
+
+                        </button>
+
+                        <div class="nav-user-menu" id="navUserMenu">
+
+                            <div class="px-3 py-2 text-white bg-dark border-bottom d-flex align-items-center justify-content-between" style="font-size:11px; font-weight:700;">
+
+                                <span><i class="fas fa-user-circle me-1 text-warning"></i> @userSession</span>
+
+                                @if (vaiTro == "Quản trị viên")
+
+                                {
+
+                                    <span class="badge bg-danger" style="font-size: 8px;">ADMIN</span>
+
+                                }
+
+                            </div>
+
+                            @if (vaiTro == "Quản trị viên")
+
+                            {
+
+                                <a href="/Home/Dashboard" class="nav-user-menu-item text-primary fw-bold">
+
+                                    <i class="fas fa-tachometer-alt"></i> Bảng điều khiển Admin
+
+                                </a>
+
+                            }
+
+                            <a href="/KhachHangs/Profile" class="nav-user-menu-item">
+
+                                <i class="fas fa-id-card"></i> Thông tin cá nhân
+
+                            </a>
+
+                            <a href="/KhachHangs/LichSuDonHang" class="nav-user-menu-item">
+
+                                <i class="fas fa-shopping-bag"></i> Lịch sử đơn hàng
+
+                            </a>
+
+                            <a href="/KhachHangs/DiemThuong" class="nav-user-menu-item text-warning fw-bold">
+
+                                <i class="fas fa-coins text-warning"></i> Điểm thưởng &amp; Giới thiệu
+
+                            </a>
+
+                            <div class="nav-user-menu-divider"></div>
+
+                            <a href="/Auth/Logout" class="nav-user-menu-item text-danger">
+
+                                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                }
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+
+    <!-- MOBILE NAVIGATION DRAWER & BACKDROP -->
+
+    <div class="mobile-nav-backdrop" id="mobileNavBackdrop" onclick="toggleMobileDrawer(false)"></div>
+
+    <div class="mobile-nav-drawer" id="mobileNavDrawer">
+
+        <div class="mobile-nav-header">
+
+            <a href="/" class="mobile-nav-logo" style="display:flex; align-items:center;">
+
+                <img src="/images/fashionstore/logo.svg" alt="FASHION STORE" style="height: 20px; width: auto;" />
+
+            </a>
+
+            <button type="button" class="mobile-nav-close" id="btnMobileMenuClose" aria-label="Đóng menu" onclick="toggleMobileDrawer(false)">
+
+                <i class="fas fa-times"></i>
+
+            </button>
+
+        </div>
+
+
+
+        <!-- Mobile Search Form -->
+
+        <div class="mobile-nav-search px-3 pt-3 pb-2">
+
+            <form action="/SanPham" method="get" class="mobile-search-form">
+
+                <input type="text" name="tuKhoa" id="mobileSearchInputBox" placeholder="Tìm kiếm sản phẩm..." class="mobile-search-input" />
+
+                <button type="button" class="mobile-camera-btn" onclick="openVisualSearchFromMobile()" title="Tìm bằng ảnh">
+
+                    <i class="fas fa-camera"></i>
+
+                </button>
+
+                <button type="submit" class="mobile-search-submit">
+
+                    <i class="fas fa-search"></i>
+
+                </button>
+
+            </form>
+
+        </div>
+
+
+
+        <!-- Mobile Navigation Menu -->
+
+        <div class="mobile-nav-body">
+
+            <ul class="mobile-menu-list">
+
+                <li class="mobile-menu-item">
+
+                    <a href="/SanPham?sapXep=moi_nhat" class="mobile-menu-link text-danger fw-bold">
+
+                        <i class="fas fa-fire me-2"></i> HÀNG MỚI VỀ
+
+                    </a>
+
+                </li>
+
+
+
+                <!-- Accordion Áo -->
+
+                <li class="mobile-menu-item">
+
+                    <div class="mobile-menu-link-wrap">
+
+                        <a href="/SanPham?maLoai=@(aoParent?.MaLoaiSanPham)" class="mobile-menu-link">ÁO</a>
+
+                        <button type="button" class="mobile-menu-arrow" onclick="toggleMobileSubmenu(this)">
+
+                            <i class="fas fa-chevron-down"></i>
+
+                        </button>
+
+                    </div>
+
+                    <ul class="mobile-submenu">
+
+                        <li><a href="/SanPham?maLoai=@(aoParent?.MaLoaiSanPham)" class="fw-bold"><i class="fas fa-layer-group me-1 text-primary"></i>Tất cả sản phẩm Áo</a></li>
+
+                        @foreach (var cat in subAoList)
+
+                        {
+
+                            <li><a href="/SanPham?maLoai=@cat.MaLoaiSanPham">@cat.TenLoaiSanPham</a></li>
+
+                        }
+
+                    </ul>
+
+                </li>
+
+
+
+                <!-- Accordion Quần -->
+
+                <li class="mobile-menu-item">
+
+                    <div class="mobile-menu-link-wrap">
+
+                        <a href="/SanPham?maLoai=@(quanParent?.MaLoaiSanPham)" class="mobile-menu-link">QUẦN</a>
+
+                        <button type="button" class="mobile-menu-arrow" onclick="toggleMobileSubmenu(this)">
+
+                            <i class="fas fa-chevron-down"></i>
+
+                        </button>
+
+                    </div>
+
+                    <ul class="mobile-submenu">
+
+                        <li><a href="/SanPham?maLoai=@(quanParent?.MaLoaiSanPham)" class="fw-bold"><i class="fas fa-layer-group me-1 text-primary"></i>Tất cả sản phẩm Quần</a></li>
+
+                        @foreach (var cat in subQuanList)
+
+                        {
+
+                            <li><a href="/SanPham?maLoai=@cat.MaLoaiSanPham">@cat.TenLoaiSanPham</a></li>
+
+                        }
+
+                    </ul>
+
+                </li>
+
+
+
+                <!-- Accordion Phụ kiện -->
+
+                <li class="mobile-menu-item">
+
+                    <div class="mobile-menu-link-wrap">
+
+                        <a href="/SanPham?maLoai=@(phuKienParent?.MaLoaiSanPham)" class="mobile-menu-link">PHỤ KIỆN</a>
+
+                        <button type="button" class="mobile-menu-arrow" onclick="toggleMobileSubmenu(this)">
+
+                            <i class="fas fa-chevron-down"></i>
+
+                        </button>
+
+                    </div>
+
+                    <ul class="mobile-submenu" style="max-height: 600px;">
+
+                        <li><a href="/SanPham?maLoai=@(phuKienParent?.MaLoaiSanPham)" class="fw-bold"><i class="fas fa-layer-group me-1 text-primary"></i>Tất cả Phụ kiện</a></li>
+
+                        @if (giayParent != null)
+
+                        {
+
+                            <li class="bg-light px-3 py-1 fw-bold text-dark border-top border-bottom" style="font-size: 11px;">
+
+                                <a href="/SanPham?maLoai=@giayParent.MaLoaiSanPham" class="fw-bold text-dark p-0"><i class="fas fa-shoe-prints me-1 text-warning"></i>GIÀY NAM (TẤT CẢ)</a>
+
+                            </li>
+
+                            @foreach (var cat in subGiayList)
+
+                            {
+
+                                <li><a href="/SanPham?maLoai=@cat.MaLoaiSanPham" class="ps-4">↳ @cat.TenLoaiSanPham</a></li>
+
+                            }
+
+                        }
+
+                        @foreach (var cat in subPhuKienKhacList)
+
+                        {
+
+                            <li><a href="/SanPham?maLoai=@cat.MaLoaiSanPham">@cat.TenLoaiSanPham</a></li>
+
+                        }
+
+                    </ul>
+
+                </li>
+
+
+
+                <li class="mobile-menu-item">
+
+                    <a href="/SanPham" class="mobile-menu-link">CHỈ BÁN ONLINE</a>
+
+                </li>
+
+                <!-- Accordion Khám Phá -->
+
+                <li class="mobile-menu-item">
+
+                    <div class="mobile-menu-link-wrap">
+
+                        <a href="javascript:void(0)" class="mobile-menu-link fw-bold" onclick="toggleMobileSubmenu(this)">
+
+                            <i class="fas fa-compass me-2 text-warning"></i> KHÁM PHÁ
+
+                        </a>
+
+                        <button type="button" class="mobile-menu-arrow" onclick="toggleMobileSubmenu(this)">
+
+                            <i class="fas fa-chevron-down"></i>
+
+                        </button>
+
+                    </div>
+
+                    <ul class="mobile-submenu">
+
+                        <li>
+
+                            <a href="/SanPham?sapXep=gia_tang">
+
+                                <i class="fas fa-tags me-2 text-warning"></i> Ưu đãi &amp; Quà tặng
+
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <a href="/BaiViet">
+
+                                <i class="fas fa-feather-alt me-2 text-info"></i> Bài viết &amp; Tin tức
+
+                            </a>
+
+                        </li>
+
+                        <li>
+
+                            <a href="/Home/GioiThieu">
+
+                                <i class="fas fa-landmark me-2 text-primary"></i> Thông tin thương hiệu
+
+                            </a>
+
+                        </li>
+
+                    </ul>
+
+                </li>
+
+            </ul>
+
+
+
+            <!-- Mobile User & Contact Info -->
+
+            <div class="mobile-nav-footer border-top p-3 mt-2">
+
+                @if (string.IsNullOrEmpty(userSession))
+
+                {
+
+                    <a href="/Auth/Login" class="btn btn-dark w-100 mb-3 py-2 text-uppercase fw-bold" style="font-size: 11px; letter-spacing: 1px;">
+
+                        <i class="fas fa-user me-2"></i> Đăng nhập / Đăng ký
+
+                    </a>
+
+                }
+
+                else
+
+                {
+
+                    <div class="d-flex align-items-center justify-content-between mb-3 p-2 bg-light rounded">
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i class="fas fa-user-circle fs-4 text-dark"></i>
+
+                            <div>
+
+                                <div class="fw-bold" style="font-size: 12px;">@userSession</div>
+
+                                <small class="text-muted" style="font-size: 10px;">Thành viên</small>
+
+                            </div>
+
+                        </div>
+
+                        <a href="/Auth/Logout" class="text-danger small fw-bold" title="Đăng xuất">
+
+                            <i class="fas fa-sign-out-alt"></i>
+
+                        </a>
+
+                    </div>
+
+                    <div class="d-flex flex-column gap-2 mb-3">
+
+                        <a href="/KhachHangs/Profile" class="mobile-footer-link"><i class="fas fa-id-card me-2"></i> Thông tin tài khoản</a>
+
+                        <a href="/KhachHangs/LichSuDonHang" class="mobile-footer-link"><i class="fas fa-receipt me-2"></i> Lịch sử đơn hàng</a>
+
+                    </div>
+
+                }
+
+
+
+                <div class="mobile-support-box pt-2 border-top">
+
+                    <div class="small text-muted mb-1"><i class="fas fa-phone-alt me-1"></i> Hotline hỗ trợ:</div>
+
+                    <a href="tel:19008079" class="fw-bold text-dark fs-6 text-decoration-none">1900 8079</a>
+
+                    <span class="text-muted ms-2 small">(8:30 - 19:00)</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- MAIN CONTENT -->
+
+    <main>
+
+        @RenderBody()
+
+    </main>
+
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer-store">
+
+        <div class="footer-container">
+
+            <div class="footer-cols">
+
+                <!-- Cột 1: Thông tin Công ty -->
+
+                <div class="footer-col">
+
+                    <div style="margin-bottom: 20px;">
+
+                        <img src="/images/fashionstore/logo_footer.svg" alt="FASHION STORE" style="height: 24px; width: auto;" />
+
+                    </div>
+
+                    <ul class="contact-info" style="list-style: none; padding: 0;">
+
+                        <li class="fw-bold text-white" style="margin-bottom: 8px;">CÔNG TY CỔ PHẦN THỜI TRANG FASHION STORE VIỆT NAM</li>
+
+                        <li style="margin-bottom: 6px; font-size: 12px; color: #aaa;"><i class="fas fa-phone-alt me-2"></i>Hotline: 1900 8079</li>
+
+                        <li style="margin-bottom: 6px; font-size: 12px; color: #aaa;">
+
+                            <a href="@zaloLink" target="_blank" style="color: #aaa; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+
+                                <i class="fas fa-comment-dots"></i> Zalo Tư Vấn: Trò chuyện ngay
+
+                            </a>
+
+                        </li>
+
+                        <li style="margin-bottom: 12px; font-size: 12px; color: #aaa;"><i class="far fa-clock me-2"></i>8:30 - 19:00 tất cả các ngày trong tuần.</li>
+
+                        <li style="margin-bottom: 8px; font-size: 12px; color: #aaa;"><strong>VP Phía Bắc:</strong> Tầng 17 tòa nhà Viwaseen, 48 Phố Tố Hữu, Nam Từ Liêm, Hà Nội.</li>
+
+                        <li style="margin-bottom: 8px; font-size: 12px; color: #aaa;"><strong>VP Phía Nam:</strong> 186A Nam Kỳ Khởi Nghĩa, Phường Võ Thị Sáu, Quận 3, TP.HCM.</li>
+
+                    </ul>
+
+                </div>
+
+
+
+                <!-- Cột 2: Giới thiệu FASHION STORE -->
+
+                <div class="footer-col">
+
+                    <h3>GIỚI THIỆU FASHION STORE</h3>
+
+                    <ul>
+
+                        <li><a href="/Home/GioiThieu">Giới thiệu thương hiệu</a></li>
+
+                        <li><a href="/BaiViet">Tin tức &amp; Xu hướng</a></li>
+
+                        <li><a href="/SanPham?sapXep=gia_tang">Ưu đãi &amp; Quà tặng</a></li>
+
+                        <li><a href="/Home/Privacy#privacy">Chính sách bảo mật</a></li>
+
+                    </ul>
+
+                </div>
+
+
+
+                <!-- Cột 3: Hỗ trợ khách hàng -->
+
+                <div class="footer-col">
+
+                    <h3>HỖ TRỢ KHÁCH HÀNG</h3>
+
+                    <ul>
+
+                        <li><a href="/Home/Privacy#faq">Hỏi đáp thường gặp</a></li>
+
+                        <li><a href="/Home/Privacy#vip">Chính sách VIP &amp; Chiết khấu</a></li>
+
+                        <li><a href="/Home/Privacy#shipping">Chính sách vận chuyển</a></li>
+
+                        <li><a href="/Home/Privacy#sizing">Hướng dẫn chọn kích cỡ</a></li>
+
+                        <li><a href="/Home/Privacy#payment">Hướng dẫn thanh toán</a></li>
+
+                        <li><a href="/Home/Privacy#return">Quy định đổi trả hàng</a></li>
+
+                        <li><a href="/Home/Privacy#guide">Hướng dẫn đặt mua online</a></li>
+
+                    </ul>
+
+                </div>
+
+
+
+                <!-- Cột 4: Kết nối & Thanh toán -->
+
+                <div class="footer-col">
+
+                    <h3>KẾT NỐI</h3>
+
+                    <div class="social-icons" style="margin-bottom: 25px;">
+
+                        <a href="#" class="social-icon" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+
+                        <a href="#" class="social-icon" title="Instagram"><i class="fab fa-instagram"></i></a>
+
+                        <a href="#" class="social-icon" title="YouTube"><i class="fab fa-youtube"></i></a>
+
+                        <a href="#" class="social-icon" title="TikTok"><i class="fab fa-tiktok"></i></a>
+
+                        <a href="@zaloLink" target="_blank" class="social-icon zalo-icon-style" title="Zalo">
+
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+
+                                <path d="M12.002 2C6.479 2 2 6.477 2 12c0 2.285.766 4.39 2.054 6.079-.168.805-.623 2.977-.678 3.25-.091.448.337.783.708.536.31-.207 3.018-2.023 3.655-2.428A9.957 9.957 0 0012 22c5.523 0 10.002-4.477 10.002-10S17.525 2 12.002 2zm3.328 12.833h-5.06l4.908-5.32c.184-.2.247-.432.247-.633v-.714c0-.441-.358-.8-1-.8H9.366c-.642 0-1 .359-1 .8v.4c0 .441.358.8 1 .8h4.532l-4.78 5.184c-.21.229-.274.455-.274.685v.766c0 .441.358.8 1 .8h5.49c.642 0 1-.359 1-.8v-.4c0-.441-.358-.8-1-.8z"/>
+
+                            </svg>
+
+                        </a>
+
+                    </div>
+
+                    <h3>PHƯƠNG THỨC THANH TOÁN</h3>
+
+                    <div class="payment-methods-custom d-flex flex-wrap gap-2 align-items-center" style="margin-bottom: 15px;">
+
+                        <img src="/images/visa_logo.png" alt="Visa" style="height: 22px; background: #fff; padding: 2px 4px; border-radius: 4px; object-fit: contain;">
+
+                        <img src="/images/mastercard_logo.png" alt="Mastercard" style="height: 22px; background: #fff; padding: 2px 4px; border-radius: 4px; object-fit: contain;">
+
+                        <img src="/images/jcb_logo.png" alt="JCB" style="height: 22px; background: #fff; padding: 2px 4px; border-radius: 4px; object-fit: contain;">
+
+                    </div>
+
+                    <a href="http://online.gov.vn" target="_blank" rel="nofollow">
+
+                        <img src="https://webmedia.com.vn/images/2021/09/logo-da-thong-bao-bo-cong-thuong-mau-xanh.png" alt="Đã thông báo bộ công thương" style="height: 40px; max-width: 130px; object-fit: contain;">
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- Bản quyền & Nút cuộn lên đầu trang -->
+
+            <div class="footer-bottom-store border-top border-secondary pt-3 mt-4 d-flex justify-content-between align-items-center">
+
+                <p style="margin: 0; font-size: 11px; color: #888;">&copy; 2026 by FASHION STORE</p>
+
+                <button type="button" class="scroll-to-top" id="scrollToTopBtn" title="Lên đầu trang" style="background: none; border: 1.5px solid #555; color: #fff; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+
+                    <i class="fas fa-chevron-up"></i>
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- Bong bóng Chatbot AI -->
+
+    <div class="chatbot-bubble shadow" id="chatbotBubble" onclick="toggleChatWindow()" title="Hỏi AI tư vấn">
+
+        <i class="fas fa-robot"></i>
+
+        <span class="ai-live-badge">AI</span>
+
+        <span class="bubble-tooltip">Hỏi AI tư vấn</span>
+
+    </div>
+
+
+
+    <!-- Khung Chatbot AI -->
+
+    <div class="chatbot-window shadow-lg d-none" id="chatbotWindow">
+
+        <div class="chatbot-header">
+
+            <div class="d-flex align-items-center gap-2">
+
+                <div class="chat-avatar bg-white text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+
+                    <i class="fas fa-robot text-dark" style="font-size: 14px;"></i>
+
+                </div>
+
+                <div>
+
+                    <h6 class="mb-0 fw-bold" style="font-size: 13px; letter-spacing: 0.5px;">Fashion AI Assistant</h6>
+
+                    <small class="text-white-50" style="font-size: 9px;">Đang hoạt động</small>
+
+                </div>
+
+            </div>
+
+            <button class="btn-close-chat" onclick="toggleChatWindow()">&times;</button>
+
+        </div>
+
+        
+
+        <div class="chatbot-body" id="chatbotBody">
+
+            <div class="chat-message bot">
+
+                Dạ em chào Anh/Chị! Em là Chuyên viên tư vấn phong cách của Fashion Store. Em có thể hỗ trợ Anh/Chị chọn size chuẩn, phối đồ thời trang hoặc giải đáp chính sách mua sắm ạ!
+
+            </div>
+
+        </div>
+
+        
+
+        <!-- Preview hình ảnh đính kèm -->
+
+        <div class="chatbot-preview-area d-none" id="chatImagePreviewArea">
+
+            <div class="position-relative d-inline-block">
+
+                <img src="" id="chatImagePreview" class="img-thumbnail" style="max-height: 80px;" />
+
+                <button type="button" class="btn-remove-preview" onclick="removeChatImage()">&times;</button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Quick Prompt Chips -->
+
+        <div class="chat-quick-chips" id="chatQuickChips">
+
+            <button type="button" class="chat-chip" onclick="sendQuickPrompt('Tư vấn size chuẩn giúp mình: cao 1m70, nặng 85kg')">📏 Tư vấn size chuẩn</button>
+
+            <button type="button" class="chat-chip" onclick="sendQuickPrompt('Gợi ý set đồ đi chơi tối cuối tuần với ngân sách dưới 500k')">✨ Phối set đồ &lt; 500k</button>
+
+            <button type="button" class="chat-chip" onclick="sendQuickPrompt('Shop cho mình hỏi về chính sách đổi size trong bao lâu và như thế nào?')">🔄 Chính sách đổi size</button>
+
+            <button type="button" class="chat-chip" onclick="sendQuickPrompt('Gợi ý cho mình các mẫu sản phẩm hot bán chạy nhất shop hiện nay')">🔥 Mẫu hot bán chạy</button>
+
+        </div>
+
+
+
+        <div class="chatbot-footer">
+
+            <input type="file" id="chatImageInput" accept="image/*" style="display: none;" onchange="previewChatImage(this)" />
+
+            <button type="button" class="btn-attach" onclick="document.getElementById('chatImageInput').click()" title="Đính kèm ảnh">
+
+                <i class="fas fa-camera"></i>
+
+            </button>
+
+            <input type="text" id="chatInputText" class="chat-input" placeholder="Nhập tin nhắn..." onkeypress="handleChatKeyPress(event)" />
+
+            <button type="button" class="btn-send-chat" onclick="sendChatMessage()">
+
+                <i class="fas fa-paper-plane text-dark"></i>
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Visual Search Input Ẩn -->
+
+    <input type="file" id="visualSearchInput" accept="image/*" style="display: none;" />
+
+
+
+    <!-- Visual Search Scanner Overlay -->
+
+    <div class="scanner-overlay d-none" id="scannerOverlay">
+
+        <div class="scanner-container">
+
+            <div class="scanner-box">
+
+                <div class="scanner-line"></div>
+
+                <img src="" id="scannedImagePreview" alt="Scanning..." />
+
+            </div>
+
+            <h5 class="text-white mt-4 fw-bold animate-pulse">Fashion AI đang quét hình ảnh...</h5>
+
+            <p class="text-white-50 small">Vui lòng chờ trong giây lát</p>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Modal Kết quả Tìm kiếm Hình ảnh -->
+
+    <div class="modal fade rounded-0" id="visualSearchResultModal" tabindex="-1" aria-labelledby="visualSearchResultModalLabel" aria-hidden="true">
+
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+
+            <div class="modal-content rounded-0 border-0 shadow-lg">
+
+                <div class="modal-header bg-dark text-white rounded-0 border-0">
+
+                    <h5 class="modal-title fw-bold" id="visualSearchResultModalLabel" style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px;"><i class="fas fa-search me-2"></i>Kết quả tìm kiếm bằng hình ảnh</h5>
+
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                </div>
+
+                <div class="modal-body p-4">
+
+                    <div id="visualSearchTags" class="mb-4 d-flex flex-wrap gap-2">
+
+                        <!-- Tags will go here -->
+
+                    </div>
+
+                    <div class="row g-3" id="visualSearchProducts">
+
+                        <!-- Products will go here -->
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- TOAST -->
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+
+        <div id="cartToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+
+            <div class="d-flex">
+
+                <div class="toast-body d-flex align-items-center gap-2">
+
+                    <span id="toastIcon"></span>
+
+                    <span id="toastMessage">Sản phẩm đã được thêm vào giỏ hàng!</span>
+
+                </div>
+
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+    <script>
+
+        /* ===== NAVBAR SCROLL EFFECT ===== */
+
+        (function () {
+
+            var nav = document.getElementById('mainNav');
+
+            window.addEventListener('scroll', function () {
+
+                if (window.scrollY > 20) {
+
+                    nav.classList.add('scrolled');
+
+                } else {
+
+                    nav.classList.remove('scrolled');
+
+                }
+
+            }, { passive: true });
+
+        })();
+
+
+
+        /* ===== HERO LOADED CLASS ===== */
+
+        window.addEventListener('load', function () {
+
+            var hero = document.querySelector('.hero');
+
+            if (hero) hero.classList.add('loaded');
+
+        });
+
+
+
+        /* ===== PROMOTIONAL SLIDER ===== */
+
+        (function () {
+
+            var slides = document.querySelectorAll('.promo-slide');
+
+            var prevBtn = document.getElementById('promoPrevBtn');
+
+            var nextBtn = document.getElementById('promoNextBtn');
+
+            var wrapper = document.getElementById('promoBarWrapper');
+
+            var currentIndex = 0;
+
+            var slideInterval = null;
+
+            var intervalDuration = 4000; // 4 seconds
+
+
+
+            if (slides.length === 0) return;
+
+
+
+            function showSlide(index) {
+
+                slides.forEach(function (slide, i) {
+
+                    if (i === index) {
+
+                        slide.classList.add('active');
+
+                    } else {
+
+                        slide.classList.remove('active');
+
+                    }
+
+                });
+
+            }
+
+
+
+            function nextSlide() {
+
+                currentIndex = (currentIndex + 1) % slides.length;
+
+                showSlide(currentIndex);
+
+            }
+
+
+
+            function prevSlide() {
+
+                currentIndex = (currentIndex - 1 + slides.length) % slides.length;
+
+                showSlide(currentIndex);
+
+            }
+
+
+
+            function startAutoPlay() {
+
+                if (slideInterval) clearInterval(slideInterval);
+
+                slideInterval = setInterval(nextSlide, intervalDuration);
+
+            }
+
+
+
+            function stopAutoPlay() {
+
+                if (slideInterval) clearInterval(slideInterval);
+
+            }
+
+
+
+            // Event Listeners
+
+            if (prevBtn) {
+
+                prevBtn.addEventListener('click', function () {
+
+                    prevSlide();
+
+                    startAutoPlay(); // restart timer
+
+                });
+
+            }
+
+
+
+            if (nextBtn) {
+
+                nextBtn.addEventListener('click', function () {
+
+                    nextSlide();
+
+                    startAutoPlay(); // restart timer
+
+                });
+
+            }
+
+
+
+            if (wrapper) {
+
+                wrapper.addEventListener('mouseenter', stopAutoPlay);
+
+                wrapper.addEventListener('mouseleave', startAutoPlay);
+
+            }
+
+
+
+            // Start first slide and autoplay
+
+            showSlide(currentIndex);
+
+            startAutoPlay();
+
+
+
+            // Copy promo code logic
+
+            var copyBtn = document.getElementById('btnCopyPromoCode');
+
+            if (copyBtn) {
+
+                copyBtn.addEventListener('click', function (e) {
+
+                    e.preventDefault();
+
+                    var code = copyBtn.getAttribute('data-code') || "NEW10";
+
+                    navigator.clipboard.writeText(code).then(function () {
+
+                        // Use existing system showCartToast function
+
+                        if (typeof showCartToast === 'function') {
+
+                            showCartToast('Đã sao chép mã giảm giá ' + code + ' vào bộ nhớ tạm!', true);
+
+                        } else {
+
+                            alert('Đã sao chép mã giảm giá ' + code + '!');
+
+                        }
+
+                    }).catch(function (err) {
+
+                        console.error('Không thể sao chép: ', err);
+
+                    });
+
+                });
+
+            }
+
+        })();
+
+
+
+        /* ===== CART TOAST ===== */
+
+        function showCartToast(message, isSuccess = true) {
+
+            var toastEl = document.getElementById('cartToast');
+
+            if (!toastEl) return;
+
+            var toastMessage = document.getElementById('toastMessage');
+
+            var toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.textContent = message;
+
+            if (isSuccess) {
+
+                toastEl.className = 'toast align-items-center text-white bg-dark border-0';
+
+                toastIcon.innerHTML = '<i class="fas fa-check-circle text-success" style="font-size:1.1rem;"></i>';
+
+            } else {
+
+                toastEl.className = 'toast align-items-center text-white bg-danger border-0';
+
+                toastIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="font-size:1.1rem;"></i>';
+
+            }
+
+            var toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+
+            toast.show();
+
+        }
+
+
+
+        function updateCartBadge(count) {
+
+            var globalBadge = document.getElementById('globalCartCountBadge');
+
+            if (globalBadge) {
+
+                globalBadge.textContent = count > 0 ? count : '0';
+
+                if (count > 0) {
+
+                    globalBadge.classList.remove('d-none');
+
+                    globalBadge.style.display = '';
+
+                } else {
+
+                    globalBadge.classList.add('d-none');
+
+                }
+
+            }
+
+            var cartBtn = document.querySelector('a[href="/Cart"]');
+
+            if (cartBtn) {
+
+                var badges = cartBtn.querySelectorAll('.cart-count, .cart-badge-count-custom');
+
+                badges.forEach(function (b) {
+
+                    b.textContent = count > 0 ? count : '';
+
+                    b.style.display = count > 0 ? '' : 'none';
+
+                });
+
+            }
+
+        }
+
+
+
+        /* ===== GLOBAL ADD TO CART FUNCTION ===== */
+
+        window.addToCart = function (productId, variantId) {
+
+            var dataPayload = { soLuong: 1 };
+
+            if (variantId && variantId > 0) {
+
+                dataPayload.maBienThe = variantId;
+
+            } else if (productId && productId > 0) {
+
+                dataPayload.maSanPham = productId;
+
+            }
+
+
+
+            $.ajax({
+
+                url: '/Cart/AddToCart',
+
+                type: 'POST',
+
+                data: dataPayload,
+
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+
+                success: function (response) {
+
+                    if (response.success) {
+
+                        showCartToast(response.message || 'Đã thêm sản phẩm vào giỏ hàng!', true);
+
+                        updateCartBadge(response.cartCount);
+
+                    } else {
+
+                        if (response.redirectUrl) {
+
+                            showCartToast((response.message || 'Vui lòng đăng nhập.') + ' Đang chuyển hướng...', false);
+
+                            setTimeout(function () { window.location.href = response.redirectUrl; }, 1200);
+
+                        } else {
+
+                            showCartToast(response.message || 'Không thể thêm sản phẩm.', false);
+
+                        }
+
+                    }
+
+                },
+
+                error: function () {
+
+                    showCartToast('Đã xảy ra lỗi khi kết nối máy chủ.', false);
+
+                }
+
+            });
+
+        };
+
+
+
+        /* ===== QUICK ADD TO CART ===== */
+
+        $(document).on('click', '.quick-add-to-cart, .fs-quick-cart', function (e) {
+
+            e.preventDefault();
+
+            e.stopPropagation();
+
+            var variantId = $(this).data('variant-id');
+
+            var productId = $(this).data('product-id');
+
+            if (!variantId && !productId) return;
+
+            var $btn = $(this);
+
+            var originalHtml = $btn.html();
+
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            
+
+            var dataPayload = { soLuong: 1 };
+
+            if (variantId && variantId > 0) dataPayload.maBienThe = variantId;
+
+            else if (productId && productId > 0) dataPayload.maSanPham = productId;
+
+
+
+            $.ajax({
+
+                url: '/Cart/AddToCart',
+
+                type: 'POST',
+
+                data: dataPayload,
+
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+
+                success: function (response) {
+
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    if (response.success) {
+
+                        showCartToast(response.message, true);
+
+                        updateCartBadge(response.cartCount);
+
+                    } else {
+
+                        if (response.redirectUrl) {
+
+                            showCartToast(response.message + ' Đang chuyển hướng...', false);
+
+                            setTimeout(function () { window.location.href = response.redirectUrl; }, 1500);
+
+                        } else {
+
+                            showCartToast(response.message, false);
+
+                        }
+
+                    }
+
+                },
+
+                error: function () {
+
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    showCartToast('Đã xảy ra lỗi khi thêm vào giỏ hàng.', false);
+
+                }
+
+            });
+
+        });
+
+
+
+        /* ===== USER DROPDOWN ===== */
+
+        function toggleUserMenu(e) {
+
+            if (e) {
+
+                e.preventDefault();
+
+                e.stopPropagation();
+
+            }
+
+            var menu = document.getElementById('navUserMenu');
+
+            var chevron = document.getElementById('navChevron');
+
+            if (!menu) return;
+
+            menu.classList.toggle('show');
+
+            if (chevron) chevron.classList.toggle('open');
+
+        }
+
+
+
+        document.addEventListener('click', function (e) {
+
+            var dropdown = document.getElementById('navUserDropdown');
+
+            if (dropdown && !dropdown.contains(e.target)) {
+
+                var menu = document.getElementById('navUserMenu');
+
+                var chevron = document.getElementById('navChevron');
+
+                if (menu) menu.classList.remove('show');
+
+                if (chevron) chevron.classList.remove('open');
+
+            }
+
+        });
+
+
+
+        /* ===== SCROLL REVEAL ===== */
+
+        (function () {
+
+            var observer = new IntersectionObserver(function (entries) {
+
+                entries.forEach(function (entry) {
+
+                    if (entry.isIntersecting) {
+
+                        entry.target.style.opacity = '1';
+
+                        entry.target.style.transform = 'translateY(0)';
+
+                        observer.unobserve(entry.target);
+
+                    }
+
+                });
+
+            }, { threshold: 0.08 });
+
+
+
+            document.querySelectorAll('.product-card-balen, .product-card').forEach(function (el) {
+
+                el.style.opacity = '0';
+
+                el.style.transform = 'translateY(24px)';
+
+                el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+
+                observer.observe(el);
+
+            });
+
+        })();
+
+
+
+        /* ===== SCROLL TO TOP EVENT ===== */
+
+        var scrollTopBtn = document.getElementById('scrollToTopBtn');
+
+        if (scrollTopBtn) {
+
+            scrollTopBtn.addEventListener('click', function () {
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            });
+
+        }
+
+
+
+        /* ===== AI CHATBOT & VISUAL SEARCH LOGIC ===== */
+
+        var chatHistory = [
+
+            {
+
+                role: "model",
+
+                parts: [{ text: "Dạ em chào Anh/Chị! Em là Chuyên viên tư vấn phong cách của Fashion Store. Em có thể hỗ trợ Anh/Chị chọn size chuẩn, phối đồ thời trang hoặc giải đáp chính sách mua sắm ạ!" }]
+
+            }
+
+        ];
+
+        var chatImageBase64 = "";
+
+
+
+        // Gửi câu hỏi nhanh từ Quick Prompt Chips (với guard chống gửi trùng lặp khi AI đang trả lời)
+
+        function sendQuickPrompt(promptText) {
+
+            var typingIndicator = document.getElementById("typingIndicator");
+
+            if (typingIndicator) return;
+
+            var input = document.getElementById("chatInputText");
+
+            if (input) {
+
+                input.value = promptText;
+
+                sendChatMessage();
+
+            }
+
+        }
+
+
+
+        // Toggle chat window
+
+        function toggleChatWindow() {
+
+            var win = document.getElementById("chatbotWindow");
+
+            if (win) {
+
+                var isOpening = win.classList.contains("d-none");
+
+                win.classList.toggle("d-none");
+
+                if (isOpening) {
+
+                    var supportCard = document.getElementById("supportPopupCard");
+
+                    var supportIcon = document.getElementById("supportIcon");
+
+                    if (supportCard && supportCard.style.display !== "none") {
+
+                        supportCard.style.display = "none";
+
+                        if (supportIcon) supportIcon.className = "fas fa-headset";
+
+                    }
+
+                    var body = document.getElementById("chatbotBody");
+
+                    if (body) body.scrollTop = body.scrollHeight;
+
+                }
+
+            }
+
+        }
+
+
+
+        // Preview attached image in chat
+
+        function previewChatImage(input) {
+
+            if (input.files && input.files[0]) {
+
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+
+                    chatImageBase64 = e.target.result;
+
+                    document.getElementById("chatImagePreview").src = chatImageBase64;
+
+                    document.getElementById("chatImagePreviewArea").classList.remove("d-none");
+
+                };
+
+                reader.readAsDataURL(input.files[0]);
+
+            }
+
+        }
+
+
+
+        // Remove attached image
+
+        function removeChatImage() {
+
+            chatImageBase64 = "";
+
+            document.getElementById("chatImageInput").value = "";
+
+            document.getElementById("chatImagePreviewArea").classList.add("d-none");
+
+        }
+
+
+
+        // Handle Enter key inside chatbot input
+
+        function handleChatKeyPress(e) {
+
+            if (e.key === "Enter") {
+
+                sendChatMessage();
+
+            }
+
+        }
+
+
+
+        // Helper: Escape HTML special characters to prevent DOM XSS injection
+
+        function escapeHtml(str) {
+
+            if (!str) return "";
+
+            return String(str)
+
+                .replace(/&/g, "&amp;")
+
+                .replace(/</g, "&lt;")
+
+                .replace(/>/g, "&gt;")
+
+                .replace(/"/g, "&quot;")
+
+                .replace(/'/g, "&#39;");
+
+        }
+
+
+
+        // Render danh sách thẻ sản phẩm trực tiếp từ response DTO
+
+        function renderProductCards(products, parentDiv) {
+
+            if (!products || products.length === 0) return;
+
+            var container = document.createElement("div");
+
+            container.className = "chat-products-container";
+
+            var html = '<div class="chat-products-title"><i class="fas fa-shopping-bag"></i> G&#7906;I &#221; S&#7842;N PH&#7848;M T&#7914; SHOP</div><div class="chat-products-list">';
+
+            products.forEach(function (p) {
+
+                var safeId = encodeURIComponent(p.maSanPham || '');
+
+                var safeName = escapeHtml(p.tenSanPham || '');
+
+                var safeCat = escapeHtml(p.loaiSanPham || 'Th&#7901;i trang');
+
+                var safeImg = escapeHtml(p.hinhAnh || '/images/no-image.png');
+
+                var priceFormatted = (p.gia || 0).toLocaleString('vi-VN');
+
+                html += '<a href="/SanPham/Details/' + safeId + '" class="chat-product-item">' +
+
+                    '<div class="chat-product-img"><img src="' + safeImg + '" alt="' + safeName + '" onerror="this.onerror=null;this.src=\'/images/no-image.png\';" /></div>' +
+
+                    '<div class="chat-product-info">' +
+
+                        '<div class="chat-product-cat">' + safeCat + '</div>' +
+
+                        '<h6 class="chat-product-name" title="' + safeName + '">' + safeName + '</h6>' +
+
+                        '<div class="chat-product-price">' + priceFormatted + ' &#273;</div>' +
+
+                    '</div>' +
+
+                    '<div class="chat-product-action">Xem</div>' +
+
+                '</a>';
+
+            });
+
+            html += '</div>';
+
+            container.innerHTML = html;
+
+            parentDiv.appendChild(container);
+
+            var body = document.getElementById("chatbotBody");
+
+            if (body) body.scrollTop = body.scrollHeight;
+
+        }
+
+
+
+        // Append message to chat body (hỗ trợ trực tiếp tham số products từ backend)
+
+        function appendChatMessage(sender, text, base64Img = "", products = null) {
+
+            var body = document.getElementById("chatbotBody");
+
+            if (!body) return;
+
+
+
+            var msgDiv = document.createElement("div");
+
+            msgDiv.className = "chat-message " + sender;
+
+
+
+            if (base64Img) {
+
+                var img = document.createElement("img");
+
+                img.src = base64Img;
+
+                img.className = "chat-message-image img-fluid rounded";
+
+                msgDiv.appendChild(img);
+
+            }
+
+
+
+            var cleanText = text;
+
+            var productIdsStr = null;
+
+
+
+            if (text && sender === "bot") {
+
+                // Trích xuất toàn bộ product IDs từ tất cả các tag [RECOMMEND: ...] xuất hiện trong văn bản
+
+                var recommendRegex = /\[RECOMMEND:\s*([0-9\s,\-_]+)\]/gi;
+
+                var match;
+
+                var idParts = [];
+
+                while ((match = recommendRegex.exec(text)) !== null) {
+
+                    if (match[1]) idParts.push(match[1]);
+
+                }
+
+                if (idParts.length > 0) {
+
+                    productIdsStr = idParts.join(",");
+
+                }
+
+                // Xóa sạch toàn bộ các tag [RECOMMEND: ...] khỏi văn bản hiển thị cho người dùng
+
+                cleanText = text.replace(/\[RECOMMEND:\s*([0-9\s,\-_]+)\]/gi, "").trim();
+
+            }
+
+
+
+            if (cleanText) {
+
+                var txt = document.createElement("span");
+
+                txt.textContent = cleanText;
+
+                msgDiv.appendChild(txt);
+
+            }
+
+
+
+            body.appendChild(msgDiv);
+
+            body.scrollTop = body.scrollHeight;
+
+
+
+            // Nếu đã có sẵn mảng sản phẩm từ response backend, hiển thị ngay
+
+            if (products && products.length > 0) {
+
+                renderProductCards(products, msgDiv);
+
+            }
+
+            // Ngược lại, nếu trong nội dung văn bản có tag [RECOMMEND: ...], fetch qua API
+
+            else if (productIdsStr) {
+
+                renderChatProducts(productIdsStr, msgDiv);
+
+            }
+
+        }
+
+
+
+        // Fetch and render recommended products inline in chat message bubble
+
+        function renderChatProducts(idsStr, parentDiv) {
+
+            // Build products container
+
+            var container = document.createElement("div");
+
+            container.className = "chat-products-container";
+
+            container.innerHTML = `
+
+                <div class="chat-products-title">
+
+                    <i class="fas fa-shopping-bag"></i> G&#7906;I &#221; S&#7842;N PH&#7848;M T&#7914; SHOP
+
+                </div>
+
+                <div class="chat-products-list">
+
+                    <div class="text-center p-2 text-muted small">
+
+                        <i class="fas fa-spinner fa-spin me-1"></i> &#272;ang t&#7843;i s&#7843;n ph&#7849;m...
+
+                    </div>
+
+                </div>
+
+            `;
+
+            parentDiv.appendChild(container);
+
+            
+
+            var listDiv = container.querySelector(".chat-products-list");
+
+            var body = document.getElementById("chatbotBody");
+
+            if (body) body.scrollTop = body.scrollHeight;
+
+
+
+            $.ajax({
+
+                url: "/api/Ai/GetProductsByIds",
+
+                type: "GET",
+
+                data: { ids: idsStr },
+
+                success: function (res) {
+
+                    if (res.success && res.products && res.products.length > 0) {
+
+                        var html = "";
+
+                        res.products.forEach(function (p) {
+
+                            var safeId = encodeURIComponent(p.maSanPham || '');
+
+                            var safeName = escapeHtml(p.tenSanPham || '');
+
+                            var safeCat = escapeHtml(p.loaiSanPham || 'Th&#7901;i trang');
+
+                            var safeImg = escapeHtml(p.hinhAnh || '/images/no-image.png');
+
+                            var priceFormatted = (p.gia || 0).toLocaleString('vi-VN');
+
+                            html += '<a href="/SanPham/Details/' + safeId + '" class="chat-product-item">' +
+
+                                '<div class="chat-product-img"><img src="' + safeImg + '" alt="' + safeName + '" onerror="this.onerror=null;this.src=\'/images/no-image.png\';" /></div>' +
+
+                                '<div class="chat-product-info">' +
+
+                                    '<div class="chat-product-cat">' + safeCat + '</div>' +
+
+                                    '<h6 class="chat-product-name" title="' + safeName + '">' + safeName + '</h6>' +
+
+                                    '<div class="chat-product-price">' + priceFormatted + ' &#273;</div>' +
+
+                                '</div>' +
+
+                                '<div class="chat-product-action">Xem</div>' +
+
+                            '</a>';
+
+                        });
+
+                        listDiv.innerHTML = html;
+
+                    } else {
+
+                        container.remove();
+
+                    }
+
+                    if (body) body.scrollTop = body.scrollHeight;
+
+                },
+
+                error: function () {
+
+                    container.remove();
+
+                }
+
+            });
+
+        }
+
+
+
+        // Show/hide typing indicator
+
+        function toggleTypingIndicator(show) {
+
+            var body = document.getElementById("chatbotBody");
+
+            if (!body) return;
+
+
+
+            var existing = document.getElementById("typingIndicator");
+
+            if (show) {
+
+                if (!existing) {
+
+                    var ind = document.createElement("div");
+
+                    ind.className = "chat-typing-indicator";
+
+                    ind.id = "typingIndicator";
+
+                    ind.innerHTML = "<span></span><span></span><span></span>";
+
+                    body.appendChild(ind);
+
+                }
+
+            } else {
+
+                if (existing) {
+
+                    existing.remove();
+
+                }
+
+            }
+
+
+
+            // Vô hiệu hóa nút gửi và các gợi ý nhanh (chips) khi đang đợi phản hồi từ AI
+
+            var sendBtn = document.querySelector(".btn-send-chat");
+
+            if (sendBtn) {
+
+                sendBtn.disabled = show;
+
+                sendBtn.style.pointerEvents = show ? "none" : "";
+
+                sendBtn.style.opacity = show ? "0.6" : "";
+
+            }
+
+            var chips = document.querySelectorAll(".chat-chip");
+
+            chips.forEach(function (c) {
+
+                c.disabled = show;
+
+                c.style.pointerEvents = show ? "none" : "";
+
+                c.style.opacity = show ? "0.6" : "";
+
+            });
+
+
+
+            body.scrollTop = body.scrollHeight;
+
+        }
+
+
+
+        // Send chat message
+
+        function sendChatMessage() {
+
+            var typingIndicator = document.getElementById("typingIndicator");
+
+            if (typingIndicator) return;
+
+            var input = document.getElementById("chatInputText");
+
+            var prompt = input.value.trim();
+
+            if (!prompt && !chatImageBase64) return;
+
+
+
+            // Clear input and remove preview
+
+            input.value = "";
+
+            var currentImg = chatImageBase64;
+
+            removeChatImage();
+
+
+
+            // Append user message to UI
+
+            appendChatMessage("user", prompt, currentImg);
+
+
+
+            // Show AI typing
+
+            toggleTypingIndicator(true);
+
+
+
+            if (currentImg) {
+
+                // Call Multimodal Chat API
+
+                $.ajax({
+
+                    url: "/api/Ai/ChatImage",
+
+                    type: "POST",
+
+                    contentType: "application/json",
+
+                    data: JSON.stringify({ prompt: prompt || "Hãy tư vấn hình ảnh này giúp tôi.", base64Image: currentImg }),
+
+                    success: function (res) {
+
+                        toggleTypingIndicator(false);
+
+                        if (res.success) {
+
+                            appendChatMessage("bot", res.reply, "", res.products);
+
+                            // Sync model response into history
+
+                            chatHistory.push({ role: "user", parts: [{ text: prompt || "Tải lên hình ảnh sản phẩm" }] });
+
+                            chatHistory.push({ role: "model", parts: [{ text: res.reply }] });
+
+                        } else {
+
+                            appendChatMessage("bot", "Lỗi: " + res.error);
+
+                        }
+
+                    },
+
+                    error: function (xhr) {
+
+                        toggleTypingIndicator(false);
+
+                        appendChatMessage("bot", "Đã xảy ra lỗi khi kết nối với máy chủ AI.");
+
+                    }
+
+                });
+
+            } else {
+
+                // Call normal Text Chat API
+
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                $.ajax({
+
+                    url: "/api/Ai/Chat",
+
+                    type: "POST",
+
+                    contentType: "application/json",
+
+                    data: JSON.stringify(chatHistory),
+
+                    success: function (res) {
+
+                        toggleTypingIndicator(false);
+
+                        if (res.success) {
+
+                            appendChatMessage("bot", res.reply, "", res.products);
+
+                            chatHistory.push({ role: "model", parts: [{ text: res.reply }] });
+
+                        } else {
+
+                            appendChatMessage("bot", "Lỗi: " + res.error);
+
+                            chatHistory.pop(); // Remove last user prompt since it failed
+
+                        }
+
+                    },
+
+                    error: function (xhr) {
+
+                        toggleTypingIndicator(false);
+
+                        appendChatMessage("bot", "Đã xảy ra lỗi khi kết nối với máy chủ AI.");
+
+                        chatHistory.pop();
+
+                    }
+
+                });
+
+            }
+
+        }
+
+
+
+        // Visual Search Logic
+
+        $(document).ready(function () {
+
+            // Camera search button click
+
+            $("#visualSearchBtn").on("click", function (e) {
+
+                e.preventDefault();
+
+                $("#visualSearchInput").click();
+
+            });
+
+
+
+            // Input file change handler for Visual Search
+
+            $("#visualSearchInput").on("change", function () {
+
+                if (this.files && this.files[0]) {
+
+                    var file = this.files[0];
+
+                    var reader = new FileReader();
+
+                    reader.onload = function (e) {
+
+                        var base64Data = e.target.result;
+
+                        
+
+                        // Show scanning overlay
+
+                        $("#scannedImagePreview").attr("src", base64Data);
+
+                        $("#scannerOverlay").removeClass("d-none");
+
+
+
+                        // Call Visual Search API
+
+                        $.ajax({
+
+                            url: "/api/Ai/VisualSearch",
+
+                            type: "POST",
+
+                            contentType: "application/json",
+
+                            data: JSON.stringify({ base64Image: base64Data }),
+
+                            success: function (res) {
+
+                                $("#scannerOverlay").addClass("d-none");
+
+                                $("#visualSearchInput").val(""); // reset
+
+
+
+                                if (res.success) {
+
+                                    // Populate Tags
+
+                                    var tagsHtml = "";
+
+                                    if (res.keywords && res.keywords.length > 0) {
+
+                                        res.keywords.forEach(function (kw) {
+
+                                            tagsHtml += '<span class="badge visual-search-tag-badge">' + kw + '</span> ';
+
+                                        });
+
+                                    }
+
+                                    $("#visualSearchTags").html(tagsHtml || '<span class="text-muted small">Không nhận dạng được từ khóa</span>');
+
+
+
+                                    // Populate Products
+
+                                    var prodsHtml = "";
+
+                                    if (res.products && res.products.length > 0) {
+
+                                        res.products.forEach(function (p) {
+
+                                            prodsHtml += `
+
+                                                <div class="col-md-3 col-sm-6">
+
+                                                    <div class="product-card border h-100 d-flex flex-column" onclick="window.location.href='/SanPham/Details/${p.maSanPham}'">
+
+                                                        <div class="product-card-img-wrap" style="aspect-ratio:3/4; overflow:hidden;">
+
+                                                            <img src="${p.hinhAnh}" alt="${p.tenSanPham}" style="width:100%; height:100%; object-fit:cover;" />
+
+                                                        </div>
+
+                                                        <div class="product-card-body p-3 flex-grow-1">
+
+                                                            <small class="text-muted d-block uppercase" style="font-size:9px; letter-spacing:1px;">${p.loaiSanPham}</small>
+
+                                                            <h6 class="fw-bold mt-1 text-truncate" style="font-size:12px;" title="${p.tenSanPham}">${p.tenSanPham}</h6>
+
+                                                            <div class="fw-bold mt-2 text-danger" style="font-size:13px;">${p.gia.toLocaleString('vi-VN')} ₫</div>
+
+                                                        </div>
+
+                                                        <div class="p-3 pt-0">
+
+                                                            <a href="/SanPham/Details/${p.maSanPham}" class="btn btn-outline-dark btn-sm rounded-0 w-100" style="font-size:10px; font-weight:700; text-transform:uppercase;">Chi tiết</a>
+
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            `;
+
+                                        });
+
+                                    } else {
+
+                                        prodsHtml = `
+
+                                            <div class="col-12 text-center p-4">
+
+                                                <i class="fas fa-box-open text-muted mb-3" style="font-size: 2.5rem;"></i>
+
+                                                <p class="text-muted small">${res.message || "Không tìm thấy sản phẩm nào tương tự."}</p>
+
+                                            </div>
+
+                                        `;
+
+                                    }
+
+                                    $("#visualSearchProducts").html(prodsHtml);
+
+
+
+                                    // Show Results Modal
+
+                                    var modal = new bootstrap.Modal(document.getElementById("visualSearchResultModal"));
+
+                                    modal.show();
+
+                                } else {
+
+                                    alert(res.message || "Đã xảy ra lỗi khi tìm kiếm bằng ảnh.");
+
+                                }
+
+                            },
+
+                            error: function (xhr) {
+
+                                $("#scannerOverlay").addClass("d-none");
+
+                                $("#visualSearchInput").val(""); // reset
+
+                                alert("Có lỗi xảy ra khi gọi API tìm kiếm hình ảnh.");
+
+                            }
+
+                        });
+
+                    };
+
+                    reader.readAsDataURL(file);
+
+                }
+
+            });
+
+        });
+
+
+
+        // Mobile Navigation Drawer Controls
+
+        function toggleMobileDrawer(open) {
+
+            var drawer = document.getElementById("mobileNavDrawer");
+
+            var backdrop = document.getElementById("mobileNavBackdrop");
+
+            if (open) {
+
+                drawer.classList.add("active");
+
+                backdrop.classList.add("active");
+
+                document.body.style.overflow = "hidden";
+
+            } else {
+
+                drawer.classList.remove("active");
+
+                backdrop.classList.remove("active");
+
+                document.body.style.overflow = "";
+
+            }
+
+        }
+
+
+
+        function toggleMobileSubmenu(btn) {
+
+            var submenu = btn.closest(".mobile-menu-item").querySelector(".mobile-submenu");
+
+            if (submenu) {
+
+                submenu.classList.toggle("open");
+
+                btn.classList.toggle("open");
+
+            }
+
+        }
+
+
+
+        function openVisualSearchFromMobile() {
+
+            toggleMobileDrawer(false);
+
+            $("#visualSearchInput").click();
+
+        }
+
+
+
+        function openMobileSearchFocus() {
+
+            toggleMobileDrawer(true);
+
+            setTimeout(function () {
+
+                var input = document.getElementById("mobileSearchInputBox");
+
+                if (input) input.focus();
+
+            }, 350);
+
+        }
+
+    </script>
+
+
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+
+    <nav class="mobile-bottom-bar d-flex d-lg-none" id="mobileBottomBar">
+
+        <a href="/" class="mobile-bar-tab @(Context.Request.Path == "/" ? "active" : "")">
+
+            <i class="fas fa-home"></i>
+
+            <span>Trang chủ</span>
+
+        </a>
+
+        <a href="/SanPham" class="mobile-bar-tab @(Context.Request.Path.Value?.StartsWith("/SanPham") == true ? "active" : "")">
+
+            <i class="fas fa-th-large"></i>
+
+            <span>Sản phẩm</span>
+
+        </a>
+
+        <button type="button" class="mobile-bar-tab" onclick="openMobileSearchFocus()">
+
+            <i class="fas fa-search"></i>
+
+            <span>Tìm kiếm</span>
+
+        </button>
+
+        <a href="/Cart" class="mobile-bar-tab @(Context.Request.Path.Value?.StartsWith("/Cart") == true ? "active" : "")">
+
+            <i class="fas fa-shopping-bag"></i>
+
+            @if (cartCount > 0)
+
+            {
+
+                <span class="mobile-cart-badge-dot">@cartCount</span>
+
+            }
+
+            <span>Giỏ hàng</span>
+
+        </a>
+
+        @if (string.IsNullOrEmpty(userSession))
+
+        {
+
+            <a href="/Auth/Login" class="mobile-bar-tab @(Context.Request.Path.Value?.StartsWith("/Auth") == true ? "active" : "")">
+
+                <i class="far fa-user"></i>
+
+                <span>Tài khoản</span>
+
+            </a>
+
+        }
+
+        else
+
+        {
+
+            <a href="/KhachHangs/Profile" class="mobile-bar-tab @(Context.Request.Path.Value?.StartsWith("/KhachHangs") == true ? "active" : "")">
+
+                <i class="fas fa-user-check"></i>
+
+                <span>Tài khoản</span>
+
+            </a>
+
+        }
+
+    </nav>
+
+
+
+    <!-- FLOATING LIVE SUPPORT & SMART SIZE ADVISOR WIDGET -->
+
+    <div id="fashionSupportWidget">
+
+        <!-- POPUP MENU -->
+
+        <div id="supportPopupCard" class="support-popup-card shadow-lg" style="display: none;">
+
+            <div style="background: linear-gradient(135deg, #090d16, #18181b); color: #fff; padding: 14px 18px;">
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.12); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+
+                            <i class="fas fa-headset text-warning"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold small" style="letter-spacing: 0.5px; font-size: 12px;">FASHION CARE 24/7</div>
+
+                            <small class="text-white-50" style="font-size: 10px;"><i class="fas fa-circle text-success me-1" style="font-size: 8px;"></i>Đang sẵn sàng hỗ trợ</small>
+
+                        </div>
+
+                    </div>
+
+                    <button type="button" onclick="toggleSupportWidget()" style="background: none; border: none; color: #fff; opacity: 0.8; font-size: 16px; cursor: pointer;">
+
+                        <i class="fas fa-times"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- TABS / ACTIONS -->
+
+            <div class="p-3">
+
+                <!-- AI QUICK LAUNCH BANNER -->
+
+                <div class="p-2 mb-2 rounded-3 d-flex align-items-center justify-content-between" style="background: linear-gradient(135deg, #1e1b4b, #312e81); color: #fff; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="toggleChatWindow()">
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div style="width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px;">
+
+                            <i class="fas fa-robot text-warning"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold small" style="font-size: 11px;">Hỏi Trợ Lý AI Phối Đồ</div>
+
+                            <small class="text-white-50" style="font-size: 9.5px;">Tư vấn phong cách &amp; sản phẩm</small>
+
+                        </div>
+
+                    </div>
+
+                    <span class="badge bg-warning text-dark fw-bold" style="font-size: 9px;">Thử ngay</span>
+
+                </div>
+
+
+
+                <!-- ZALO OA (NỔI BẬT NHẤT) -->
+
+                <a href="@zaloLink" target="_blank" class="d-flex align-items-center justify-content-between p-2 mb-2 text-decoration-none rounded-3 shadow-sm" style="background: linear-gradient(135deg, #0068ff, #0052cc); color: #fff; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='scale(1.02)'; this.style.boxShadow='0 6px 18px rgba(0,104,255,0.4)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div style="width: 36px; height: 36px; background: #fff; color: #0068ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800;">
+
+                            Z
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold" style="font-size: 12px; line-height: 1.2;">Chat qua Zalo OA</div>
+
+                            <small style="font-size: 10px; opacity: 0.9;">Tư vấn phối đồ &amp; đổi size tức thì</small>
+
+                        </div>
+
+                    </div>
+
+                    <span class="badge bg-white text-primary fw-bold" style="font-size: 9px; padding: 4px 6px;">Chat ngay <i class="fas fa-arrow-right ms-1"></i></span>
+
+                </a>
+
+
+
+                <!-- HOTLINE -->
+
+                <a href="tel:19008079" class="d-flex align-items-center justify-content-between p-2 mb-2 text-decoration-none rounded-3" style="background: #fef2f2; border: 1px solid #fee2e2; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+
+                    <div class="d-flex align-items-center gap-2">
+
+                        <div style="width: 34px; height: 34px; background: #dc2626; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+
+                            <i class="fas fa-phone-alt"></i>
+
+                        </div>
+
+                        <div>
+
+                            <div class="fw-bold text-dark" style="font-size: 12px;">Hotline: 1900 8079</div>
+
+                            <small class="text-muted" style="font-size: 10px;">Miễn phí cước (8:30 - 21:30)</small>
+
+                        </div>
+
+                    </div>
+
+                    <span class="badge bg-danger text-white" style="font-size: 9px;">Gọi ngay</span>
+
+                </a>
+
+
+
+                <!-- TRA CỨU SIZE THÔNG MINH -->
+
+                <div class="border rounded-3 p-2 mb-2 bg-light">
+
+                    <div class="d-flex justify-content-between align-items-center" onclick="toggleSizeCalc()" style="cursor: pointer;">
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <i class="fas fa-ruler-combined text-primary"></i>
+
+                            <span class="fw-bold small text-dark" style="font-size: 11.5px;">Gợi ý chọn Size chuẩn</span>
+
+                        </div>
+
+                        <i class="fas fa-chevron-down text-muted small" id="sizeCalcChevron"></i>
+
+                    </div>
+
+                    <div id="sizeCalcBox" style="display: none;" class="pt-2 mt-2 border-top">
+
+                        <div class="row g-2 mb-2">
+
+                            <div class="col-6">
+
+                                <label class="small text-muted" style="font-size: 10px;">Chiều cao (cm)</label>
+
+                                <input type="number" id="scHeight" class="form-control form-control-sm" placeholder="VD: 172" value="170" />
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <label class="small text-muted" style="font-size: 10px;">Cân nặng (kg)</label>
+
+                                <input type="number" id="scWeight" class="form-control form-control-sm" placeholder="VD: 65" value="65" />
+
+                            </div>
+
+                        </div>
+
+                        <button type="button" class="btn btn-dark btn-sm w-100 fw-bold py-1" onclick="calcQuickSize()" style="font-size: 11px;">
+
+                            Xem Size gợi ý
+
+                        </button>
+
+                        <div id="scResult" class="mt-2 text-center small fw-bold text-primary" style="display: none;"></div>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- TRA CỨU ĐƠN HÀNG NHANH -->
+
+                <div class="border rounded-3 p-2 bg-light">
+
+                    <div class="small fw-bold text-dark mb-1" style="font-size: 11.5px;">
+
+                        <i class="fas fa-search-location text-success me-1"></i>Tra cứu mã đơn hàng
+
+                    </div>
+
+                    <div class="input-group input-group-sm">
+
+                        <input type="number" id="quickOrderId" class="form-control" placeholder="Nhập mã ĐH (VD: 12)" />
+
+                        <button class="btn btn-outline-dark" type="button" onclick="checkQuickOrder()">Tra cứu</button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- LAUNCHER BUTTON (GỘP HỖ TRỢ & ZALO) -->
+
+        <button type="button" onclick="toggleSupportWidget()" id="supportLauncherBtn" class="fashion-support-launcher shadow" title="Hỗ trợ &amp; Zalo">
+
+            <i class="fas fa-headset" id="supportIcon"></i>
+
+            <span class="support-zalo-badge">Z</span>
+
+            <span class="support-tooltip">Hỗ Trợ &amp; Zalo</span>
+
+        </button>
+
+    </div>
+
+
+
+    <script>
+
+        function toggleSupportWidget() {
+
+            var card = document.getElementById("supportPopupCard");
+
+            var icon = document.getElementById("supportIcon");
+
+            if (card.style.display === "none" || card.style.display === "") {
+
+                var chatWin = document.getElementById("chatbotWindow");
+
+                if (chatWin && !chatWin.classList.contains("d-none")) {
+
+                    chatWin.classList.add("d-none");
+
+                }
+
+                card.style.display = "block";
+
+                icon.className = "fas fa-times";
+
+            } else {
+
+                card.style.display = "none";
+
+                icon.className = "fas fa-headset";
+
+            }
+
+        }
+
+
+
+        function toggleSizeCalc() {
+
+            var box = document.getElementById("sizeCalcBox");
+
+            var chev = document.getElementById("sizeCalcChevron");
+
+            if (box.style.display === "none") {
+
+                box.style.display = "block";
+
+                chev.className = "fas fa-chevron-up text-muted small";
+
+            } else {
+
+                box.style.display = "none";
+
+                chev.className = "fas fa-chevron-down text-muted small";
+
+            }
+
+        }
+
+
+
+        function calcQuickSize() {
+
+            var h = parseFloat(document.getElementById("scHeight").value) || 170;
+
+            var w = parseFloat(document.getElementById("scWeight").value) || 60;
+
+            var res = document.getElementById("scResult");
+
+
+
+            var size = "M";
+
+            if (w < 55) size = "S (Form ôm gọn)";
+
+            else if (w >= 55 && w < 65) size = "M (Vừa vặn)";
+
+            else if (w >= 65 && w < 74) size = "L (Thoải mái)";
+
+            else if (w >= 74 && w < 84) size = "XL (Rộng rãi)";
+
+            else size = "XXL (Ngoại cỡ)";
+
+
+
+            res.style.display = "block";
+
+            res.innerHTML = '<span class="text-success"><i class="fas fa-check-circle me-1"></i>Size phù hợp nhất: <strong>' + size + '</strong></span>';
+
+        }
+
+
+
+        function checkQuickOrder() {
+
+            var id = document.getElementById("quickOrderId").value.trim();
+
+            if (!id) {
+
+                alert("Vui lòng nhập mã đơn hàng cần tra cứu.");
+
+                return;
+
+            }
+
+            window.location.href = "/KhachHangs/ChiTietDonHang/" + id;
+
+        }
+
+
+
+        // Click outside to close support popup
+
+        document.addEventListener('click', function (e) {
+
+            var supportWidget = document.getElementById('fashionSupportWidget');
+
+            var card = document.getElementById('supportPopupCard');
+
+            var icon = document.getElementById('supportIcon');
+
+            if (supportWidget && card && card.style.display === 'block') {
+
+                if (!supportWidget.contains(e.target)) {
+
+                    card.style.display = 'none';
+
+                    if (icon) icon.className = 'fas fa-headset';
+
+                }
+
+            }
+
+        });
+
+    </script>
+
+
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+
+</html>

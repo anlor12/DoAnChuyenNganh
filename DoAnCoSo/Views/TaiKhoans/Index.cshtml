@@ -1,0 +1,133 @@
+@model IEnumerable<DoAnCoSo.Models.TaiKhoan>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Tài khoản hệ thống";
+}
+
+<div class="stats-row">
+    <div class="stat-card">
+        <span>Tổng số tài khoản</span>
+        <h3>@Model.Count()</h3>
+    </div>
+    <div class="stat-card">
+        <span>Đang hoạt động</span>
+        <h3>@Model.Count(x => x.TrangThai == "Hoạt động" || string.IsNullOrEmpty(x.TrangThai))</h3>
+    </div>
+    <div class="stat-card">
+        <span>Quản trị viên</span>
+        <h3>@Model.Count(x => x.VaiTro == "Quản trị viên")</h3>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="content-card-header">
+        <div>
+            <h4 class="content-title">Danh sách tài khoản đăng nhập</h4>
+            <div class="content-note">Quản lý tài khoản đăng nhập, vai trò phân quyền và trạng thái hoạt động</div>
+        </div>
+
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" placeholder="Tìm tài khoản..." />
+            </div>
+
+            <a asp-action="Create" class="btn-add">
+                <i class="bi bi-plus-lg"></i>
+                Thêm tài khoản
+            </a>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+        <div class="table-responsive">
+            <table class="table custom-table align-middle" id="accountTable">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">Mã số</th>
+                        <th>Tên đăng nhập</th>
+                        <th>Họ tên</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center" style="width: 200px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            var roleClass = "status-badge status-gray";
+                            if (item.VaiTro == "Quản trị viên") roleClass = "status-badge status-red";
+                            else if (item.VaiTro == "Khách hàng" || item.VaiTro == "Nhân viên") roleClass = "status-badge status-blue";
+
+                            var statusClass = "status-badge status-green";
+                            if (item.TrangThai == "Bị khóa")
+                            {
+                                statusClass = "status-badge status-red";
+                            }
+
+                            <tr>
+                                <td>
+                                    <span class="code-badge">#@item.MaTaiKhoan</span>
+                                </td>
+                                <td class="fw-bold text-white">
+                                    @item.TenDangNhap
+                                </td>
+                                <td>
+                                    @(string.IsNullOrEmpty(item.HoTen) ? "Chưa cập nhật" : item.HoTen)
+                                </td>
+                                <td>
+                                    <span class="@roleClass">@item.VaiTro</span>
+                                </td>
+                                <td>
+                                    <span class="@statusClass">
+                                        @(item.TrangThai ?? "Hoạt động")
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a asp-action="DoiTrangThai" asp-route-id="@item.MaTaiKhoan" 
+                                           class="btn-back" style="min-height: 32px; padding: 0 12px; font-size: 9px;" 
+                                           title="Đổi trạng thái khóa/mở">
+                                            <i class="bi bi-arrow-repeat" style="margin-right: 4px;"></i> Đổi trạng thái
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.MaTaiKhoan" class="btn-action btn-edit" title="Chỉnh sửa">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <i class="bi bi-shield-lock"></i>
+                                    <h6>Chưa có tài khoản nào</h6>
+                                    <p>Nhấn “Thêm tài khoản” để tạo người dùng đầu tiên.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("searchInput")?.addEventListener("keyup", function () {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#accountTable tbody tr");
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(keyword) ? "" : "none";
+            });
+        });
+    </script>
+}

@@ -1,0 +1,232 @@
+@model IEnumerable<DoAnCoSo.Models.BaiViet>
+
+@{
+    ViewData["Title"] = "Tin Tức & Xu Hướng Thời Trang";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var featured = ViewBag.FeaturedPost as DoAnCoSo.Models.BaiViet;
+    var otherPosts = Model.Where(b => featured == null || b.MaBaiViet != featured.MaBaiViet).ToList();
+}
+
+@section Styles {
+<style>
+    .blog-hero {
+        background: #0a0a0a;
+        color: #fff;
+        padding: 60px 0 40px;
+        position: relative;
+    }
+    .blog-hero-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: clamp(32px, 5vw, 56px);
+        font-weight: 800;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+        line-height: 1.1;
+    }
+    .blog-card {
+        border: none;
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #f0f0f0;
+    }
+    .blog-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 32px rgba(0,0,0,0.08);
+    }
+    .blog-card-img-wrap {
+        position: relative;
+        overflow: hidden;
+        aspect-ratio: 16/10;
+        background: #f5f5f5;
+    }
+    .blog-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+    .blog-card:hover .blog-card-img {
+        transform: scale(1.06);
+    }
+    .blog-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        background: rgba(10,10,10,0.85);
+        backdrop-filter: blur(4px);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 4px;
+    }
+    .featured-post-card {
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        border: 1px solid #eee;
+        transition: transform 0.3s ease;
+    }
+    .featured-post-card:hover {
+        transform: translateY(-4px);
+    }
+    .cat-pill {
+        display: inline-block;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        color: #4b5563;
+        background: #f3f4f6;
+        transition: all 0.2s;
+    }
+    .cat-pill:hover, .cat-pill.active {
+        background: #0a0a0a;
+        color: #fff;
+    }
+</style>
+}
+
+<!-- HERO BANNER -->
+<section class="blog-hero">
+    <div class="container text-center">
+        <span class="text-white-50 text-uppercase fw-bold small" style="letter-spacing: 4px;">Fashion Journal</span>
+        <h1 class="blog-hero-title mt-2 mb-3">Tạp Chí &amp; Tin Tức Thời Trang</h1>
+        <p class="text-white-50 max-w-600 mx-auto" style="max-width: 600px; font-size: 15px;">
+            Cập nhật xu hướng thời trang quốc tế, gợi ý phối đồ tinh tế và những câu chuyện phong cách sống đầy cảm hứng.
+        </p>
+
+        <!-- SEARCH BAR -->
+        <div class="mt-4 mx-auto" style="max-width: 520px;">
+            <form method="get" asp-action="Index" class="input-group bg-white rounded-pill p-1 shadow-sm">
+                <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" class="form-control border-0 rounded-pill ps-4" placeholder="Tìm kiếm bài viết, xu hướng..." />
+                <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">
+                    <i class="fas fa-search me-1"></i> Tìm
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN CONTAINER -->
+<div class="container py-5">
+    <!-- CATEGORIES FILTER -->
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
+        <a href="/BaiViet" class="cat-pill @(string.IsNullOrEmpty(ViewBag.ChuyenMuc) ? "active" : "")">Tất cả</a>
+        @if (ViewBag.Categories != null)
+        {
+            foreach (var cat in (List<string>)ViewBag.Categories)
+            {
+                <a href="/BaiViet?chuyenMuc=@cat" class="cat-pill @(ViewBag.ChuyenMuc == cat ? "active" : "")">@cat</a>
+            }
+        }
+    </div>
+
+    <!-- FEATURED POST -->
+    @if (featured != null && string.IsNullOrEmpty(ViewBag.TuKhoa) && string.IsNullOrEmpty(ViewBag.ChuyenMuc))
+    {
+        var f = featured;
+        <div class="featured-post-card mb-5">
+            <div class="row g-0 align-items-center">
+                <div class="col-lg-7">
+                    <div style="aspect-ratio: 16/10; overflow: hidden; position: relative;">
+                        <img src="@(string.IsNullOrEmpty(f!.HinhAnh) ? "/images/news_office_gentleman.png" : f.HinhAnh)" 
+                             alt="@f.TieuDe" 
+                             class="w-100 h-100 object-fit-cover" 
+                             onerror="this.src='/images/news_office_gentleman.png';" />
+                        <span class="blog-badge" style="background: #e11d48;">
+                            <i class="fas fa-star me-1"></i> Tiêu điểm
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-5 p-4 p-lg-5">
+                    <span class="text-muted small fw-bold text-uppercase" style="letter-spacing: 2px;">
+                        @(f.ChuyenMuc ?? "Thời trang")
+                    </span>
+                    <h2 class="fw-bold mt-2 mb-3" style="font-size: clamp(22px, 3vw, 32px); line-height: 1.25;">
+                        <a href="/BaiViet/ChiTiet/@f.MaBaiViet" class="text-dark text-decoration-none">
+                            @f.TieuDe
+                        </a>
+                    </h2>
+                    <p class="text-muted mb-4" style="line-height: 1.7; font-size: 14px;">
+                        @(f.TomTat ?? "Khám phá phong cách thời trang đương đại với những đường nét tối giản và thanh lịch.")
+                    </p>
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="far fa-user-circle text-muted fa-lg"></i>
+                            <span class="small fw-bold text-dark">@(f.TacGia ?? "Fashion Store")</span>
+                        </div>
+                        <a href="/BaiViet/ChiTiet/@f.MaBaiViet" class="btn btn-dark btn-sm rounded-pill px-3 fw-bold">
+                            Đọc tiếp <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- POSTS GRID -->
+    <h3 class="fw-bold text-uppercase mb-4" style="letter-spacing: 1px; font-size: 20px;">
+        <i class="fas fa-feather-alt text-primary me-2"></i>Bài viết mới nhất
+    </h3>
+
+    @if (!otherPosts.Any())
+    {
+        <div class="text-center py-5">
+            <i class="far fa-newspaper fa-3x text-muted mb-3 d-block"></i>
+            <p class="text-muted">Không tìm thấy bài viết nào phù hợp với tìm kiếm của bạn.</p>
+            <a href="/BaiViet" class="btn btn-outline-dark rounded-pill px-4">Xem tất cả bài viết</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var post in otherPosts)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <article class="blog-card">
+                        <div class="blog-card-img-wrap">
+                            <img src="@(string.IsNullOrEmpty(post.HinhAnh) ? "/images/news_office_gentleman.png" : post.HinhAnh)" 
+                                 alt="@post.TieuDe" 
+                                 class="blog-card-img" 
+                                 onerror="this.src='/images/news_office_gentleman.png';" />
+                            <span class="blog-badge">@(post.ChuyenMuc ?? "Tin tức")</span>
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 text-muted small mb-2">
+                                <i class="far fa-calendar-alt"></i> @post.NgayTao.ToString("dd/MM/yyyy")
+                                <span>•</span>
+                                <i class="far fa-eye"></i> @post.LuotXem lượt xem
+                            </div>
+                            <h4 class="fw-bold fs-5 mb-2" style="line-height: 1.35;">
+                                <a href="/BaiViet/ChiTiet/@post.MaBaiViet" class="text-dark text-decoration-none">
+                                    @post.TieuDe
+                                </a>
+                            </h4>
+                            <p class="text-muted small mb-4 flex-grow-1" style="line-height: 1.6;">
+                                @(string.IsNullOrEmpty(post.TomTat) ? "Bài viết chia sẻ những kiến thức thời trang hữu ích..." : post.TomTat)
+                            </p>
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto">
+                                <span class="small text-muted fw-semibold">
+                                    <i class="far fa-user me-1"></i>@(post.TacGia ?? "Admin")
+                                </span>
+                                <a href="/BaiViet/ChiTiet/@post.MaBaiViet" class="small fw-bold text-dark text-decoration-none">
+                                    Chi tiết <i class="fas fa-chevron-right ms-1" style="font-size: 10px;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            }
+        </div>
+    }
+</div>

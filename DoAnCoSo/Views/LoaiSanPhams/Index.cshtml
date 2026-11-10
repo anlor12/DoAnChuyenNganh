@@ -1,0 +1,234 @@
+@model IEnumerable<DoAnCoSo.Models.LoaiSanPham>
+@{
+    ViewData["Title"] = "Quản lý Loại sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int totalCategories = Model?.Count() ?? 0;
+    int rootCategories = Model?.Count(x => x.MaLoaiCha == null) ?? 0;
+    int subCategories = totalCategories - rootCategories;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + CONTROLS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="SanPhams" asp-action="Index" class="v22-pill-tab">
+                📦 Danh sách sản phẩm
+            </a>
+            <a asp-controller="BienTheSanPhams" asp-action="Index" class="v22-pill-tab">
+                🎨 Biến thể SKU
+            </a>
+            <a asp-controller="LoaiSanPhams" asp-action="Index" class="v22-pill-tab active">
+                🏷️ Quản lý danh mục (@totalCategories)
+            </a>
+            <a asp-controller="KhoHangs" asp-action="Index" class="v22-pill-tab">
+                🏭 Quản lý kho hàng
+            </a>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="v22-view-switcher">
+                <button type="button" onclick="switchCategoryView('grid')" id="catGridBtn" class="v22-view-btn active">
+                    ⊞ Lưới Danh Mục
+                </button>
+                <button type="button" onclick="switchCategoryView('table')" id="catTableBtn" class="v22-view-btn">
+                    ☰ Bảng Chi Tiết
+                </button>
+            </div>
+
+            <a asp-action="Create" class="v22-btn-primary" style="border-radius: 9999px;">
+                + Thêm Danh Mục Mới
+            </a>
+        </div>
+    </div>
+
+    <!-- 3 KPI METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng danh mục</span>
+                    <div class="font-display fw-bold mt-1" style="font-size: 24px;">@totalCategories <span style="font-size: 12px; font-weight: 500;" class="text-muted">phân loại</span></div>
+                </div>
+                <span class="font-mono badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 11px;">100% Hoạt động</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-sage p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-uppercase" style="font-size: 10px;">Danh mục gốc (Cha)</span>
+                    <div class="font-display fw-bold mt-1" style="font-size: 24px;">@rootCategories <span style="font-size: 12px; font-weight: 500;">nhóm gốc</span></div>
+                </div>
+                <span class="font-mono badge rounded-pill bg-dark text-white" style="font-size: 11px;">Cấp Cha</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Phân loại con</span>
+                    <div class="font-display fw-bold text-success mt-1" style="font-size: 24px;">@subCategories <span style="font-size: 12px; font-weight: 500;" class="text-muted">tiểu mục</span></div>
+                </div>
+                <span class="font-mono badge rounded-pill bg-light text-dark border" style="font-size: 11px;">Cấp Con</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH FILTER BAR -->
+    <div class="v22-card p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 420px;">
+            <i class="bi bi-search text-muted"></i>
+            <input type="text" id="searchInput" placeholder="Tìm nhanh danh mục (Áo, Quần, Phụ kiện...)" class="v22-input w-100" />
+        </div>
+        <span class="font-mono text-muted" style="font-size: 11px;">Phân cấp danh mục cha - con chuẩn cấu trúc cửa hàng</span>
+    </div>
+
+    <!-- MODE 1: POP-CARDS GRID VIEW (EXACT MATCH WITH MÃ DEMO #prodSub-categories — NO OVERFLOWING IMAGES) -->
+    <div id="categoryGridView" class="row g-3">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var c in Model)
+            {
+                <div class="col-sm-6 col-lg-3 category-item-card">
+                    <div class="v22-popcard p-3.5 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="font-mono fw-bold text-success" style="font-size: 11px;">#@c.MaLoaiSanPham</span>
+                                <span class="badge rounded-pill @(c.LoaiCha == null ? "bg-dark text-white" : "bg-light text-dark border") font-mono" style="font-size: 9.5px;">
+                                    @(c.LoaiCha != null ? "Thuộc: " + c.LoaiCha.TenLoaiSanPham : "Danh mục gốc")
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2.5 mb-2">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; background: @(c.LoaiCha == null ? "#0C3226" : "rgba(70,155,130,0.14)"); color: @(c.LoaiCha == null ? "#ffffff" : "#0C3226"); font-size: 16px;">
+                                    <i class="bi @(c.LoaiCha == null ? "bi-diagram-3-fill" : "bi-tag-fill")"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="font-display fw-bold mb-0 text-truncate" style="font-size: 15px;" title="@c.TenLoaiSanPham">@c.TenLoaiSanPham</h4>
+                                    <span class="font-mono text-muted" style="font-size: 10.5px;">@(c.LoaiCha == null ? "Nhóm phân loại chính" : "Tiểu mục sản phẩm")</span>
+                                </div>
+                            </div>
+
+                            <p class="text-muted clamp-2 mb-0" style="font-size: 12px; min-height: 34px;">
+                                @(string.IsNullOrWhiteSpace(c.MoTa) ? "Danh mục thời trang định hình phong cách hiện đại tại FASHION STORE." : c.MoTa)
+                            </p>
+                        </div>
+
+                        <div class="pt-2.5 mt-3 border-top d-flex align-items-center justify-content-between">
+                            <span class="font-mono text-success fw-bold" style="font-size: 10.5px;">● Đang hiển thị</span>
+                            <div class="d-flex align-items-center gap-1">
+                                <a asp-action="Edit" asp-route-id="@c.MaLoaiSanPham" class="btn btn-sm btn-light border py-1 px-2" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                <a asp-action="Details" asp-route-id="@c.MaLoaiSanPham" class="btn btn-sm btn-light border py-1 px-2" title="Chi tiết"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Delete" asp-route-id="@c.MaLoaiSanPham" class="btn btn-sm btn-outline-danger py-1 px-2" title="Xóa"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="v22-card p-5 text-center text-muted">Chưa có danh mục sản phẩm nào.</div>
+            </div>
+        }
+    </div>
+
+    <!-- MODE 2: COMPACT TABLE VIEW -->
+    <div id="categoryTableView" class="v22-card overflow-hidden" style="display: none;">
+        <div class="table-responsive">
+            <table class="v22-table" id="categoryTable">
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">Mã loại</th>
+                        <th>Tên loại sản phẩm</th>
+                        <th style="width: 220px;">Phân cấp</th>
+                        <th>Mô tả</th>
+                        <th style="width: 150px;" class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr class="category-item-row">
+                                <td class="font-mono fw-bold text-success">#@item.MaLoaiSanPham</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <div class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; background: @(item.LoaiCha == null ? "#0C3226" : "rgba(70,155,130,0.14)"); color: @(item.LoaiCha == null ? "#ffffff" : "#0C3226"); font-size: 15px;">
+                                            <i class="bi @(item.LoaiCha == null ? "bi-diagram-3-fill" : "bi-tag-fill")"></i>
+                                        </div>
+                                        <span class="fw-bold">@item.TenLoaiSanPham</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (item.LoaiCha != null)
+                                    {
+                                        <span class="badge rounded-pill bg-light text-dark border font-mono" style="font-size: 11px;">
+                                            <i class="bi bi-arrow-return-right text-primary me-1"></i>Thuộc: <strong>@item.LoaiCha.TenLoaiSanPham</strong>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge rounded-pill bg-dark text-white font-mono" style="font-size: 11px;">
+                                            <i class="bi bi-diagram-3 me-1"></i>Danh mục gốc
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="clamp-2 text-muted" style="font-size: 12px; max-width: 360px;">
+                                        @(string.IsNullOrWhiteSpace(item.MoTa) ? "Chưa có mô tả cho loại sản phẩm này" : item.MoTa)
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a asp-action="Edit" asp-route-id="@item.MaLoaiSanPham" class="btn btn-sm btn-light border px-2 py-1" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                        <a asp-action="Details" asp-route-id="@item.MaLoaiSanPham" class="btn btn-sm btn-light border px-2 py-1" title="Xem"><i class="bi bi-eye"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaLoaiSanPham" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function switchCategoryView(mode) {
+            const grid = document.getElementById('categoryGridView');
+            const table = document.getElementById('categoryTableView');
+            const btnGrid = document.getElementById('catGridBtn');
+            const btnTable = document.getElementById('catTableBtn');
+
+            if (mode === 'table') {
+                if (grid) grid.style.display = 'none';
+                if (table) table.style.display = 'block';
+                btnTable?.classList.add('active');
+                btnGrid?.classList.remove('active');
+            } else {
+                if (grid) grid.style.display = '';
+                if (table) table.style.display = 'none';
+                btnGrid?.classList.add('active');
+                btnTable?.classList.remove('active');
+            }
+        }
+
+        document.getElementById("searchInput")?.addEventListener("keyup", function () {
+            const keyword = this.value.toLowerCase();
+            document.querySelectorAll(".category-item-card").forEach(c => {
+                c.style.display = c.innerText.toLowerCase().includes(keyword) ? "" : "none";
+            });
+            document.querySelectorAll(".category-item-row").forEach(r => {
+                r.style.display = r.innerText.toLowerCase().includes(keyword) ? "" : "none";
+            });
+        });
+    </script>
+}

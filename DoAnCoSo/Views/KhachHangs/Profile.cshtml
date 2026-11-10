@@ -1,0 +1,761 @@
+@model DoAnCoSo.Models.NguoiDung
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+
+    var activeTab = TempData["PasswordError"] != null || TempData["PasswordSuccess"] != null
+        ? "password" : "profile";
+}
+
+@section Styles {
+<style>
+    /* ==================== ACCOUNT LAYOUT ==================== */
+    .account-page {
+        padding: 48px 0 80px;
+        background: #f7f7f7;
+        min-height: calc(100vh - 120px);
+    }
+
+    /* ===== SIDEBAR ===== */
+    .account-sidebar {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+
+    .account-sidebar-header {
+        padding: 24px 20px;
+        background: #111;
+        color: #fff;
+        text-align: center;
+    }
+
+    .user-avatar-circle {
+        width: 64px;
+        height: 64px;
+        background: #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        margin: 0 auto 12px;
+        border: 2px solid #555;
+    }
+
+    .account-sidebar-header .user-name {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0 0 4px;
+    }
+
+    .account-sidebar-header .user-meta {
+        font-size: 12px;
+        color: #aaa;
+    }
+
+    .sidebar-nav .sidebar-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #555;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .sidebar-nav .sidebar-nav-item:hover {
+        background: #f9f9f9;
+        color: #111;
+        border-left-color: #ddd;
+    }
+
+    .sidebar-nav .sidebar-nav-item.active {
+        background: #f5f5f5;
+        color: #111;
+        font-weight: 700;
+        border-left-color: #111;
+    }
+
+    .sidebar-nav .sidebar-nav-item i { width: 18px; text-align: center; font-size: 14px; }
+    .sidebar-nav .sidebar-nav-item.text-danger { color: #c00 !important; }
+    .sidebar-nav .sidebar-nav-item.text-danger:hover { background: #fff5f5; border-left-color: #c00; }
+    .sidebar-nav hr { margin: 4px 20px; border-color: #f0f0f0; }
+
+    /* ===== MAIN CONTENT ===== */
+    .account-content {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+
+    .content-top {
+        padding: 24px 28px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .content-top h4 {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .content-top p { font-size: 13px; color: #999; margin-bottom: 20px; }
+
+    /* ===== TABS ===== */
+    .profile-tabs {
+        display: flex;
+        gap: 0;
+    }
+
+    .profile-tab {
+        flex-shrink: 0;
+        padding: 10px 20px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #888;
+        text-decoration: none;
+        border-bottom: 2.5px solid transparent;
+        transition: all 0.2s;
+        cursor: pointer;
+        background: none;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+    }
+
+    .profile-tab:hover { color: #333; }
+    .profile-tab.active { color: #111; border-bottom-color: #111; }
+
+    /* ===== FORM CONTENT ===== */
+    .profile-body { padding: 28px; }
+
+    /* Alert */
+    .profile-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 18px;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 24px;
+        animation: alertSlide 0.3s ease;
+    }
+
+    @@keyframes alertSlide {
+        from { opacity: 0; transform: translateY(-8px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-alert.success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+    }
+
+    .profile-alert.error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+    }
+
+    .profile-alert i { font-size: 16px; margin-top: 1px; flex-shrink: 0; }
+
+    /* Section heading */
+    .form-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 18px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    /* Form rows */
+    .profile-form-row {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        align-items: start;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .profile-form-row label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        padding-top: 10px;
+        text-align: right;
+    }
+
+    .profile-form-row label .required {
+        color: #e53e3e;
+        margin-left: 2px;
+    }
+
+    /* Inputs */
+    .pf-input, .pf-select, .pf-textarea {
+        width: 100%;
+        padding: 9px 14px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 7px;
+        font-size: 14px;
+        color: #111;
+        background: #fff;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+
+    .pf-input:focus, .pf-select:focus, .pf-textarea:focus {
+        border-color: #111;
+        box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+    }
+
+    .pf-input.readonly-field {
+        background: #f9f9f9;
+        color: #888;
+        cursor: not-allowed;
+        border-color: #eee;
+    }
+
+    .pf-textarea { resize: vertical; min-height: 80px; }
+
+    /* Radio group */
+    .radio-group {
+        display: flex;
+        gap: 20px;
+        padding-top: 9px;
+        flex-wrap: wrap;
+    }
+
+    .radio-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        cursor: pointer;
+    }
+
+    .radio-item input[type="radio"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #111;
+        cursor: pointer;
+    }
+
+    .radio-item span {
+        font-size: 14px;
+        color: #333;
+    }
+
+    /* Height/Weight row (2 columns) */
+    .pf-double {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .pf-double-item { display: flex; flex-direction: column; gap: 5px; }
+    .pf-double-item label { font-size: 12px; color: #888; font-weight: 600; }
+
+    /* Info badge */
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #888;
+        margin-top: 4px;
+    }
+
+    /* Submit */
+    .btn-profile-save {
+        padding: 11px 32px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-profile-save:hover { background: #333; }
+    .btn-profile-save:active { transform: scale(0.97); }
+
+    .btn-profile-cancel {
+        padding: 11px 24px;
+        background: transparent;
+        color: #666;
+        border: 1.5px solid #ddd;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-profile-cancel:hover { border-color: #999; color: #333; }
+
+    /* Password strength bar */
+    .strength-bar-wrap {
+        height: 4px;
+        background: #eee;
+        border-radius: 4px;
+        margin-top: 6px;
+        overflow: hidden;
+    }
+
+    .strength-bar {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.3s, background 0.3s;
+        width: 0%;
+    }
+
+    .strength-label {
+        font-size: 11px;
+        margin-top: 4px;
+        font-weight: 600;
+    }
+
+    /* Password toggle */
+    .pw-wrap {
+        position: relative;
+    }
+
+    .pw-wrap .pf-input { padding-right: 42px; }
+
+    .pw-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 14px;
+        padding: 0;
+        transition: color 0.15s;
+    }
+
+    .pw-toggle:hover { color: #555; }
+
+    /* Divider */
+    .form-divider {
+        height: 1px;
+        background: #f0f0f0;
+        margin: 24px 0;
+    }
+
+    /* Tab panels */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    @@media (max-width: 768px) {
+        .account-page { padding: 20px 0 60px; }
+        .profile-body { padding: 16px; }
+        .profile-form-row { grid-template-columns: 1fr; }
+        .profile-form-row label { text-align: left; padding-top: 0; }
+        .content-top { padding: 16px 16px 0; }
+    }
+</style>
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- ===================== SIDEBAR ===================== -->
+            <div class="col-lg-3 col-md-4">
+                <div class="account-sidebar">
+                    <div class="account-sidebar-header">
+                        <div class="user-avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <p class="user-name">@Model.HoTen</p>
+                        <p class="user-meta mb-0">@ViewBag.TenDangNhap</p>
+                        @{
+                            var vipStatus = ViewBag.VipStatus as DoAnCoSo.Models.VipStatusViewModel;
+                        }
+                        @if (vipStatus != null)
+                        {
+                            <div class="mt-3 pt-3 border-top border-secondary text-start">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge" style="background-color: @vipStatus.CurrentTier.MauSac; color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 20px;">
+                                        <i class="fas fa-crown text-warning me-1"></i> @vipStatus.CurrentTier.TenHang
+                                    </span>
+                                    <span class="badge bg-danger text-white" style="font-size: 11px;">Giảm @vipStatus.CurrentTier.PhanTramGiam%</span>
+                                </div>
+                                <div class="text-white-50 mt-2" style="font-size: 12px;">
+                                    Đã tích lũy: <strong class="text-warning">@vipStatus.CurrentAmount.ToString("N0")₫</strong>
+                                </div>
+                                @if (vipStatus.NextTier != null)
+                                {
+                                    <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: @vipStatus.ProgressPercent%" aria-valuenow="@vipStatus.ProgressPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="mt-1 d-flex justify-content-between text-white-50" style="font-size: 10px;">
+                                        <span>+@vipStatus.AmountToNextTier.ToString("N0")₫</span>
+                                        <span>Lên @vipStatus.NextTier.TenHang (@vipStatus.NextTier.PhanTramGiam%)</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="mt-1 text-warning fw-bold" style="font-size: 11px;">
+                                        <i class="fas fa-check-circle"></i> Đạt hạng VIP tối đa!
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <nav class="sidebar-nav">
+                        <a href="/KhachHangs/Profile" class="sidebar-nav-item active">
+                            <i class="fas fa-user-circle"></i> Thông tin cá nhân
+                        </a>
+                        <a href="/KhachHangs/LichSuDonHang" class="sidebar-nav-item">
+                            <i class="fas fa-shopping-bag"></i> Lịch sử đơn hàng
+                        </a>
+                        <a href="/KhachHangs/DiemThuong" class="sidebar-nav-item">
+                            <i class="fas fa-coins text-warning"></i> Điểm thưởng & Giới thiệu
+                        </a>
+                        <hr />
+                        <a href="/Auth/Logout" class="sidebar-nav-item text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- ===================== MAIN ===================== -->
+            <div class="col-lg-9 col-md-8">
+                <div class="account-content">
+
+                    <!-- Top header + tabs -->
+                    <div class="content-top">
+                        <h4><i class="fas fa-user-circle me-2" style="font-size:16px;"></i>Tài khoản của tôi</h4>
+                        <p>Quản lý thông tin để bảo mật tài khoản</p>
+
+                        <div class="profile-tabs">
+                            <button class="profile-tab @(activeTab == "profile" ? "active" : "")"
+                                    onclick="switchTab('profile', this)" id="tab-profile-btn">
+                                <i class="fas fa-id-card me-1"></i> Hồ sơ
+                            </button>
+                            <button class="profile-tab @(activeTab == "password" ? "active" : "")"
+                                    onclick="switchTab('password', this)" id="tab-password-btn">
+                                <i class="fas fa-lock me-1"></i> Đổi mật khẩu
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-body">
+
+                        <!-- ===== TAB: HỒ SƠ ===== -->
+                        <div class="tab-panel @(activeTab == "profile" ? "active" : "")" id="panel-profile">
+
+                            @if (TempData["ProfileSuccess"] != null)
+                            {
+                                <div class="profile-alert success">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>@TempData["ProfileSuccess"]</span>
+                                </div>
+                            }
+                            @if (TempData["ProfileError"] != null)
+                            {
+                                <div class="profile-alert error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>@TempData["ProfileError"]</span>
+                                </div>
+                            }
+
+                            <form asp-action="Profile" method="post" id="profileForm">
+                                @Html.AntiForgeryToken()
+
+                                <!-- THÔNG TIN CƠ BẢN -->
+                                <p class="form-section-title">Thông tin cơ bản</p>
+
+                                <div class="profile-form-row">
+                                    <label>Họ và tên <span class="required">*</span></label>
+                                    <div>
+                                        <input type="text" class="pf-input" asp-for="HoTen" placeholder="Nhập họ và tên..." required />
+                                        <span asp-validation-for="HoTen" class="text-danger" style="font-size:12px;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form-row">
+                                    <label>Giới tính</label>
+                                    <div class="radio-group">
+                                        <label class="radio-item">
+                                            <input type="radio" asp-for="GioiTinh" value="Nam" id="gNam" />
+                                            <span>Nam</span>
+                                        </label>
+                                        <label class="radio-item">
+                                            <input type="radio" asp-for="GioiTinh" value="Nữ" id="gNu" />
+                                            <span>Nữ</span>
+                                        </label>
+                                        <label class="radio-item">
+                                            <input type="radio" asp-for="GioiTinh" value="Khác" id="gKhac" />
+                                            <span>Khác</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form-row">
+                                    <label>Ngày sinh</label>
+                                    <input type="date" class="pf-input" asp-for="NgaySinh" />
+                                </div>
+
+                                <div class="form-divider"></div>
+
+                                <!-- LIÊN HỆ -->
+                                <p class="form-section-title">Thông tin liên hệ</p>
+
+                                <div class="profile-form-row">
+                                    <label>Số điện thoại</label>
+                                    <div>
+                                        <input type="tel" class="pf-input" name="soDienThoai"
+                                               value="@ViewBag.SoDienThoai"
+                                               placeholder="Nhập số điện thoại..."
+                                               pattern="[0-9]{9,11}" />
+                                        <span class="info-badge"><i class="fas fa-info-circle"></i> Dùng khi đặt hàng và hỗ trợ</span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form-row">
+                                    <label>Email</label>
+                                    <div>
+                                        <input type="email" class="pf-input readonly-field"
+                                               value="@ViewBag.Email" readonly />
+                                        <span class="info-badge"><i class="fas fa-lock"></i> Email không thể thay đổi</span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form-row">
+                                    <label>Địa chỉ</label>
+                                    <textarea class="pf-textarea pf-input" asp-for="DiaChi"
+                                              placeholder="Nhập địa chỉ giao hàng mặc định..."></textarea>
+                                </div>
+
+                                <div class="form-divider"></div>
+
+                                <!-- SỐ ĐO -->
+                                <p class="form-section-title">Thông số cơ thể <span style="font-size:11px; font-weight:400; text-transform:none; letter-spacing:0; color:#bbb;">(hỗ trợ gợi ý size)</span></p>
+
+                                <div class="profile-form-row">
+                                    <label>Số đo</label>
+                                    <div class="pf-double">
+                                        <div class="pf-double-item">
+                                            <label>Chiều cao (cm)</label>
+                                            <input type="number" class="pf-input" asp-for="ChieuCao"
+                                                   placeholder="VD: 170" min="50" max="250" />
+                                        </div>
+                                        <div class="pf-double-item">
+                                            <label>Cân nặng (kg)</label>
+                                            <input type="number" step="0.1" class="pf-input" asp-for="CanNang"
+                                                   placeholder="VD: 60" min="10" max="300" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-divider"></div>
+
+                                <div class="d-flex gap-3 align-items-center flex-wrap">
+                                    <button type="submit" class="btn-profile-save">
+                                        <i class="fas fa-save me-1"></i> Lưu thay đổi
+                                    </button>
+                                    <a href="/KhachHangs/Profile" class="btn-profile-cancel">Hủy</a>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- ===== TAB: ĐỔI MẬT KHẨU ===== -->
+                        <div class="tab-panel @(activeTab == "password" ? "active" : "")" id="panel-password">
+
+                            @if (TempData["PasswordSuccess"] != null)
+                            {
+                                <div class="profile-alert success">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>@TempData["PasswordSuccess"]</span>
+                                </div>
+                            }
+                            @if (TempData["PasswordError"] != null)
+                            {
+                                <div class="profile-alert error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>@TempData["PasswordError"]</span>
+                                </div>
+                            }
+
+                            <form asp-action="DoiMatKhau" method="post" id="passwordForm">
+                                @Html.AntiForgeryToken()
+
+                                <p class="form-section-title">Thay đổi mật khẩu đăng nhập</p>
+
+                                <div class="profile-form-row">
+                                    <label>Mật khẩu hiện tại <span class="required">*</span></label>
+                                    <div class="pw-wrap">
+                                        <input type="password" class="pf-input" name="matKhauCu"
+                                               id="pwCurrent" placeholder="Nhập mật khẩu hiện tại..." required />
+                                        <button type="button" class="pw-toggle" onclick="togglePw('pwCurrent', this)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-divider"></div>
+
+                                <div class="profile-form-row">
+                                    <label>Mật khẩu mới <span class="required">*</span></label>
+                                    <div>
+                                        <div class="pw-wrap">
+                                            <input type="password" class="pf-input" name="matKhauMoi"
+                                                   id="pwNew" placeholder="Tối thiểu 6 ký tự..." required
+                                                   oninput="checkStrength(this.value)" />
+                                            <button type="button" class="pw-toggle" onclick="togglePw('pwNew', this)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <!-- Strength bar -->
+                                        <div class="strength-bar-wrap mt-2">
+                                            <div class="strength-bar" id="strengthBar"></div>
+                                        </div>
+                                        <span class="strength-label" id="strengthLabel" style="color:#aaa;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-form-row">
+                                    <label>Xác nhận mật khẩu <span class="required">*</span></label>
+                                    <div>
+                                        <div class="pw-wrap">
+                                            <input type="password" class="pf-input" name="xacNhanMatKhau"
+                                                   id="pwConfirm" placeholder="Nhập lại mật khẩu mới..." required
+                                                   oninput="checkMatch()" />
+                                            <button type="button" class="pw-toggle" onclick="togglePw('pwConfirm', this)">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <span id="matchMsg" class="strength-label"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-divider"></div>
+
+                                <!-- Lưu ý bảo mật -->
+                                <div style="background:#fafafa; border:1px solid #f0f0f0; border-radius:8px; padding:14px 18px; margin-bottom:24px; font-size:13px; color:#777;">
+                                    <i class="fas fa-shield-alt me-2 text-muted"></i>
+                                    <strong>Lưu ý bảo mật:</strong> Mật khẩu nên có ít nhất 6 ký tự và kết hợp chữ + số để tăng độ an toàn.
+                                    Sau khi đổi mật khẩu, bạn sẽ cần đăng nhập lại.
+                                </div>
+
+                                <div class="d-flex gap-3 align-items-center flex-wrap">
+                                    <button type="submit" class="btn-profile-save">
+                                        <i class="fas fa-key me-1"></i> Đổi mật khẩu
+                                    </button>
+                                    <button type="reset" class="btn-profile-cancel" onclick="resetPasswordForm()">Hủy</button>
+                                </div>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // ===== TAB SWITCHING =====
+    function switchTab(name, btn) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.profile-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // ===== PASSWORD SHOW/HIDE =====
+    function togglePw(inputId, btn) {
+        var input = document.getElementById(inputId);
+        var icon = btn.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    // ===== PASSWORD STRENGTH =====
+    function checkStrength(val) {
+        var bar = document.getElementById('strengthBar');
+        var label = document.getElementById('strengthLabel');
+        var len = val.length;
+        var hasNum = /\d/.test(val);
+        var hasUpper = /[A-Z]/.test(val);
+        var hasSpecial = /[^a-zA-Z0-9]/.test(val);
+
+        var score = 0;
+        if (len >= 6) score++;
+        if (len >= 10) score++;
+        if (hasNum) score++;
+        if (hasUpper || hasSpecial) score++;
+
+        var levels = [
+            { w: '0%',   color: '#eee',    text: '' },
+            { w: '25%',  color: '#e53e3e', text: 'Yếu' },
+            { w: '50%',  color: '#f59e0b', text: 'Trung bình' },
+            { w: '75%',  color: '#3b82f6', text: 'Khá' },
+            { w: '100%', color: '#22c55e', text: 'Mạnh' },
+        ];
+
+        var lvl = len === 0 ? 0 : Math.min(score + 1, 4);
+        bar.style.width = levels[lvl].w;
+        bar.style.background = levels[lvl].color;
+        label.textContent = levels[lvl].text;
+        label.style.color = levels[lvl].color;
+
+        checkMatch();
+    }
+
+    // ===== CONFIRM MATCH =====
+    function checkMatch() {
+        var pw = document.getElementById('pwNew').value;
+        var confirm = document.getElementById('pwConfirm').value;
+        var msg = document.getElementById('matchMsg');
+
+        if (confirm.length === 0) {
+            msg.textContent = '';
+            return;
+        }
+        if (pw === confirm) {
+            msg.textContent = '✓ Mật khẩu khớp';
+            msg.style.color = '#22c55e';
+        } else {
+            msg.textContent = '✗ Mật khẩu chưa khớp';
+            msg.style.color = '#e53e3e';
+        }
+    }
+
+    // ===== RESET PASSWORD FORM =====
+    function resetPasswordForm() {
+        document.getElementById('passwordForm').reset();
+        document.getElementById('strengthBar').style.width = '0%';
+        document.getElementById('strengthLabel').textContent = '';
+        document.getElementById('matchMsg').textContent = '';
+    }
+</script>
+}

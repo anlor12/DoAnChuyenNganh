@@ -1,0 +1,502 @@
+@model DoAnCoSo.Models.SanPham
+
+@{
+    ViewData["Title"] = "Cập nhật sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1 fw-bold">Cập nhật sản phẩm</h3>
+            <p class="text-muted mb-0">Chỉnh sửa thông tin sản phẩm hiện có</p>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <form asp-action="Edit" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <input type="hidden" asp-for="MaSanPham" />
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label">Mã sản phẩm</label>
+                <input value="@Model.MaSanPham" class="form-control" disabled />
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="MaLoaiSanPham" class="form-label">Loại sản phẩm</label>
+                <select asp-for="MaLoaiSanPham" class="form-select" asp-items="ViewBag.MaLoaiSanPham">
+                    <option value="">-- Chọn loại sản phẩm --</option>
+                </select>
+                <span asp-validation-for="MaLoaiSanPham" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="TenSanPham" class="form-label">Tên sản phẩm</label>
+                <input asp-for="TenSanPham" class="form-control" />
+                <span asp-validation-for="TenSanPham" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Gia" class="form-label">Giá bán</label>
+                <input asp-for="Gia" class="form-control" />
+                <span asp-validation-for="Gia" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="GioiTinh" class="form-label">Giới tính</label>
+                <select asp-for="GioiTinh" class="form-select">
+                    <option value="">-- Chọn giới tính --</option>
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Unisex">Unisex</option>
+                </select>
+                <span asp-validation-for="GioiTinh" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                <select asp-for="TrangThai" class="form-select">
+                    <option value="">-- Chọn trạng thái --</option>
+                    <option value="Đang bán">Đang bán</option>
+                    <option value="Ngừng bán">Ngừng bán</option>
+                    <option value="Sắp ra mắt">Sắp ra mắt</option>
+                </select>
+                <span asp-validation-for="TrangThai" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="KieuCoAo" class="form-label">Kiểu cổ áo</label>
+                <select asp-for="KieuCoAo" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Cổ bẻ">Cổ bẻ</option>
+                    <option value="Cổ tròn">Cổ tròn</option>
+                    <option value="Cổ trụ">Cổ trụ</option>
+                    <option value="Cổ tim">Cổ tim</option>
+                    <option value="Cổ tàu">Cổ tàu</option>
+                </select>
+                <span asp-validation-for="KieuCoAo" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="ChatLieu" class="form-label">Chất liệu</label>
+                <select asp-for="ChatLieu" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Cotton">Cotton</option>
+                    <option value="Linen">Linen</option>
+                    <option value="Bamboo">Bamboo</option>
+                    <option value="Polyester">Polyester</option>
+                    <option value="Spandex">Spandex</option>
+                    <option value="Lụa">Lụa</option>
+                </select>
+                <span asp-validation-for="ChatLieu" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="FormDang" class="form-label">Form dáng</label>
+                <select asp-for="FormDang" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Slim fit">Slim fit</option>
+                    <option value="Regular fit">Regular fit</option>
+                    <option value="Loose fit">Loose fit</option>
+                    <option value="Oversize">Oversize</option>
+                </select>
+                <span asp-validation-for="FormDang" class="text-danger"></span>
+            </div>
+
+            <!-- Section: Bộ sưu tập 4 hình ảnh sản phẩm -->
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm rounded-3 p-3 p-md-4" style="background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                                <i class="bi bi-images text-primary"></i> Quản lý bộ sưu tập 4 hình ảnh
+                            </h5>
+                            <p class="text-muted small mb-0">Xem ảnh hiện tại, thay đổi hoặc xóa bỏ từng ảnh. Bạn cũng có thể chọn nhanh từ 1-4 ảnh mới.</p>
+                        </div>
+                        <div>
+                            <input type="file" id="batchImageInput" name="batchImages" multiple accept="image/*" class="d-none" />
+                            <button type="button" class="btn btn-outline-primary btn-sm px-3 py-2 fw-semibold rounded-pill" onclick="document.getElementById('batchImageInput').click()">
+                                <i class="bi bi-folder-plus me-1"></i> Thay nhanh 1-4 ảnh từ máy tính
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-3" id="imageSlotsContainer">
+                        <!-- Ô 1: Ảnh chính (Đại diện) -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer1" 
+                                 style="border: 2px solid #3b82f6; background: #fff; min-height: 220px;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-primary px-2 py-1" style="font-size: 10px;">ẢNH CHÍNH (BÌA)</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea1" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(1)">
+                                    <div class="empty-state text-muted @(!string.IsNullOrEmpty(Model.HinhAnh) ? "d-none" : "")" id="emptyState1">
+                                        <i class="bi bi-cloud-arrow-up text-primary" style="font-size: 38px;"></i>
+                                        <div class="fw-bold small mt-1 text-dark">Tải ảnh chính</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Nhấn để chọn file</div>
+                                    </div>
+                                    <img src="@(string.IsNullOrEmpty(Model.HinhAnh) ? "" : Model.HinhAnh)" 
+                                         id="imgPreview1" 
+                                         class="img-fluid rounded-2 shadow-sm @(string.IsNullOrEmpty(Model.HinhAnh) ? "d-none" : "")" 
+                                         style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="triggerSlotInput(1)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText1">@(string.IsNullOrEmpty(Model.HinhAnh) ? "Chọn ảnh" : "Đổi ảnh")</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="imageFile" name="imageFile" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 1)" />
+                            </div>
+                        </div>
+
+                        <!-- Ô 2: Ảnh chi tiết 2 -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer2" 
+                                 style="border: 2px dashed #cbd5e1; background: #fff; min-height: 220px;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-secondary px-2 py-1" style="font-size: 10px;">ẢNH 2</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea2" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(2)">
+                                    <div class="empty-state text-muted @(!string.IsNullOrEmpty(Model.HinhAnh2) ? "d-none" : "")" id="emptyState2">
+                                        <i class="bi bi-image" style="font-size: 36px; color: #cbd5e1;"></i>
+                                        <div class="fw-bold small mt-1 text-secondary">Ảnh chi tiết 2</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Góc nghiêng/mẫu</div>
+                                    </div>
+                                    <img src="@(string.IsNullOrEmpty(Model.HinhAnh2) ? "" : Model.HinhAnh2)" 
+                                         id="imgPreview2" 
+                                         class="img-fluid rounded-2 shadow-sm @(string.IsNullOrEmpty(Model.HinhAnh2) ? "d-none" : "")" 
+                                         style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 @(string.IsNullOrEmpty(Model.HinhAnh2) ? "d-none" : "")" id="btnRemove2" onclick="removeSlot(2)" title="Xóa ảnh 2">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="triggerSlotInput(2)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText2">@(string.IsNullOrEmpty(Model.HinhAnh2) ? "Chọn ảnh" : "Đổi ảnh")</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="removeImage2" id="removeImage2" value="false" />
+                                <input type="file" id="imageFile2" name="imageFile2" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 2)" />
+                            </div>
+                        </div>
+
+                        <!-- Ô 3: Ảnh chi tiết 3 -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer3" 
+                                 style="border: 2px dashed #cbd5e1; background: #fff; min-height: 220px;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-secondary px-2 py-1" style="font-size: 10px;">ẢNH 3</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea3" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(3)">
+                                    <div class="empty-state text-muted @(!string.IsNullOrEmpty(Model.HinhAnh3) ? "d-none" : "")" id="emptyState3">
+                                        <i class="bi bi-image" style="font-size: 36px; color: #cbd5e1;"></i>
+                                        <div class="fw-bold small mt-1 text-secondary">Ảnh chi tiết 3</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Mặt sau/chi tiết vải</div>
+                                    </div>
+                                    <img src="@(string.IsNullOrEmpty(Model.HinhAnh3) ? "" : Model.HinhAnh3)" 
+                                         id="imgPreview3" 
+                                         class="img-fluid rounded-2 shadow-sm @(string.IsNullOrEmpty(Model.HinhAnh3) ? "d-none" : "")" 
+                                         style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 @(string.IsNullOrEmpty(Model.HinhAnh3) ? "d-none" : "")" id="btnRemove3" onclick="removeSlot(3)" title="Xóa ảnh 3">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="triggerSlotInput(3)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText3">@(string.IsNullOrEmpty(Model.HinhAnh3) ? "Chọn ảnh" : "Đổi ảnh")</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="removeImage3" id="removeImage3" value="false" />
+                                <input type="file" id="imageFile3" name="imageFile3" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 3)" />
+                            </div>
+                        </div>
+
+                        <!-- Ô 4: Ảnh chi tiết 4 -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer4" 
+                                 style="border: 2px dashed #cbd5e1; background: #fff; min-height: 220px;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-secondary px-2 py-1" style="font-size: 10px;">ẢNH 4</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea4" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(4)">
+                                    <div class="empty-state text-muted @(!string.IsNullOrEmpty(Model.HinhAnh4) ? "d-none" : "")" id="emptyState4">
+                                        <i class="bi bi-image" style="font-size: 36px; color: #cbd5e1;"></i>
+                                        <div class="fw-bold small mt-1 text-secondary">Ảnh chi tiết 4</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Ảnh lookbook/phối đồ</div>
+                                    </div>
+                                    <img src="@(string.IsNullOrEmpty(Model.HinhAnh4) ? "" : Model.HinhAnh4)" 
+                                         id="imgPreview4" 
+                                         class="img-fluid rounded-2 shadow-sm @(string.IsNullOrEmpty(Model.HinhAnh4) ? "d-none" : "")" 
+                                         style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 @(string.IsNullOrEmpty(Model.HinhAnh4) ? "d-none" : "")" id="btnRemove4" onclick="removeSlot(4)" title="Xóa ảnh 4">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="triggerSlotInput(4)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText4">@(string.IsNullOrEmpty(Model.HinhAnh4) ? "Chọn ảnh" : "Đổi ảnh")</span>
+                                    </button>
+                                </div>
+                                <input type="hidden" name="removeImage4" id="removeImage4" value="false" />
+                                <input type="file" id="imageFile4" name="imageFile4" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 4)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 mt-3">
+                <button type="button" id="btnAIGenerate" class="btn btn-primary px-4 py-2 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; font-weight: 500; transition: all 0.3s ease;">
+                    <i class="bi bi-magic me-2"></i> Tự động phân tích & Viết mô tả bằng AI
+                </button>
+                <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i> Lưu ý: Vui lòng nhập Tên sản phẩm và chọn ảnh trước khi gọi AI.</small>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check form-switch mt-4">
+                    <input class="form-check-input" type="checkbox" asp-for="IsNoiBat" id="isNoiBatSwitch" />
+                    <label class="form-check-label fw-bold" for="isNoiBatSwitch">Sản phẩm nổi bật</label>
+                </div>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center">
+                <div class="form-check form-switch mt-4">
+                    <input class="form-check-input" type="checkbox" asp-for="IsBanChay" id="isBanChaySwitch" />
+                    <label class="form-check-label fw-bold" for="isBanChaySwitch">Sản phẩm bán chạy nhất</label>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <label asp-for="MoTa" class="form-label">Mô tả</label>
+                <textarea asp-for="MoTa" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="MoTa" class="text-danger"></span>
+            </div>
+
+        </div>
+
+        <div class="d-flex gap-2 mt-4 flex-wrap align-items-center">
+            <button type="submit" class="btn-save">
+                <i class="bi bi-check2-circle"></i> Cập nhật
+            </button>
+            <a asp-controller="BienTheSanPhams" asp-action="Create" asp-route-maSanPham="@Model.MaSanPham" class="btn btn-outline-success">
+                <i class="bi bi-plus-circle me-1"></i> Thêm biến thể cho sản phẩm
+            </a>
+            <a asp-controller="BienTheSanPhams" asp-action="Index" asp-route-maSanPham="@Model.MaSanPham" class="btn btn-outline-warning text-dark" style="background: #fffbeb; border-color: #f59e0b;">
+                <i class="bi bi-palette-fill me-1 text-warning"></i> Xem các biến thể (@(Model.BienTheSanPhams?.Count ?? 0))
+            </a>
+            <a asp-action="Index" class="btn-back">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function triggerSlotInput(index) {
+            const inputId = index === 1 ? 'imageFile' : ('imageFile' + index);
+            const input = document.getElementById(inputId);
+            if (input) input.click();
+        }
+
+        function handleSingleSlotChange(input, index) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            previewFileInSlot(file, index);
+
+            // Bỏ đánh dấu xóa nếu có
+            if (index > 1) {
+                const remInput = document.getElementById('removeImage' + index);
+                if (remInput) remInput.value = 'false';
+            }
+        }
+
+        function previewFileInSlot(file, index) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('imgPreview' + index);
+                const emptyState = document.getElementById('emptyState' + index);
+                const btnRemove = document.getElementById('btnRemove' + index);
+                const btnText = document.getElementById('btnText' + index);
+                const container = document.getElementById('slotContainer' + index);
+
+                if (previewImg && emptyState) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('d-none');
+                    emptyState.classList.add('d-none');
+                    if (btnRemove) btnRemove.classList.remove('d-none');
+                    if (btnText) btnText.innerText = 'Đổi ảnh';
+                    if (container) {
+                        container.style.borderColor = index === 1 ? '#3b82f6' : '#10b981';
+                        container.style.borderStyle = 'solid';
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeSlot(index) {
+            if (index === 1) return; // Ảnh chính không xóa trắng mà chỉ đổi ảnh
+            const input = document.getElementById('imageFile' + index);
+            if (input) input.value = '';
+
+            const remInput = document.getElementById('removeImage' + index);
+            if (remInput) remInput.value = 'true';
+
+            const previewImg = document.getElementById('imgPreview' + index);
+            const emptyState = document.getElementById('emptyState' + index);
+            const btnRemove = document.getElementById('btnRemove' + index);
+            const btnText = document.getElementById('btnText' + index);
+            const container = document.getElementById('slotContainer' + index);
+
+            if (previewImg && emptyState) {
+                previewImg.src = '';
+                previewImg.classList.add('d-none');
+                emptyState.classList.remove('d-none');
+                if (btnRemove) btnRemove.classList.add('d-none');
+                if (btnText) btnText.innerText = 'Chọn ảnh';
+                if (container) {
+                    container.style.borderColor = '#cbd5e1';
+                    container.style.borderStyle = 'dashed';
+                }
+            }
+        }
+
+        // Chọn hàng loạt 1-4 ảnh
+        document.getElementById('batchImageInput').addEventListener('change', function() {
+            if (!this.files || this.files.length === 0) return;
+            distributeFilesToSlots(this.files);
+        });
+
+        function distributeFilesToSlots(fileList) {
+            const count = Math.min(fileList.length, 4);
+            for (let i = 0; i < count; i++) {
+                const slotIndex = i + 1;
+                const file = fileList[i];
+                const inputId = slotIndex === 1 ? 'imageFile' : ('imageFile' + slotIndex);
+                const input = document.getElementById(inputId);
+
+                if (input && window.DataTransfer) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                }
+                if (slotIndex > 1) {
+                    const remInput = document.getElementById('removeImage' + slotIndex);
+                    if (remInput) remInput.value = 'false';
+                }
+                previewFileInSlot(file, slotIndex);
+            }
+        }
+
+        // AI Phân tích mô tả sản phẩm
+        document.getElementById('btnAIGenerate').addEventListener('click', async function() {
+            const btn = this;
+            const tenSanPham = document.getElementById('TenSanPham').value;
+
+            // Tìm file ảnh mới nhất hoặc ảnh hiện tại
+            let targetFile = null;
+            for (let i = 1; i <= 4; i++) {
+                const inputId = i === 1 ? 'imageFile' : ('imageFile' + i);
+                const inp = document.getElementById(inputId);
+                if (inp && inp.files && inp.files.length > 0) {
+                    targetFile = inp.files[0];
+                    break;
+                }
+            }
+
+            if (!tenSanPham) {
+                alert('Vui lòng nhập Tên sản phẩm trước khi phân tích.');
+                document.getElementById('TenSanPham').focus();
+                return;
+            }
+
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> AI đang phân tích hình ảnh...';
+
+            let base64Image = null;
+            if (targetFile) {
+                const reader = new FileReader();
+                base64Image = await new Promise((resolve) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(targetFile);
+                });
+            } else {
+                // Sử dụng ảnh đại diện hiện tại nếu không chọn file mới
+                const curImg = document.getElementById('imgPreview1');
+                if (curImg && curImg.src && !curImg.src.includes('no-image')) {
+                    base64Image = curImg.src;
+                }
+            }
+
+            if (!base64Image) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                alert('Vui lòng chọn hoặc có ít nhất 1 ảnh để AI phân tích.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/Ai/GenerateProductAIInfo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ProductName: tenSanPham,
+                        Base64Image: base64Image
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    if (result.data.kieuCoAo) {
+                        const sel = document.getElementById('KieuCoAo');
+                        Array.from(sel.options).forEach(opt => {
+                            if(opt.value.includes(result.data.kieuCoAo) || result.data.kieuCoAo.includes(opt.value)) sel.value = opt.value;
+                        });
+                    }
+                    if (result.data.chatLieu) {
+                        const sel = document.getElementById('ChatLieu');
+                        Array.from(sel.options).forEach(opt => {
+                            if(opt.value.toLowerCase().includes(result.data.chatLieu.toLowerCase()) || result.data.chatLieu.toLowerCase().includes(opt.value.toLowerCase())) sel.value = opt.value;
+                        });
+                    }
+                    if (result.data.formDang) {
+                        const sel = document.getElementById('FormDang');
+                        Array.from(sel.options).forEach(opt => {
+                            if(opt.value.toLowerCase().includes(result.data.formDang.toLowerCase()) || result.data.formDang.toLowerCase().includes(opt.value.toLowerCase())) sel.value = opt.value;
+                        });
+                    }
+                    if (result.data.gioiTinh) document.getElementById('GioiTinh').value = result.data.gioiTinh;
+                    
+                    if (result.data.moTa) {
+                        document.getElementById('MoTa').value = result.data.moTa;
+                    }
+                    if (result.data.isFallback) {
+                        alert('Đã điền thông tin mẫu dự phòng (Lưu ý: Chưa kết nối được Google Gemini hoặc chưa cấu hình Gemini API Key trong Cấu hình hệ thống).');
+                    } else {
+                        alert('AI đã phân tích và điền thông tin thành công!');
+                    }
+                } else {
+                    alert(result.message || 'Có lỗi xảy ra khi gọi AI.');
+                }
+            } catch (error) {
+                console.error(error);
+                alert('Lỗi kết nối tới AI API.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+    </script>
+}

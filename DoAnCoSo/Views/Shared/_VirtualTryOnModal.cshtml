@@ -1,0 +1,400 @@
+<!-- MODAL PHÒNG THỬ ĐỒ ẢO AI (FASHION STORE THEME - CLEAN & MINIMALIST LUXURY) -->
+<style>
+    /* Styling đồng bộ chuẩn 100% với hệ thống Design System của FASHION STORE */
+    #vtonModal {
+        font-family: var(--font-primary), 'Montserrat', 'Inter', sans-serif;
+    }
+    #vtonModal .modal-content {
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+        background-color: #ffffff;
+        color: #0a0a0a;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+    #vtonModal .vton-header {
+        border-bottom: 1px solid #e5e5e5;
+        background: #ffffff;
+        padding: 16px 24px;
+    }
+    #vtonModal .vton-title {
+        font-family: var(--font-primary), 'Montserrat', sans-serif;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #0a0a0a;
+    }
+    #vtonModal .vton-badge-live {
+        background: #0a0a0a;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    #vtonModal .vton-live-dot {
+        width: 7px;
+        height: 7px;
+        background-color: #e0001b;
+        border-radius: 50%;
+        display: inline-block;
+        animation: vtonPulse 1.5s infinite;
+    }
+    @@keyframes vtonPulse {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 0, 27, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(224, 0, 27, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(224, 0, 27, 0); }
+    }
+    /* Video Viewport */
+    #vtonModal .vton-viewport-wrap {
+        background: #f7f7f8;
+        border-right: 1px solid #e5e5e5;
+    }
+    #vtonModal .vton-camera-stage {
+        background: #ffffff;
+        border: 1px solid #e5e5e5;
+        border-radius: 4px;
+        overflow: hidden;
+        position: relative;
+    }
+    /* Placeholder State */
+    #vtonModal .vton-placeholder-icon {
+        width: 68px;
+        height: 68px;
+        border-radius: 50%;
+        background: #f5f5f5;
+        border: 1px solid #e5e5e5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a0a0a;
+        font-size: 24px;
+        margin-bottom: 16px;
+    }
+    #vtonModal .btn-start-camera {
+        background: #0a0a0a;
+        color: #ffffff;
+        border: none;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 13px 26px;
+        transition: var(--transition, all 0.3s ease);
+    }
+    #vtonModal .btn-start-camera:hover {
+        background: #262626;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+    /* Control Buttons */
+    #vtonModal .vton-ctrl-btn {
+        background: #ffffff;
+        color: #0a0a0a;
+        border: 1px solid #e5e5e5;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        transition: all 0.2s ease;
+    }
+    #vtonModal .vton-ctrl-btn:hover {
+        background: #0a0a0a;
+        color: #ffffff;
+        border-color: #0a0a0a;
+    }
+    #vtonModal .vton-ctrl-btn-danger {
+        background: #ffffff;
+        color: #e0001b;
+        border: 1px solid #e0001b;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 9px 18px;
+        transition: all 0.2s ease;
+    }
+    #vtonModal .vton-ctrl-btn-danger:hover {
+        background: #e0001b;
+        color: #ffffff;
+    }
+    #vtonModal .vton-snapshot-btn {
+        background: #0a0a0a;
+        color: #ffffff;
+        border: 1px solid #0a0a0a;
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 9px 22px;
+        transition: all 0.2s ease;
+    }
+    #vtonModal .vton-snapshot-btn:hover {
+        background: #262626;
+        border-color: #262626;
+    }
+
+    /* Tủ đồ Grid 2 Cột (Dùng CSS Grid chuẩn để không bao giờ vỡ giao diện) */
+    .vton-grid-2col {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+    }
+    .vton-wardrobe-card {
+        background: #ffffff;
+        border: 1px solid #e5e5e5 !important;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 8px;
+        text-align: center;
+        overflow: hidden;
+    }
+    .vton-wardrobe-card:hover {
+        border-color: #0a0a0a !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .vton-wardrobe-card.active {
+        border: 2px solid #0a0a0a !important;
+        background-color: #fcfcfc;
+    }
+
+    /* Cart Button & Download Button */
+    #vtonModal .btn-vton-cart {
+        width: 100%;
+        padding: 15px 20px;
+        background: #0a0a0a;
+        color: #ffffff;
+        border: none;
+        border-radius: 2px;
+        font-family: var(--font-primary), 'Montserrat', sans-serif;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    #vtonModal .btn-vton-cart:hover {
+        background: #262626;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+    #vtonModal .btn-vton-download {
+        width: 100%;
+        padding: 11px 18px;
+        background: #ffffff;
+        color: #0a0a0a;
+        border: 1px solid #0a0a0a;
+        border-radius: 2px;
+        font-family: var(--font-primary), 'Montserrat', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    #vtonModal .btn-vton-download:hover:not(:disabled) {
+        background: #0a0a0a;
+        color: #ffffff;
+    }
+    #vtonModal .btn-vton-download:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        border-color: #cccccc;
+        color: #888888;
+    }
+</style>
+
+<div class="modal fade" id="vtonModal" tabindex="-1" aria-labelledby="vtonModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 1120px;">
+        <div class="modal-content overflow-hidden" style="height: 88vh; max-height: 760px; min-height: 560px;">
+            
+            <!-- Modal Header: Chuẩn tone trắng tối giản, đồng bộ 100% với Fashion Store -->
+            <div class="vton-header d-flex align-items-center justify-content-between" style="flex-shrink: 0;">
+                <div class="d-flex align-items-center gap-3">
+                    <span class="vton-badge-live">
+                        <span class="vton-live-dot"></span> LIVE V-TON
+                    </span>
+                    <h5 class="vton-title mb-0" id="vtonModalLabel">
+                        Phòng Thử Đồ Ảo AI <span class="fw-normal text-muted ms-1" style="font-size: 11.5px; letter-spacing: 0; text-transform: none;">— Anywear Live Fitting</span>
+                    </h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="stopDecartVtonSession()"></button>
+            </div>
+
+            <!-- Modal Body: Chia 2 cột sạch sẽ -->
+            <div class="modal-body p-0 d-flex flex-column flex-lg-row overflow-hidden" style="flex: 1 1 auto; height: 100%;">
+                
+                <!-- CỘT TRÁI: KHUNG VIDEO LIVE WEBRTC (65% chiều rộng) -->
+                <div class="vton-viewport-wrap d-flex flex-column justify-content-between p-3" style="flex: 1 1 65%; min-width: 0; height: 100%;">
+                    
+                    <!-- Khung Video chính -->
+                    <div class="vton-camera-stage w-100 d-flex align-items-center justify-content-center flex-grow-1" style="min-height: 380px;">
+                        
+                        <!-- 1. Video AI từ Decart WebRTC (Video đã thay quần áo thật) -->
+                        <video id="vtonAiVideo" autoplay playsinline class="w-100 h-100 object-fit-cover d-none" style="background: #000;"></video>
+
+                        <!-- 2. Video Camera người dùng (hiển thị khi đang kết nối) -->
+                        <video id="vtonLocalVideo" autoplay playsinline muted class="w-100 h-100 object-fit-cover d-none" style="background: #000;"></video>
+
+                        <!-- 3. Ảnh chụp Snapshot -->
+                        <img id="vtonSnapshotImg" src="" alt="Snapshot" class="w-100 h-100 object-fit-contain d-none" style="background: #ffffff;" />
+
+                        <!-- Canvas ẩn phục vụ chụp ảnh -->
+                        <canvas id="vtonCanvas" class="d-none"></canvas>
+
+                        <!-- Màn hình chào khi chưa bật Camera -->
+                        <div id="vtonStreamPlaceholder" class="text-center p-4">
+                            <div class="vton-placeholder-icon">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <h5 class="text-dark fw-bold mb-2" style="font-size: 14px; letter-spacing: 2px; text-transform: uppercase;">
+                                Phòng Thử Đồ Trực Tiếp
+                            </h5>
+                            <p class="text-muted mb-4 mx-auto" style="max-width: 420px; font-size: 13px; line-height: 1.6;">
+                                Bật camera để AI tự động nhận diện vóc dáng và ướm trang phục bạn đang chọn lên người theo thời gian thực.
+                            </p>
+                            <button type="button" class="btn-start-camera shadow-sm" onclick="startDecartVtonSession()">
+                                <i class="fas fa-video me-2"></i>Bật Camera &amp; Thử Đồ Ngay
+                            </button>
+                        </div>
+
+                        <!-- Trạng thái kết nối WebRTC góc trái trên -->
+                        <div id="vtonStatusBadge" class="position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill shadow-sm d-none d-flex align-items-center gap-2" 
+                             style="background: rgba(10, 10, 10, 0.85); color: #ffffff; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(8px); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; font-weight: 600;">
+                            <span class="spinner-grow spinner-grow-sm text-light" id="vtonStatusDot" role="status" style="width: 8px; height: 8px;"></span>
+                            <span id="vtonStatusText">Đang khởi tạo WebRTC...</span>
+                        </div>
+
+                        <!-- Đồng hồ đếm ngược góc phải trên -->
+                        <div id="vtonTimerBadge" class="position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill shadow-sm d-none d-flex align-items-center gap-2" 
+                             style="background: rgba(224, 0, 27, 0.9); color: #ffffff; font-size: 11px; letter-spacing: 1px; font-weight: 700;">
+                            <i class="fas fa-stopwatch"></i> <span id="vtonTimerSec">60</span>s
+                        </div>
+
+                        <!-- Loading Overlay khi AI đang xử lý kết nối -->
+                        <div id="vtonLoadingOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white bg-opacity-90 d-none d-flex flex-column align-items-center justify-content-center text-dark p-4" style="backdrop-filter: blur(4px); z-index: 5;">
+                            <div class="spinner-border text-dark mb-3" style="width: 2.8rem; height: 2.8rem;" role="status"></div>
+                            <h6 class="fw-bold mb-1 text-uppercase" id="vtonLoadingTitle" style="font-size: 13px; letter-spacing: 1.5px;">Đang kết nối Lucy V-TON Engine...</h6>
+                            <p class="text-muted text-center mb-0" id="vtonLoadingDesc" style="max-width: 360px; font-size: 12px; line-height: 1.5;">
+                                Đang phân tích phom dáng và ướm trang phục theo chuyển động thực tế.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Thanh điều khiển phía dưới Camera -->
+                    <div class="w-100 pt-3 d-flex align-items-center justify-content-between gap-2" style="flex-shrink: 0;">
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="vton-ctrl-btn" onclick="toggleDecartCameraFacing()" title="Đổi camera trước/sau">
+                                <i class="fas fa-camera-rotate me-1"></i> Đổi Cam
+                            </button>
+                            <button type="button" class="vton-ctrl-btn-danger d-none" id="btnStopStream" onclick="stopDecartVtonSession()">
+                                <i class="fas fa-stop me-1"></i> Dừng Cam
+                            </button>
+                            <button type="button" class="vton-ctrl-btn d-none" id="btnBackToLive" onclick="backToLiveVideo()">
+                                <i class="fas fa-arrow-left me-1"></i> Trở lại Video
+                            </button>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="vton-snapshot-btn shadow-sm" id="btnSnapshot" onclick="takeSnapshot()">
+                                <i class="fas fa-camera me-1"></i> Chụp ảnh thử đồ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: TỦ ĐỒ ĐỔI TRANG PHỤC & GIỎ HÀNG (Cố định nút bấm ở dưới, nội dung cuộn mượt ở trên) -->
+                <div class="d-flex flex-column bg-white" style="flex: 1 1 35%; min-width: 320px; height: 100%; border-left: 1px solid #e5e5e5;">
+                    
+                    <!-- PHẦN NỘI DUNG CUỘN (SCROLLABLE CONTENT) -->
+                    <div class="flex-grow-1 p-3 overflow-y-auto" style="min-height: 0;">
+                        <div class="d-flex flex-column gap-3">
+                            
+                            <!-- 1. Món đồ đang ướm thử -->
+                            <div>
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-2" style="font-size: 10.5px; letter-spacing: 1px;">
+                                    Trang phục đang thử
+                                </span>
+                                <div class="d-flex gap-3 align-items-center p-2 rounded-1 border bg-white" style="border-color: #e5e5e5 !important;">
+                                    <img id="vtonProductImg" src="" alt="Sản phẩm" class="rounded-1 border object-fit-cover flex-shrink-0" style="width: 58px; height: 58px; border-color: #e5e5e5 !important; background: #f5f5f5;" />
+                                    <div class="overflow-hidden flex-grow-1">
+                                        <h6 class="fw-bold mb-1 text-dark text-truncate" id="vtonProductName" style="font-size: 13px;">Tên sản phẩm</h6>
+                                        <div class="fw-bold" id="vtonProductPrice" style="font-size: 13.5px; color: #e0001b;">0 đ</div>
+                                        <div class="text-muted" id="vtonProductMeta" style="font-size: 11px;">Size: M | Tiêu chuẩn</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Tủ đồ đổi trang phục nhanh -->
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="text-dark small fw-bold text-uppercase" style="font-size: 10.5px; letter-spacing: 1px;">
+                                        <i class="fas fa-tshirt me-1"></i> Đổi trang phục khác
+                                    </span>
+                                    <div>
+                                        <input type="file" id="vtonCustomGarmentInput" accept="image/*" class="d-none" onchange="uploadCustomGarmentForDecart(this)" />
+                                        <button type="button" class="btn btn-outline-dark py-1 px-2 rounded-1 fw-bold" style="font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase;" onclick="document.getElementById('vtonCustomGarmentInput').click()">
+                                            <i class="fas fa-upload me-1"></i> Tải ảnh từ máy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Khung chứa Grid Tủ đồ: Dùng CSS Grid cuộn chuẩn bên trong -->
+                                <div class="p-2 border rounded-1" style="max-height: 250px; overflow-y: auto; overflow-x: hidden; background: #fafafa; border-color: #e5e5e5 !important; scrollbar-width: thin;">
+                                    <div id="vtonQuickWardrobeList" class="vton-grid-2col">
+                                        <div class="text-muted small fst-italic p-2">Đang nạp tủ đồ...</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Lịch sử ảnh đã chụp -->
+                            <div>
+                                <span class="text-muted small fw-bold text-uppercase d-block mb-1" style="font-size: 10.5px; letter-spacing: 1px;">
+                                    <i class="fas fa-images me-1"></i> Ảnh đã chụp trong phiên
+                                </span>
+                                <div id="vtonHistoryList" class="d-flex gap-2 overflow-x-auto py-1" style="min-height: 52px; scrollbar-width: thin;">
+                                    <span class="text-muted small fst-italic" style="font-size: 11px;">Chưa chụp ảnh nào.</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- CỤM NÚT CHỐT ĐƠN & TẢI ẢNH (CỐ ĐỊNH Ở ĐÁY CỘT PHẢI, NỀN TRẮNG ĐẶC KHÔNG CHE KHUẤT) -->
+                    <div class="p-3 border-top bg-white" style="flex-shrink: 0; border-color: #e5e5e5 !important; z-index: 10; box-shadow: 0 -4px 10px rgba(0,0,0,0.03);">
+                        <button type="button" class="btn-vton-cart mb-2" onclick="addVtonProductToCart()">
+                            <i class="fas fa-cart-plus"></i>
+                            <span>Thêm món này vào giỏ</span>
+                        </button>
+                        <button type="button" class="btn-vton-download" id="vtonDownloadImgBtn" onclick="downloadSnapshot()" disabled>
+                            <i class="fas fa-download"></i>
+                            <span>Tải ảnh chụp về máy</span>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

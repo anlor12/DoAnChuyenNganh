@@ -1,0 +1,612 @@
+@model DoAnCoSo.Models.CauHinhGioiThieuViewModel
+@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = Model?.HeroTitle ?? "Giới thiệu";
+}
+
+@section Styles {
+<style>
+    /* ===== ABOUT HERO ===== */
+    .about-hero {
+        position: relative;
+        height: 70vh;
+        min-height: 480px;
+        background: #0a0a0a;
+        display: flex;
+        align-items: flex-end;
+        overflow: hidden;
+    }
+
+    .about-hero-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.38;
+        transform: scale(1.05);
+        transition: transform 10s ease;
+    }
+
+    .about-hero.loaded .about-hero-bg { transform: scale(1.0); }
+
+    .about-hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+    }
+
+    .about-hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 1300px;
+        margin: 0 auto;
+        width: 100%;
+        padding: 0 40px 60px;
+        animation: fadeUp 0.9s ease forwards;
+    }
+
+    @@keyframes fadeUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .about-eyebrow {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 14px;
+    }
+
+    .about-hero-title {
+        font-size: clamp(42px, 8vw, 100px);
+        font-weight: 800;
+        line-height: 0.92;
+        letter-spacing: -2px;
+        text-transform: uppercase;
+        color: #fff;
+        margin: 0;
+    }
+
+    .about-hero-title span {
+        display: block;
+        color: rgba(255,255,255,0.12);
+        -webkit-text-stroke: 1.5px rgba(255,255,255,0.45);
+    }
+
+    /* ===== STAT BAR ===== */
+    .stat-bar {
+        background: #0a0a0a;
+        padding: 0;
+    }
+
+    .stat-bar-inner {
+        max-width: 1300px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        border-left: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .stat-item {
+        padding: 36px 40px;
+        border-right: 1px solid rgba(255,255,255,0.08);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        transition: background 0.3s;
+    }
+
+    .stat-item:hover { background: rgba(255,255,255,0.04); }
+
+    .stat-number {
+        font-size: clamp(36px, 5vw, 56px);
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -1px;
+        line-height: 1;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.4);
+    }
+
+    /* ===== MISSION SECTION ===== */
+    .about-section {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 100px 40px;
+    }
+
+    .about-section-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #aaa;
+        margin-bottom: 12px;
+    }
+
+    .about-section-title {
+        font-size: clamp(28px, 4.5vw, 54px);
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        text-transform: uppercase;
+        color: #0a0a0a;
+        line-height: 1.05;
+        margin-bottom: 28px;
+    }
+
+    .about-section-title em {
+        font-style: normal;
+        color: rgba(10,10,10,0.15);
+        -webkit-text-stroke: 1.5px rgba(10,10,10,0.35);
+    }
+
+    .about-body-text {
+        font-size: 16px;
+        line-height: 1.8;
+        color: #555;
+        max-width: 600px;
+    }
+
+    .about-body-text strong { color: #0a0a0a; }
+
+    /* ===== SPLIT IMAGE LAYOUT ===== */
+    .about-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0;
+        min-height: 560px;
+    }
+
+    .about-split-img {
+        position: relative;
+        overflow: hidden;
+        background: #f0f0f0;
+    }
+
+    .about-split-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.7s ease;
+        filter: grayscale(20%);
+    }
+
+    .about-split-img:hover img { transform: scale(1.04); filter: grayscale(0%); }
+
+    .about-split-content {
+        background: #0a0a0a;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 70px 60px;
+    }
+
+    .about-split-content .about-section-label { color: rgba(255,255,255,0.35); }
+    .about-split-content .about-section-title { color: #fff; }
+    .about-split-content .about-section-title em {
+        color: rgba(255,255,255,0.1);
+        -webkit-text-stroke: 1.5px rgba(255,255,255,0.3);
+    }
+    .about-split-content .about-body-text { color: rgba(255,255,255,0.55); }
+
+    /* ===== VALUES GRID ===== */
+    .values-section {
+        background: #f7f7f5;
+        padding: 100px 0;
+    }
+
+    .values-inner {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 40px;
+    }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2px;
+        margin-top: 60px;
+        background: #e0e0e0;
+        border: 1px solid #e0e0e0;
+    }
+
+    .value-card {
+        background: #f7f7f5;
+        padding: 50px 40px;
+        transition: background 0.3s, transform 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .value-card::before {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 0;
+        height: 3px;
+        background: #0a0a0a;
+        transition: width 0.4s ease;
+    }
+
+    .value-card:hover::before { width: 100%; }
+    .value-card:hover { background: #fff; transform: translateY(-4px); }
+
+    .value-icon {
+        font-size: 32px;
+        color: #0a0a0a;
+        margin-bottom: 24px;
+        display: block;
+        transition: transform 0.3s;
+    }
+
+    .value-card:hover .value-icon { transform: scale(1.15); }
+
+    .value-title {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #0a0a0a;
+        margin-bottom: 14px;
+    }
+
+    .value-desc {
+        font-size: 14px;
+        color: #777;
+        line-height: 1.7;
+    }
+
+    /* ===== TEAM ===== */
+    .team-section {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 100px 40px;
+    }
+
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 24px;
+        margin-top: 60px;
+    }
+
+    .team-card {
+        text-align: center;
+    }
+
+    .team-avatar {
+        width: 100%;
+        aspect-ratio: 1;
+        object-fit: cover;
+        background: #f0f0f0;
+        margin-bottom: 20px;
+        filter: grayscale(30%);
+        transition: filter 0.4s, transform 0.4s;
+    }
+
+    .team-card:hover .team-avatar { filter: grayscale(0%); transform: scale(1.02); }
+
+    .team-avatar-placeholder {
+        width: 100%;
+        aspect-ratio: 1;
+        background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        font-size: 48px;
+        color: #ccc;
+        transition: transform 0.4s;
+    }
+
+    .team-card:hover .team-avatar-placeholder { transform: scale(1.02); }
+
+    .team-name {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #0a0a0a;
+        margin-bottom: 4px;
+    }
+
+    .team-role {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #aaa;
+    }
+
+    /* ===== CTA BANNER ===== */
+    .about-cta {
+        background: #0a0a0a;
+        padding: 100px 40px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .about-cta::before {
+        content: 'FASHION';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: clamp(80px, 18vw, 220px);
+        font-weight: 800;
+        color: rgba(255,255,255,0.03);
+        letter-spacing: -5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+
+    .about-cta-content { position: relative; z-index: 1; }
+
+    .about-cta-title {
+        font-size: clamp(28px, 5vw, 60px);
+        font-weight: 800;
+        letter-spacing: -1px;
+        text-transform: uppercase;
+        color: #fff;
+        margin-bottom: 16px;
+    }
+
+    .about-cta-sub {
+        font-size: 14px;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 40px;
+        letter-spacing: 1px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @@media (max-width: 1024px) {
+        .team-grid { grid-template-columns: repeat(2, 1fr); }
+        .stat-bar-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @@media (max-width: 768px) {
+        .about-hero-content { padding: 0 20px 50px; }
+        .about-section { padding: 60px 20px; }
+        .about-split { grid-template-columns: 1fr; }
+        .about-split-content { padding: 50px 24px; }
+        .values-inner { padding: 0 20px; }
+        .values-grid { grid-template-columns: 1fr; }
+        .team-section { padding: 60px 20px; }
+        .team-grid { grid-template-columns: repeat(2, 1fr); }
+        .about-cta { padding: 70px 20px; }
+        .stat-bar-inner { grid-template-columns: repeat(2, 1fr); }
+        .stat-item { padding: 28px 20px; }
+    }
+</style>
+}
+
+<!-- ===== ABOUT HERO ===== -->
+<section class="about-hero" id="aboutHero">
+    <img class="about-hero-bg"
+         src="@(Model?.HeroImage ?? "/images/store-interior.jpg.jpg")"
+         alt="Fashion Store"
+         onerror="this.style.display='none'" />
+    <div class="about-hero-overlay"></div>
+    <div class="about-hero-content">
+        <p class="about-eyebrow">@(Model?.HeroEyebrow ?? "Fashion Store — Câu chuyện của chúng tôi")</p>
+        <h1 class="about-hero-title">
+            @(Model?.HeroTitle ?? "Về Chúng Tôi")
+        </h1>
+    </div>
+</section>
+
+<!-- ===== STAT BAR ===== -->
+<div class="stat-bar">
+    <div class="stat-bar-inner">
+        <div class="stat-item">
+            <span class="stat-number">@(Model?.StatProducts ?? "50+")</span>
+            <span class="stat-label">Sản phẩm</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">@(Model?.StatCustomers ?? "10.000+")</span>
+            <span class="stat-label">Khách hàng tin tưởng</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">@(Model?.StatYears ?? "5+")</span>
+            <span class="stat-label">Năm kinh nghiệm</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">@(Model?.StatProvinces ?? "63+")</span>
+            <span class="stat-label">Tỉnh thành giao hàng</span>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MISSION ===== -->
+<section class="about-section">
+    <div class="row g-5 align-items-center">
+        <div class="col-lg-5">
+            <p class="about-section-label">Sứ mệnh</p>
+            <h2 class="about-section-title">
+                @(Model?.MissionTitle ?? "Thời trang Không giới hạn")
+            </h2>
+        </div>
+        <div class="col-lg-7">
+            <p class="about-body-text">
+                @(Model?.MissionP1 ?? "Chúng tôi tin rằng thời trang không chỉ là quần áo — đó là ngôn ngữ của bản sắc.")
+            </p>
+            <p class="about-body-text mt-4">
+                @(Model?.MissionP2 ?? "Fashion Store đồng hành cùng bạn với chất lượng vượt trội và phong cách không bao giờ lỗi thời.")
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ===== SPLIT: STORY ===== -->
+<div class="about-split">
+    <div class="about-split-img">
+        <img src="@(Model?.StoryImage ?? "/images/store-interior.jpg.jpg")"
+             alt="Fashion Store Story"
+             onerror="this.src=''; this.parentElement.style.background='#1a1a1a';" />
+    </div>
+    <div class="about-split-content">
+        <p class="about-section-label">Câu chuyện thương hiệu</p>
+        <h2 class="about-section-title">
+            @(Model?.StoryTitle ?? "Sinh ra từ đam mê thời trang")
+        </h2>
+        <p class="about-body-text">
+            @(Model?.StoryP1 ?? "Khởi đầu từ một cửa hàng nhỏ với ước mơ lớn vào năm 2020...")
+        </p>
+        <p class="about-body-text mt-3">
+            @(Model?.StoryP2 ?? "Chúng tôi không ngừng tìm kiếm những chất liệu tốt nhất...")
+        </p>
+    </div>
+</div>
+
+<!-- ===== VALUES ===== -->
+<section class="values-section">
+    <div class="values-inner">
+        <p class="about-section-label">Giá trị cốt lõi</p>
+        <h2 class="about-section-title">Những điều<br/>chúng tôi tin</h2>
+        <div class="values-grid">
+            <div class="value-card">
+                <span class="value-icon"><i class="fas fa-gem"></i></span>
+                <div class="value-title">@(Model?.Value1Title ?? "Chất lượng tuyệt đối")</div>
+                <p class="value-desc">
+                    @(Model?.Value1Desc ?? "Mỗi sản phẩm đều trải qua quy trình kiểm định nghiêm ngặt trước khi đến tay khách hàng.")
+                </p>
+            </div>
+            <div class="value-card">
+                <span class="value-icon"><i class="fas fa-leaf"></i></span>
+                <div class="value-title">@(Model?.Value2Title ?? "Thiết kế hiện đại")</div>
+                <p class="value-desc">
+                    @(Model?.Value2Desc ?? "Cập nhật liên tục các xu hướng thời trang quốc tế, dung hòa hoàn hảo với phom dáng và khí hậu Việt Nam.")
+                </p>
+            </div>
+            <div class="value-card">
+                <span class="value-icon"><i class="fas fa-heart"></i></span>
+                <div class="value-title">@(Model?.Value3Title ?? "Tận tâm phục vụ")</div>
+                <p class="value-desc">
+                    @(Model?.Value3Desc ?? "Khách hàng là trung tâm của mọi quyết định. Chính sách đổi trả linh hoạt và hỗ trợ tư vấn 24/7.")
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== TEAM ===== -->
+<section class="team-section">
+    <p class="about-section-label">Con người</p>
+    <h2 class="about-section-title">Đội ngũ<br/>của chúng tôi</h2>
+    <div class="team-grid">
+        <div class="team-card">
+            <div class="team-avatar-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="team-name">Hà Phương Bình</div>
+            <div class="team-role">Nhà sáng lập & CEO</div>
+        </div>
+        <div class="team-card">
+            <div class="team-avatar-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="team-name">Hà Phương Bình</div>
+            <div class="team-role">Giám đốc Sáng tạo</div>
+        </div>
+        <div class="team-card">
+            <div class="team-avatar-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="team-name">Nguyễn Hoài An</div>
+            <div class="team-role">Trưởng phòng Kinh doanh</div>
+        </div>
+        <div class="team-card">
+            <div class="team-avatar-placeholder">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="team-name">Nguyễn Hoài An</div>
+            <div class="team-role">Chăm sóc Khách hàng</div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA BANNER ===== -->
+<section class="about-cta">
+    <div class="about-cta-content">
+        <h2 class="about-cta-title">Sẵn sàng khám phá<br/>bộ sưu tập?</h2>
+        <p class="about-cta-sub">New Collection SS 2026 — Đã có mặt trên cửa hàng</p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a href="/SanPham?sapXep=moi_nhat" class="hero-cta">
+                Mua sắm ngay
+            </a>
+            <a href="/SanPham?sapXep=ban_chay" class="hero-cta hero-cta-outline">
+                Bán chạy nhất
+            </a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    // Hero loaded animation
+    document.getElementById('aboutHero').classList.add('loaded');
+
+    // Counter animation
+    function animateCounter(el) {
+        var target = parseInt(el.getAttribute('data-count'));
+        var suffix = el.textContent.replace(/[0-9]/g, '');
+        var start = 0;
+        var duration = 1800;
+        var step = target / (duration / 16);
+        var current = 0;
+        var timer = setInterval(function () {
+            current += step;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            el.textContent = Math.floor(current).toLocaleString('vi-VN') + suffix;
+        }, 16);
+    }
+
+    // Trigger counter when stat bar is visible
+    var countersStarted = false;
+    var statBar = document.querySelector('.stat-bar');
+    if (statBar) {
+        var observer = new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting && !countersStarted) {
+                countersStarted = true;
+                document.querySelectorAll('.stat-number[data-count]').forEach(animateCounter);
+            }
+        }, { threshold: 0.4 });
+        observer.observe(statBar);
+    }
+
+    // Scroll reveal for sections
+    var revealObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                revealObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.value-card, .team-card').forEach(function (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(28px)';
+        el.style.transition = 'opacity 0.55s ease, transform 0.55s ease';
+        revealObserver.observe(el);
+    });
+</script>
+}

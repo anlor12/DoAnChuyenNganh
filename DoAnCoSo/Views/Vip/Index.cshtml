@@ -1,0 +1,177 @@
+@model IEnumerable<DoAnCoSo.Models.VipTier>
+@{
+    ViewData["Title"] = "Chính sách tích VIP & Chiết khấu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var customers = ViewBag.Customers as List<DoAnCoSo.Models.NguoiDung> ?? new List<DoAnCoSo.Models.NguoiDung>();
+    decimal totalVipDiscounts = ViewBag.TotalVipDiscounts != null ? (decimal)ViewBag.TotalVipDiscounts : 0;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="KhuyenMais" asp-action="Index" class="v22-pill-tab">
+                🎟️ Khuyến mãi &amp; Quà tặng
+            </a>
+            <a asp-controller="Marketing" asp-action="AbandonedCarts" class="v22-pill-tab">
+                🛒 Giải cứu giỏ hàng
+            </a>
+            <a asp-controller="Vip" asp-action="Index" class="v22-pill-tab active">
+                👑 Chính sách VIP 11 Bậc
+            </a>
+            <a asp-controller="Marketing" asp-action="LoyaltyProgram" class="v22-pill-tab">
+                🪙 Điểm thưởng &amp; Giới thiệu
+            </a>
+            <a asp-controller="NguoiDungs" asp-action="Index" class="v22-pill-tab">
+                👥 Hồ sơ khách hàng
+            </a>
+            <a asp-controller="DanhGias" asp-action="Index" class="v22-pill-tab">
+                ⭐ Đánh giá &amp; Gemini AI
+            </a>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION ALERT -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.12); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- HERO FOREST BANNER (MATCHING DEMO #mktSub-vip11) -->
+    <div class="v22-hero-forest p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <span class="font-mono text-uppercase" style="font-size: 11px; letter-spacing: 0.12em; color: #7DD3B6;">HỆ THỐNG THÀNH VIÊN TỰ ĐỘNG • 11 CẤP ĐỘ</span>
+            <h3 class="font-display fw-bold text-white mt-1 mb-1" style="font-size: 22px;">
+                Chính Sách <span class="font-serif-italic fw-normal" style="color: #7DD3B6;">Tích Hạng VIP &amp; Chiết Khấu Tự Động (5% – 15%)</span>
+            </h3>
+            <p class="mb-0" style="font-size: 12.5px; color: rgba(255,255,255,0.75);">
+                Hệ thống tự động nâng bậc dựa trên tổng chi tiêu đơn hàng đã hoàn tất • Đã trao ưu đãi <strong>@totalVipDiscounts.ToString("N0") ₫</strong> cho <strong>@customers.Count</strong> thành viên
+            </p>
+        </div>
+
+        <form asp-action="RecalculateAll" method="post" class="m-0">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="v22-btn-coral" style="border-radius: 9999px;" onclick="return confirm('Đồng bộ và tính lại hạng VIP cho tất cả khách hàng dựa trên doanh số đơn hàng thực tế?');">
+                🔄 Đồng Bộ Hạng VIP Toàn Hệ Thống
+            </button>
+        </form>
+    </div>
+
+    <!-- 11 TIER BENTO CARDS GRID (MATCHING DEMO #vip11CardsGrid) -->
+    <div class="row g-3">
+        @foreach (var tier in (Model ?? Enumerable.Empty<DoAnCoSo.Models.VipTier>()).OrderBy(t => t.Level))
+        {
+            var countInTier = customers.Count(c => DoAnCoSo.Services.VipService.GetTierByAmount(c.TongChiTieu).Level == tier.Level);
+            string rangeText = (tier.MaxAmount == decimal.MaxValue)
+                ? $"≥ {tier.MinAmount:N0} ₫"
+                : $"{tier.MinAmount:N0} – {tier.MaxAmount:N0} ₫";
+            int progressWidth = Math.Min(100, Math.Max(15, tier.Level * 9));
+
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="@(tier.Level >= 10 ? "v22-peach" : "v22-card") p-3.5 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="font-mono fw-bold px-2 py-0.5 rounded-pill bg-dark text-white" style="font-size: 10px;">BẬC #@tier.Level</span>
+                            <span class="font-mono fw-bold text-success" style="font-size: 15px;">-@tier.PhanTramGiam%</span>
+                        </div>
+                        <div class="font-display fw-bold mb-1" style="font-size: 14.5px;">@tier.TenHang</div>
+                        <div class="font-mono text-muted mb-2.5" style="font-size: 11px;">Chi tiêu: @rangeText</div>
+                    </div>
+
+                    <div>
+                        <div class="w-100 rounded-pill overflow-hidden mb-1.5" style="height: 6px; background: rgba(12,50,38,0.08);">
+                            <div class="h-100 v22-hatched-mint rounded-pill" style="width: @(progressWidth)%;"></div>
+                        </div>
+                        <div class="d-flex justify-content-between font-mono text-muted" style="font-size: 10.5px;">
+                            <span>Thành viên hiện tại</span>
+                            <strong class="text-dark">@countInTier khách</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- CUSTOMER VIP LEADERBOARD TABLE -->
+    <div class="v22-card p-0 overflow-hidden">
+        <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-trophy-fill text-warning"></i>
+                <span class="font-display fw-bold" style="font-size: 14.5px;">Bảng Xếp Hạng &amp; Hồ Sơ VIP Khách Hàng</span>
+            </div>
+            <span class="font-mono text-muted" style="font-size: 11px;">@customers.Count khách hàng</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="v22-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Khách hàng</th>
+                        <th>Tài khoản &amp; Liên hệ</th>
+                        <th class="text-center" style="width: 110px;">Số đơn hàng</th>
+                        <th style="width: 180px;">Chi tiêu tích lũy</th>
+                        <th class="text-center" style="width: 160px;">Hạng VIP</th>
+                        <th class="text-center" style="width: 130px;">Chiết khấu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!customers.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                Chưa có dữ liệu khách hàng nào trong hệ thống.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var cus in customers.OrderByDescending(c => c.TongChiTieu))
+                        {
+                            var currentTier = DoAnCoSo.Services.VipService.GetTierByAmount(cus.TongChiTieu);
+                            var orderCount = cus.DonHangs?.Count(d => d.TrangThaiDonHang != "Đã hủy") ?? 0;
+
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <div class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; background: #0C3226; font-size: 13px;">
+                                            @(string.IsNullOrEmpty(cus.HoTen) ? "K" : cus.HoTen.Substring(0, 1).ToUpper())
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold font-display" style="font-size: 13.5px;">@cus.HoTen</div>
+                                            <span class="font-mono text-muted" style="font-size: 10.5px;">ID: #@cus.MaNguoiDung</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-size: 12px;">@(cus.TaiKhoan?.TenDangNhap ?? "N/A")</div>
+                                    <span class="text-muted font-mono" style="font-size: 11px;">@(cus.TaiKhoan?.SoDienThoai ?? "Chưa có SĐT")</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border font-mono px-2.5 py-1">@orderCount đơn</span>
+                                </td>
+                                <td>
+                                    <span class="font-mono fw-bold text-success" style="font-size: 13.5px;">@cus.TongChiTieu.ToString("N0") ₫</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge @currentTier.BadgeClass px-2.5 py-1 rounded-pill font-mono" style="font-size: 11px;">
+                                        <i class="bi @currentTier.Icon me-1"></i>@currentTier.TenHang
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-danger text-white rounded-pill px-3 py-1 font-mono fw-bold" style="font-size: 12px;">
+                                        -@currentTier.PhanTramGiam%
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

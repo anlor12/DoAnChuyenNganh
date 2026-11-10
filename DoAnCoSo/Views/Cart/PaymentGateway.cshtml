@@ -1,0 +1,219 @@
+@model DoAnCoSo.Models.DonHang
+@{
+    var method = ViewBag.Method as string ?? "VNPAY";
+    var isVnpay = method == "VNPAY";
+    ViewData["Title"] = isVnpay ? "Cổng thanh toán VNPAY-QR" : "Thanh toán qua Ví MoMo";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+
+    var primaryColor = isVnpay ? "#005baa" : "#a50064";
+    var secondaryColor = isVnpay ? "#ed1c24" : "#d82d8b";
+    var brandName = isVnpay ? "VNPAY CỔNG THANH TOÁN" : "VÍ ĐIỆN TỬ MOMO";
+    var qrImage = isVnpay 
+        ? "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + Uri.EscapeDataString($"VNPAYQR://PAY?orderId={Model.MaDonHang}&amount={Model.TongTien}&brand=FashionStore")
+        : "https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=" + Uri.EscapeDataString($"2|99|0988888888|FASHION STORE|admin@fashionstore.vn|0|0|{Model.TongTien}|DH{Model.MaDonHang}|transfer_p2p");
+}
+
+@section Styles {
+<style>
+    .payment-gateway-wrapper {
+        min-height: 80vh;
+        background: #f8fafc;
+        padding: 50px 0;
+    }
+    .pg-card {
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        border: 1px solid #edf2f7;
+        overflow: hidden;
+    }
+    .pg-header {
+        background: linear-gradient(135deg, @primaryColor, @secondaryColor);
+        color: #fff;
+        padding: 26px 30px;
+        text-align: center;
+        position: relative;
+    }
+    .pg-header .badge-secure {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.2);
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        backdrop-filter: blur(4px);
+    }
+    .qr-container {
+        background: #fff;
+        padding: 16px;
+        border-radius: 16px;
+        display: inline-block;
+        border: 2px dashed #cbd5e1;
+        position: relative;
+    }
+    .countdown-box {
+        background: #fff1f2;
+        border: 1px solid #ffe4e6;
+        color: #e11d48;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+    }
+    .order-summary-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+    }
+    .btn-confirm-pay {
+        background: linear-gradient(135deg, @primaryColor, @secondaryColor);
+        color: #fff;
+        font-weight: 700;
+        padding: 14px 28px;
+        border-radius: 10px;
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+    .btn-confirm-pay:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        color: #fff;
+    }
+</style>
+}
+
+<div class="payment-gateway-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+                <div class="pg-card">
+                    <!-- HEADER -->
+                    <div class="pg-header">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge-secure">
+                                <i class="fas fa-lock"></i> SSL Bảo mật 256-Bit
+                            </span>
+                            <div class="countdown-box bg-white text-danger">
+                                <i class="fas fa-stopwatch"></i> <span id="timer">14:59</span>
+                            </div>
+                        </div>
+                        <h4 class="fw-bold mb-1" style="letter-spacing: 1px;">@brandName</h4>
+                        <p class="mb-0 opacity-75 small">Quét mã QR để hoàn tất thanh toán tức thì</p>
+                    </div>
+
+                    <div class="p-4 p-md-5">
+                        <div class="row align-items-center g-4">
+                            <!-- QR CODE -->
+                            <div class="col-md-6 text-center">
+                                <div class="qr-container mb-3 shadow-sm">
+                                    <img src="@qrImage" alt="Mã thanh toán QR" class="img-fluid" style="width: 220px; height: 220px;" />
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="fas fa-mobile-alt me-1 text-primary"></i>
+                                    Mở ứng dụng <strong>@(isVnpay ? "Ngân hàng hoặc Ví VNPAY" : "Ví MoMo")</strong> để quét mã
+                                </div>
+                            </div>
+
+                            <!-- ORDER INFO -->
+                            <div class="col-md-6">
+                                <div class="order-summary-box mb-4">
+                                    <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                        <span class="text-muted small">Mã đơn hàng:</span>
+                                        <span class="fw-bold text-dark">#ĐH@Model.MaDonHang</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                        <span class="text-muted small">Khách hàng:</span>
+                                        <span class="fw-semibold">@Model.NguoiDung?.HoTen</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2 pb-2 border-bottom">
+                                        <span class="text-muted small">Cổng thanh toán:</span>
+                                        <span class="badge" style="background-color: @primaryColor;">@method</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between pt-1">
+                                        <span class="fw-bold text-dark">Tổng thanh toán:</span>
+                                        <span class="fw-bold fs-5 text-danger">@Model.TongTien.ToString("N0") ₫</span>
+                                    </div>
+                                </div>
+
+                                <!-- SIMULATE CONFIRM BUTTON -->
+                                <a href="/Cart/PaymentCallback?orderId=@Model.MaDonHang&method=@method&status=00&transId=@(method + "-" + DateTime.Now.ToString("yyyyMMddHHmmss") + "-" + Model.MaDonHang)" 
+                                   class="btn-confirm-pay mb-2">
+                                    <i class="fas fa-check-circle"></i> Tôi đã thanh toán thành công
+                                </a>
+
+                                <div class="text-center mt-3">
+                                    <a href="/KhachHangs/LichSuDonHang" class="text-muted small text-decoration-none">
+                                        <i class="fas fa-arrow-left me-1"></i> Để thanh toán sau và xem đơn hàng
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- HƯỚNG DẪN BƯỚC -->
+                        <div class="mt-4 pt-4 border-top">
+                            <h6 class="fw-bold mb-3 small text-uppercase" style="letter-spacing: 1px;">
+                                <i class="fas fa-info-circle text-primary me-2"></i>Quy trình thanh toán tự động:
+                            </h6>
+                            <div class="row g-2 text-muted small">
+                                <div class="col-4">
+                                    <div class="p-2 border rounded-3 bg-light text-center h-100">
+                                        <div class="fw-bold text-dark">1. Quét mã QR</div>
+                                        <div style="font-size: 11px;">Mở app quét mã trên màn hình</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 border rounded-3 bg-light text-center h-100">
+                                        <div class="fw-bold text-dark">2. Xác nhận chuyển</div>
+                                        <div style="font-size: 11px;">Kiểm tra số tiền @Model.TongTien.ToString("N0")₫</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 border rounded-3 bg-light text-center h-100">
+                                        <div class="fw-bold text-dark">3. Tự động kích hoạt</div>
+                                        <div style="font-size: 11px;">Đơn chuyển trạng thái "Đã thanh toán"</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Countdown timer 15:00
+    let duration = 15 * 60;
+    const timerDisplay = document.getElementById('timer');
+    const interval = setInterval(function () {
+        let minutes = parseInt(duration / 60, 10);
+        let seconds = parseInt(duration % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        timerDisplay.textContent = minutes + ":" + seconds;
+
+        if (--duration < 0) {
+            clearInterval(interval);
+            timerDisplay.textContent = "HẾT HẠN";
+            alert("Phiên thanh toán đã hết hạn. Vui lòng thử lại!");
+            window.location.href = "/KhachHangs/LichSuDonHang";
+        }
+    }, 1000);
+</script>
+}

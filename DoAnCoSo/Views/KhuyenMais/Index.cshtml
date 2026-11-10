@@ -1,0 +1,375 @@
+@model IEnumerable<DoAnCoSo.Models.KhuyenMai>
+@{
+    ViewData["Title"] = "Chương trình khuyến mãi & Quà tặng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var allList = Model ?? Enumerable.Empty<DoAnCoSo.Models.KhuyenMai>();
+    var totalCount = allList.Count();
+    var activeCount = allList.Count(x => x.TrangThai && x.NgayKetThuc >= DateTime.Now && x.SoLuong > 0);
+    var giftCount = allList.Count(x => x.LoaiKhuyenMai == "TangQua");
+    var voucherCount = allList.Count(x => x.LoaiKhuyenMai != "TangQua");
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + CONTROLS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="KhuyenMais" asp-action="Index" class="v22-pill-tab active">
+                🎟️ Khuyến mãi &amp; Quà tặng (@totalCount)
+            </a>
+            <a asp-controller="Marketing" asp-action="AbandonedCarts" class="v22-pill-tab">
+                🛒 Giải cứu giỏ hàng
+            </a>
+            <a asp-controller="Vip" asp-action="Index" class="v22-pill-tab">
+                👑 Chính sách VIP 11 Bậc
+            </a>
+            <a asp-controller="Marketing" asp-action="LoyaltyProgram" class="v22-pill-tab">
+                🪙 Điểm thưởng &amp; Giới thiệu
+            </a>
+            <a asp-controller="NguoiDungs" asp-action="Index" class="v22-pill-tab">
+                👥 Hồ sơ khách hàng
+            </a>
+            <a asp-controller="DanhGias" asp-action="Index" class="v22-pill-tab">
+                ⭐ Đánh giá &amp; Gemini AI
+            </a>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="v22-view-switcher">
+                <button type="button" onclick="switchPromoView('cards')" id="promoCardsBtn" class="v22-view-btn active">
+                    ⊞ Thẻ Voucher &amp; Quà Tặng
+                </button>
+                <button type="button" onclick="switchPromoView('table')" id="promoTableBtn" class="v22-view-btn">
+                    ☰ Bảng Chi Tiết
+                </button>
+            </div>
+
+            <a asp-action="Create" class="v22-btn-primary" style="border-radius: 9999px;">
+                + Tạo Khuyến Mãi Mới
+            </a>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION ALERT -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.12); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- 4 KPI BENTO METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng chiến dịch</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@totalCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">mã</span></div>
+                    <span class="text-muted" style="font-size: 11px;">Toàn bộ voucher &amp; quà</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-ticket-perforated-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Đang hoạt động</span>
+                    <div class="font-display fw-bold text-success" style="font-size: 24px;">@activeCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">mã</span></div>
+                    <span class="text-success" style="font-size: 11px;">● Hiệu lực trực tuyến</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check2-circle fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-peach p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Ưu đãi tặng quà</span>
+                    <div class="font-display fw-bold" style="font-size: 24px; color: #E07A5F;">@giftCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">quà tặng</span></div>
+                    <span class="text-muted" style="font-size: 11px;">Tặng kèm sản phẩm</span>
+                </div>
+                <div class="rounded-3 p-2.5" style="background: rgba(224, 122, 95, 0.15); color: #E07A5F;">
+                    <i class="bi bi-gift-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Voucher chiết khấu</span>
+                    <div class="font-display fw-bold text-warning" style="font-size: 24px;">@voucherCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">voucher</span></div>
+                    <span class="text-muted" style="font-size: 11px;">Giảm theo % đơn hàng</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-percent fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="v22-card p-3.5">
+        <form method="get" asp-action="Index" class="row g-2.5 align-items-center m-0">
+            <div class="col-md-5">
+                <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" class="v22-input" placeholder="Tìm theo mã code, tên chương trình, quà tặng..." />
+            </div>
+            <div class="col-md-3">
+                <select name="loai" class="v22-input fw-bold">
+                    <option value="">-- Tất cả loại hình --</option>
+                    <option value="GiamGia" selected="@(ViewBag.Loai == "GiamGia")">🎟️ Voucher giảm giá (%)</option>
+                    <option value="TangQua" selected="@(ViewBag.Loai == "TangQua")">🎁 Ưu đãi tặng quà</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="filter" class="v22-input fw-bold">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="active" selected="@(ViewBag.Filter == "active")">Đang áp dụng</option>
+                    <option value="expired" selected="@(ViewBag.Filter == "expired")">Hết hạn / Tạm dừng</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="v22-btn-primary w-100 justify-content-center">Lọc</button>
+                <a asp-action="Index" class="v22-btn-outline px-2.5" title="Đặt lại bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- MODE 1: BENTO VOUCHERS & GIFTS CARDS GRID (DEFAULT - MATCHING DEMO #mktSub-vouchers) -->
+    <div id="promoCardsView" class="row g-3">
+        @if (allList.Any())
+        {
+            @foreach (var item in allList)
+            {
+                bool isGift = item.LoaiKhuyenMai == "TangQua";
+                bool isExpired = !item.TrangThai || item.NgayKetThuc < DateTime.Now || item.SoLuong <= 0;
+
+                <div class="col-md-4">
+                    <div class="@(isGift ? "v22-peach" : "v22-popcard") p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-2.5">
+                                <span class="font-mono fw-bold px-2.5 py-1 rounded-2 @(isGift ? "bg-danger text-white" : "bg-dark text-white")" style="font-size: 11px;">
+                                    @item.Code
+                                </span>
+                                <span class="badge rounded-pill @(!isExpired ? "bg-success text-white" : "bg-secondary text-white") font-mono" style="font-size: 10px;">
+                                    @(!isExpired ? "Đang áp dụng" : "Hết hạn / Dừng")
+                                </span>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2.5 mb-2">
+                                @if (!string.IsNullOrEmpty(item.HinhAnhQuaTang))
+                                {
+                                    <img src="@item.HinhAnhQuaTang"
+                                         alt="Quà tặng"
+                                         class="v22-thumb"
+                                         style="width: 46px; height: 46px; object-fit: cover; border-radius: 12px; flex-shrink: 0;"
+                                         onerror="this.style.display='none';" />
+                                }
+                                <div class="min-w-0">
+                                    <div class="font-display fw-bold" style="font-size: 20px; color: @(isGift ? "#E07A5F" : "var(--text-primary)");">
+                                        @(isGift ? (!string.IsNullOrEmpty(item.QuaTangKem) ? item.QuaTangKem : "Quà tặng đặc biệt") : $"Giảm {item.PhanTramGiam}%")
+                                    </div>
+                                    <div class="fw-semibold text-truncate" style="font-size: 12.5px;" title="@item.TenChuongTrinh">
+                                        @(string.IsNullOrEmpty(item.TenChuongTrinh) ? "Chiến dịch ưu đãi khách hàng" : item.TenChuongTrinh)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-muted clamp-2 mb-3" style="font-size: 12px;">
+                                @(item.MoTa ?? (item.GiaTriDonToiThieu > 0 ? $"Áp dụng cho đơn tối thiểu {item.GiaTriDonToiThieu:N0} ₫" : "Áp dụng cho mọi đơn hàng đủ điều kiện"))
+                            </p>
+                        </div>
+
+                        <div class="pt-2.5 border-top d-flex align-items-center justify-content-between">
+                            <div class="font-mono text-muted" style="font-size: 11px;">
+                                Còn <strong>@item.SoLuong</strong> lượt • HSD: @item.NgayKetThuc.ToString("dd/MM/yyyy")
+                            </div>
+                            <div class="d-flex align-items-center gap-1">
+                                <a asp-action="Edit" asp-route-id="@item.Code" class="btn btn-sm btn-light border py-1 px-2" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form asp-action="Delete" asp-route-id="@item.Code" method="post" class="d-inline m-0" onsubmit="return confirm('Xóa mã @item.Code này?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="v22-card p-5 text-center text-muted">Không tìm thấy chương trình khuyến mãi nào phù hợp.</div>
+            </div>
+        }
+    </div>
+
+    <!-- MODE 2: DATA TABLE (HIDDEN BY DEFAULT SO NO DUPLICATION) -->
+    <div id="promoTableView" class="v22-card p-0 overflow-hidden" style="display: none;">
+        <div class="table-responsive">
+            <table class="v22-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 140px;">Mã / Loại hình</th>
+                        <th>Chương trình &amp; Ưu đãi</th>
+                        <th style="width: 170px;">Điều kiện áp dụng</th>
+                        <th class="text-center" style="width: 100px;">Còn lại</th>
+                        <th style="width: 150px;">Thời hạn</th>
+                        <th class="text-center" style="width: 130px;">Trạng thái</th>
+                        <th class="text-end" style="width: 110px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in allList)
+                    {
+                        bool isExpired = !item.TrangThai || item.NgayKetThuc < DateTime.Now || item.SoLuong <= 0;
+                        <tr>
+                            <td>
+                                <div class="d-flex flex-column align-items-start gap-1">
+                                    <span class="badge bg-dark font-mono px-2.5 py-1" style="font-size: 11.5px;">@item.Code</span>
+                                    @if (item.LoaiKhuyenMai == "TangQua")
+                                    {
+                                        <span class="badge bg-danger bg-opacity-10 text-danger font-mono" style="font-size: 10px;">🎁 Tặng quà</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary bg-opacity-10 text-primary font-mono" style="font-size: 10px;">Giảm @item.PhanTramGiam%</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2.5">
+                                    @if (!string.IsNullOrEmpty(item.HinhAnhQuaTang))
+                                    {
+                                        <img src="@item.HinhAnhQuaTang"
+                                             alt="Quà tặng"
+                                             class="v22-thumb"
+                                             style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; flex-shrink: 0;"
+                                             onerror="this.style.display='none';" />
+                                    }
+                                    <div>
+                                        <div class="fw-bold font-display" style="font-size: 13px;">
+                                            @(string.IsNullOrEmpty(item.TenChuongTrinh) ? item.Code : item.TenChuongTrinh)
+                                        </div>
+                                        @if (item.LoaiKhuyenMai == "TangQua" && !string.IsNullOrEmpty(item.QuaTangKem))
+                                        {
+                                            <div class="small fw-semibold" style="color: #E07A5F;">Quà tặng: @item.QuaTangKem</div>
+                                        }
+                                        <div class="text-muted clamp-2" style="font-size: 11.5px; max-width: 300px;">
+                                            @(item.MoTa ?? "Không có mô tả chi tiết")
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-size: 12px;">
+                                    <span class="text-muted">Đơn tối thiểu:</span>
+                                    <div class="font-mono fw-bold">
+                                        @(item.GiaTriDonToiThieu > 0 ? item.GiaTriDonToiThieu.ToString("N0") + " ₫" : "Mọi đơn hàng")
+                                    </div>
+                                    @if (item.GiamToiDa.HasValue && item.GiamToiDa.Value > 0)
+                                    {
+                                        <div class="text-muted font-mono" style="font-size: 10.5px;">Tối đa: @item.GiamToiDa.Value.ToString("N0") ₫</div>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-mono fw-bold @(item.SoLuong <= 10 ? "text-danger" : "")" style="font-size: 13.5px;">@item.SoLuong</span>
+                                <span class="text-muted d-block font-mono" style="font-size: 10px;">lượt</span>
+                            </td>
+                            <td>
+                                <div class="font-mono fw-semibold @(item.NgayKetThuc < DateTime.Now ? "text-danger" : "")" style="font-size: 11.5px;">
+                                    @item.NgayKetThuc.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm border-0 p-1" onclick="toggleTrangThai('@item.Code', this)">
+                                    @if (!isExpired)
+                                    {
+                                        <span class="badge bg-success rounded-pill px-2.5 py-1">Đang chạy</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary rounded-pill px-2.5 py-1">Tạm dừng / Hết</span>
+                                    }
+                                </button>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <a asp-action="Edit" asp-route-id="@item.Code" class="btn btn-sm btn-light border px-2 py-1" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.Code" method="post" class="d-inline m-0" onsubmit="return confirm('Xóa mã @item.Code này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+<script>
+    function switchPromoView(mode) {
+        const cards = document.getElementById('promoCardsView');
+        const table = document.getElementById('promoTableView');
+        const btnCards = document.getElementById('promoCardsBtn');
+        const btnTable = document.getElementById('promoTableBtn');
+
+        if (mode === 'table') {
+            if (cards) cards.style.display = 'none';
+            if (table) table.style.display = 'block';
+            btnTable?.classList.add('active');
+            btnCards?.classList.remove('active');
+        } else {
+            if (cards) cards.style.display = '';
+            if (table) table.style.display = 'none';
+            btnCards?.classList.add('active');
+            btnTable?.classList.remove('active');
+        }
+    }
+
+    function toggleTrangThai(code, btn) {
+        fetch('/KhuyenMais/ToggleTrangThai/' + code, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                var badge = btn.querySelector('.badge');
+                if (data.trangThai) {
+                    badge.className = 'badge bg-success rounded-pill px-2.5 py-1';
+                    badge.innerText = 'Đang chạy';
+                    showToast('Đã kích hoạt khuyến mãi: ' + code);
+                } else {
+                    badge.className = 'badge bg-secondary rounded-pill px-2.5 py-1';
+                    badge.innerText = 'Tạm dừng';
+                    showToast('Đã tạm dừng khuyến mãi: ' + code);
+                }
+            }
+        });
+    }
+</script>
+}

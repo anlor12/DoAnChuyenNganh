@@ -1,0 +1,64 @@
+﻿@model DoAnCoSo.Models.BienTheSanPham
+
+@{
+    ViewData["Title"] = "Xóa biến thể";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="delete-box">
+        <div class="delete-icon">
+            <i class="bi bi-trash3-fill"></i>
+        </div>
+
+        <h3 class="fw-bold mb-2">Xác nhận xóa biến thể</h3>
+        <p class="text-muted mb-4">
+            Bạn có chắc chắn muốn xóa biến thể này không? Dữ liệu liên quan có thể bị ảnh hưởng.
+        </p>
+
+        <div class="mb-4">
+            <img src="@(string.IsNullOrWhiteSpace(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh)"
+                 alt="Ảnh biến thể"
+                 class="preview-img delete-preview" />
+        </div>
+
+        <div class="detail-grid text-start mb-4">
+            <div class="detail-item">
+                <span class="detail-label">Mã biến thể</span>
+                <div class="detail-value">
+                    <span class="code-badge">#@Model.MaBienThe</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Sản phẩm</span>
+                <div class="detail-value fw-bold">@(Model.SanPham?.TenSanPham ?? "Chưa có sản phẩm")</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Kích cỡ</span>
+                <div class="detail-value">@Model.KichCo</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Màu sắc</span>
+                <div class="detail-value">@Model.MauSac</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Giá</span>
+                <div class="detail-value fw-bold text-price">@Model.Gia.ToString("N0") VNĐ</div>
+            </div>
+        </div>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="MaBienThe" />
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <button type="submit" class="btn-delete-solid">
+                    <i class="bi bi-trash3"></i> Xác nhận xóa
+                </button>
+                <a asp-action="Index" class="btn-back">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

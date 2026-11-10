@@ -1,0 +1,380 @@
+@model DoAnCoSo.Models.DonHang
+@{
+    Layout = null;
+    var carrier = DoAnCoSo.Services.ShippingService.Carriers.Find(c => c.Code.Equals(Model.DonViVanChuyen, StringComparison.OrdinalIgnoreCase)) 
+        ?? DoAnCoSo.Services.ShippingService.Carriers[0];
+    var trackingCode = Model.MaVanDon ?? DoAnCoSo.Services.ShippingService.GenerateTrackingCode(carrier.Code, Model.MaDonHang);
+    var isCod = Model.PhuongThucThanhToan == "COD" && Model.TrangThaiThanhToan != "DaThanhToan" && Model.TrangThaiThanhToan != "Đã thanh toán";
+    var codAmount = isCod ? Model.TongTien : 0;
+    var qrUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://fashionstore.vn/KhachHangs/ChiTietDonHang/{Model.MaDonHang}";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phiếu dán bưu kiện — #@Model.MaDonHang — @trackingCode</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <style>
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { margin: 0; padding: 20px; background: #f1f5f9; color: #0f172a; }
+        .no-print-bar {
+            max-width: 720px;
+            margin: 0 auto 16px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .btn-print {
+            background: #0f172a;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-close-win {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .waybill-sheet {
+            max-width: 720px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 24px;
+            border: 2px solid #000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .waybill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .brand-title {
+            font-size: 18px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .carrier-badge {
+            font-size: 16px;
+            font-weight: 900;
+            border: 2px solid #000;
+            padding: 4px 12px;
+            background: #f8fafc;
+            text-transform: uppercase;
+        }
+        .barcode-section {
+            text-align: center;
+            padding: 10px 0;
+            border-bottom: 2px dashed #000;
+            margin-bottom: 12px;
+        }
+        .barcode-box {
+            width: 280px;
+            height: 55px;
+            margin: 0 auto 6px auto;
+        }
+        .barcode-code {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-family: monospace;
+        }
+        .route-info {
+            display: flex;
+            justify-content: space-between;
+            background: #000;
+            color: #fff;
+            padding: 6px 12px;
+            font-weight: 800;
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .sender-receiver-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .address-box {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .box-title {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 4px;
+            margin-bottom: 6px;
+        }
+        .cod-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fef2f2;
+            border: 2px solid #dc2626;
+            padding: 10px 16px;
+            margin-bottom: 12px;
+        }
+        .cod-val {
+            font-size: 22px;
+            font-weight: 900;
+            color: #dc2626;
+        }
+        .paid-online {
+            background: #f0fdf4;
+            border-color: #16a34a;
+        }
+        .paid-val {
+            color: #16a34a !important;
+            font-size: 18px;
+        }
+        .picklist-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 8px;
+            border: 1px solid #000;
+        }
+        .picklist-table th, .picklist-table td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        .picklist-table th {
+            background: #e2e8f0;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 16px;
+            padding-top: 10px;
+            border-top: 1px dashed #000;
+            font-size: 11px;
+            text-align: center;
+        }
+        .sig-box { width: 30%; }
+        .sig-space { height: 45px; }
+
+        @@media print {
+            body { padding: 0; background: #fff; }
+            .no-print-bar { display: none !important; }
+            .waybill-sheet {
+                border: 2px solid #000 !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 12px !important;
+            }
+            @@page { size: A5 portrait; margin: 6mm; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Action Bar (Hidden when printing) -->
+    <div class="no-print-bar">
+        <div>
+            <strong>PHIẾU DÁN BƯU KIỆN (WAYBILL &amp; PICK LIST)</strong>
+            <div style="font-size: 12px; color: #64748b;">Khổ giấy chuẩn A5 / In nhiệt dán thùng hàng</div>
+        </div>
+        <div style="display:flex; gap: 10px;">
+            <button type="button" class="btn-print" onclick="window.print()">
+                <i class="fas fa-print"></i> In phiếu ngay (Ctrl+P)
+            </button>
+            <a href="javascript:window.close()" class="btn-close-win">Đóng</a>
+        </div>
+    </div>
+
+    <!-- Main Printable Waybill Sheet -->
+    <div class="waybill-sheet">
+        <!-- Header -->
+        <div class="waybill-header">
+            <div>
+                <div class="brand-title">FASHION STORE</div>
+                <div style="font-size: 11px; color: #475569;">Đơn hàng: <strong>#ORD-@Model.NgayDat.ToString("yyyyMMdd")-@Model.MaDonHang</strong></div>
+            </div>
+            <div style="text-align: right;">
+                <span class="carrier-badge">@carrier.Name</span>
+                <div style="font-size: 10.5px; margin-top: 4px;">Hotline: @carrier.Hotline</div>
+            </div>
+        </div>
+
+        <!-- Route Indicator -->
+        <div class="route-info">
+            <span>HÀ NỘI ➔ @(string.IsNullOrEmpty(Model.TinhThanh) ? "TOÀN QUỐC" : Model.TinhThanh.ToUpper())</span>
+            <span>NGÀY GỬI: @DateTime.Now.ToString("dd/MM/yyyy")</span>
+        </div>
+
+        <!-- Barcode & QR Code Section -->
+        <div class="barcode-section">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+                <div>
+                    <div class="barcode-box">
+                        @Html.Raw(DoAnCoSo.Services.ShippingService.GenerateBarcodeSvg(trackingCode, 45))
+                    </div>
+                    <div class="barcode-code">@trackingCode</div>
+                </div>
+                <div style="border-left: 1px dashed #cbd5e1; padding-left: 16px; text-align: center;">
+                    <img src="@qrUrl" alt="QR Tra cứu" style="width: 70px; height: 70px; border: 1px solid #ccc; padding: 2px;" />
+                    <div style="font-size: 9px; margin-top: 2px; color: #64748b;">Quét tra cứu</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sender & Receiver Grid -->
+        <div class="sender-receiver-grid">
+            <!-- NGƯỜI GỬI -->
+            <div class="address-box">
+                <div class="box-title"><i class="fas fa-arrow-up text-primary"></i> Người gửi:</div>
+                <div style="font-weight: 700;">FASHION STORE FLAGSHIP (Kho Tổng)</div>
+                <div>Địa chỉ: Tầng 3, 98 Thái Hà, Đống Đa, Hà Nội</div>
+                <div>Điện thoại: <strong>1900 8079</strong> - 0988.888.888</div>
+            </div>
+
+            <!-- NGƯỜI NHẬN -->
+            <div class="address-box">
+                <div class="box-title"><i class="fas fa-arrow-down text-danger"></i> Người nhận:</div>
+                <div style="font-weight: 800; font-size: 13px;">@(Model.NguoiDung?.HoTen ?? "Khách hàng")</div>
+                <div>Điện thoại: <strong style="font-size: 13px;">@Model.SoDienThoaiNhan</strong></div>
+                <div>Địa chỉ: @Model.DiaChiGiaoHang</div>
+                @if (!string.IsNullOrEmpty(Model.TinhThanh))
+                {
+                    <div style="font-weight: 700; color: #0284c7;">@(Model.PhuongXa), @(Model.QuanHuyen), @(Model.TinhThanh)</div>
+                }
+            </div>
+        </div>
+
+        <!-- COD Box -->
+        <div class="cod-row @(codAmount == 0 ? "paid-online" : "")">
+            <div>
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase;">Tiền thu người nhận (COD):</div>
+                <div style="font-size: 11px; color: #64748b;">
+                    @(codAmount == 0 ? "Đơn hàng đã thanh toán qua " + Model.PhuongThucThanhToan + ". Bưu tá không thu thêm." : "Thu đúng số tiền ghi trên phiếu khi bàn giao bưu phẩm.")
+                </div>
+            </div>
+            <div class="cod-val @(codAmount == 0 ? "paid-val" : "")">
+                @(codAmount == 0 ? "0 ₫ (ĐÃ THANH TOÁN)" : codAmount.ToString("N0") + " ₫")
+            </div>
+        </div>
+
+        <!-- Chỉ dẫn giao hàng -->
+        <div style="border: 1px dashed #000; padding: 6px 10px; font-size: 11px; margin-bottom: 12px; background: #fafafa;">
+            <strong>Chỉ dẫn giao hàng:</strong> Cho khách kiểm tra hàng, không cho thử đồ. Chuyển hoàn sau 3 lần phát không thành công.
+            @if (!string.IsNullOrEmpty(Model.GhiChu))
+            {
+                <span style="color: #b45309;"> · Ghi chú: <strong>@Model.GhiChu</strong></span>
+            }
+        </div>
+
+        <!-- DANH SÁCH NHẶT HÀNG TẠI KHO (WAREHOUSE PICK LIST) -->
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">
+                    <i class="fas fa-boxes-stacked me-1"></i> Danh sách nhặt hàng tại kho (Warehouse Pick List)
+                </span>
+                <span style="font-size: 10px; color: #64748b;">Tổng: @(Model.ChiTietDonHangs?.Sum(c => c.SoLuong) ?? 0) sản phẩm</span>
+            </div>
+
+            <table class="picklist-table">
+                <thead>
+                    <tr>
+                        <th style="width: 30px; text-align: center;">STT</th>
+                        <th>Mã SKU / Tên sản phẩm</th>
+                        <th style="width: 80px; text-align: center;">Phân loại</th>
+                        <th style="width: 40px; text-align: center;">SL</th>
+                        <th style="width: 70px; text-align: center;">Kệ kho</th>
+                        <th style="width: 50px; text-align: center;">Check</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int stt = 1; }
+                    @if (Model.ChiTietDonHangs != null)
+                    {
+                        foreach (var item in Model.ChiTietDonHangs)
+                        {
+                            var sp = item.BienTheSanPham?.SanPham;
+                            var bt = item.BienTheSanPham;
+                            var shelfCode = $"Kệ {((item.MaBienThe % 4) + 1)}-A{((item.MaBienThe % 9) + 1)}";
+                            <tr>
+                                <td style="text-align: center;">@stt</td>
+                                <td>
+                                    <strong>@(sp?.TenSanPham ?? "Sản phẩm")</strong>
+                                    <div style="font-size: 9.5px; color: #64748b;">Mã SP: SP-@(sp?.MaSanPham ?? 0) · Biến thể #@item.MaBienThe</div>
+                                </td>
+                                <td style="text-align: center;">
+                                    Size: <strong>@(bt?.KichCo ?? "-")</strong><br />
+                                    Màu: @(bt?.MauSac ?? "-")
+                                </td>
+                                <td style="text-align: center; font-weight: 800; font-size: 13px;">@item.SoLuong</td>
+                                <td style="text-align: center; font-weight: 700; color: #0284c7;">@shelfCode</td>
+                                <td style="text-align: center;"><input type="checkbox" style="transform: scale(1.2);" /></td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(Model.QuaTangKem))
+                    {
+                        <tr style="background: #fffbeb;">
+                            <td style="text-align: center;">★</td>
+                            <td colspan="2">
+                                <strong style="color: #b45309;">QUÀ TẶNG KÈM: @Model.QuaTangKem</strong>
+                            </td>
+                            <td style="text-align: center; font-weight: 800;">1</td>
+                            <td style="text-align: center; color: #b45309;">Kệ Quà</td>
+                            <td style="text-align: center;"><input type="checkbox" style="transform: scale(1.2);" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Chữ ký xác nhận -->
+        <div class="signature-row">
+            <div class="sig-box">
+                <strong>Nhân viên nhặt &amp; đóng gói</strong>
+                <div class="sig-space"></div>
+                <div>(Ký và ghi rõ họ tên)</div>
+            </div>
+            <div class="sig-box">
+                <strong>Bưu tá lấy hàng (@carrier.Code)</strong>
+                <div class="sig-space"></div>
+                <div>(Ký và ghi rõ họ tên)</div>
+            </div>
+            <div class="sig-box">
+                <strong>Người nhận bưu phẩm</strong>
+                <div class="sig-space"></div>
+                <div>(Xác nhận nguyên vẹn)</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

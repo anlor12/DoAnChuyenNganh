@@ -1,0 +1,186 @@
+@{
+    Layout = null;
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng ký - Cửa hàng thời trang</title>
+    <link rel="stylesheet" href="~/css/register.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+
+    <img class="bg-image"
+         id="bgImg"
+         src="~/images/login-bg.jpg.jpg"
+         alt="" />
+
+    <!-- Lớp phủ tối nhẹ để tăng độ tương phản -->
+    <div class="bg-overlay"></div>
+
+    <div class="register-container">
+        <div class="register-card">
+            <!-- Cột trái: Nội dung thương hiệu/Hình ảnh thời trang -->
+            <div class="card-left has-bg">
+                <div class="brand-info">
+                    <div class="brand-title">Fashion Store</div>
+                </div>
+                <div class="brand-slogan-box">
+                    <h1>Nâng tầm<br>phong cách của bạn</h1>
+                    <p>Khám phá bộ sưu tập thời trang mới nhất và nhận ưu đãi đặc biệt dành riêng cho thành viên.</p>
+                </div>
+            </div>
+
+            <!-- Cột phải: Form đăng ký kính mờ -->
+            <div class="card-right">
+                <form id="registerForm" asp-action="Register" method="post">
+                    <h2>ĐĂNG KÝ</h2>
+                    <p class="subtitle">Đăng ký thành viên để nhận nhiều ưu đãi</p>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert-error">
+                            <i class="fas fa-exclamation-circle"></i> @ViewBag.Error
+                        </div>
+                    }
+
+                    <!-- Họ và tên & Tên đăng nhập song song -->
+                    <div class="input-row">
+                        <div class="input-group">
+                            <i class="fas fa-user-tag"></i>
+                            <input type="text"
+                                   id="hoTen"
+                                   name="hoTen"
+                                   placeholder=" "
+                                   required />
+                            <label for="hoTen">Họ và tên</label>
+                        </div>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text"
+                                   id="tenDangNhap"
+                                   name="tenDangNhap"
+                                   placeholder=" "
+                                   required />
+                            <label for="tenDangNhap">Tên đăng nhập</label>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="input-group">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email"
+                               id="email"
+                               name="email"
+                               placeholder=" "
+                               required />
+                        <label for="email">Địa chỉ Email</label>
+                    </div>
+
+                    <!-- Mật khẩu -->
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password"
+                               id="matKhau"
+                               name="matKhau"
+                               placeholder=" "
+                               required />
+                        <label for="matKhau">Mật khẩu</label>
+                    </div>
+
+                    <!-- Nhập lại mật khẩu -->
+                    <div class="input-group">
+                        <i class="fas fa-shield-alt"></i>
+                        <input type="password"
+                               id="nhapLaiMatKhau"
+                               name="nhapLaiMatKhau"
+                               placeholder=" "
+                               required />
+                        <label for="nhapLaiMatKhau">Nhập lại mật khẩu</label>
+                    </div>
+
+                    <!-- Mã giới thiệu (Tùy chọn) -->
+                    <div class="input-group">
+                        <i class="fas fa-gift" style="color: #f59e0b;"></i>
+                        <input type="text"
+                               id="maGioiThieu"
+                               name="maGioiThieu"
+                               value="@ViewBag.RefCode"
+                               placeholder=" "
+                               style="text-transform: uppercase;" />
+                        <label for="maGioiThieu">Mã người giới thiệu (Nhận ngay +10.000 điểm - tùy chọn)</label>
+                    </div>
+
+                    <button type="submit" class="register-btn" id="submitBtn">ĐĂNG KÝ NGAY</button>
+
+                    <div style="display: flex; align-items: center; margin: 18px 0 12px; color: rgba(255, 255, 255, 0.7); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600;">
+                        <span style="flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.2);"></span>
+                        <span style="margin: 0 10px;">HOẶC ĐĂNG KÝ 1-CHẠM VỚI</span>
+                        <span style="flex: 1; border-bottom: 1px solid rgba(255, 255, 255, 0.2);"></span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                        <a asp-controller="Auth" asp-action="GoogleLogin" asp-route-returnUrl="@ViewBag.ReturnUrl" style="display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.95); color: #1f2937; text-decoration: none; font-size: 13px; font-weight: 600; transition: transform 0.2s;" title="Đăng ký nhanh với Google">
+                            <svg width="18" height="18" viewBox="0 0 48 48" style="margin-right: 8px;">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            Google
+                        </a>
+                        <a asp-controller="Auth" asp-action="FacebookLogin" asp-route-returnUrl="@ViewBag.ReturnUrl" style="display: flex; align-items: center; justify-content: center; padding: 10px; border-radius: 8px; background: #1877f2; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 600; transition: transform 0.2s;" title="Đăng ký nhanh với Facebook">
+                            <i class="fab fa-facebook-f" style="margin-right: 8px;"></i>
+                            Facebook
+                        </a>
+                    </div>
+
+                    <p class="login-link">
+                        Đã có tài khoản? <a asp-controller="Auth" asp-action="Login" asp-route-returnUrl="@ViewBag.ReturnUrl">Đăng nhập</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fallback nếu ảnh nền chính không tìm thấy
+        var bgImg = document.getElementById('bgImg');
+        bgImg.onerror = function () {
+            this.src = 'https://images.pexels.com/photos/3408744/pexels-photo-3408744.jpeg?auto=compress&cs=tinysrgb&w=1920';
+            this.onerror = function () {
+                this.src = 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=1920&q=80';
+                this.onerror = function () {
+                    this.style.display = 'none';
+                    document.body.style.background =
+                        'linear-gradient(160deg, #8B1A00 0%, #c0392b 15%, #87CEEB 45%, #4682B4 70%, #1a3a6c 100%)';
+                };
+            };
+        };
+
+        // Fallback cho ảnh cột trái nếu không tìm thấy file local
+        var cardLeft = document.querySelector('.card-left');
+        var testImg = new Image();
+        testImg.src = '@Url.Content("~/images/store-interior.jpg.jpg")';
+        testImg.onerror = function() {
+            cardLeft.style.backgroundImage = "url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80')";
+            cardLeft.style.backgroundSize = 'cover';
+        };
+
+        // Hiệu ứng nút bấm khi gửi form
+        document.getElementById('registerForm').addEventListener('submit', function () {
+            var btn = document.getElementById('submitBtn');
+            btn.innerText = 'Đang xử lý...';
+            btn.disabled = true;
+            setTimeout(function () {
+                btn.innerText = 'ĐĂNG KÝ NGAY';
+                btn.disabled = false;
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

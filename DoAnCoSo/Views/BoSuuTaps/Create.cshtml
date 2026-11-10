@@ -1,0 +1,94 @@
+@model DoAnCoSo.Models.BoSuuTap
+
+@{
+    ViewData["Title"] = "Thêm Bộ sưu tập Thời trang";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="architect-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="architect-card-title mb-1 fw-bold fs-4">
+                <i class="bi bi-plus-circle me-2 text-primary"></i>Thêm Bộ sưu tập Thời trang
+            </h3>
+            <p class="text-muted small mb-0">Tải lên bộ sưu tập để cấu hình các điểm ghim sản phẩm tương tác</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm px-3">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+        </a>
+    </div>
+
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="row g-4">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label asp-for="TenBoSuuTap" class="form-label fw-semibold">Tên bộ sưu tập <span class="text-danger">*</span></label>
+                    <input asp-for="TenBoSuuTap" class="form-control" placeholder="Ví dụ: BST Quý Ông Công Sở - Gentleman Look 2026..." />
+                    <span asp-validation-for="TenBoSuuTap" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MoTa" class="form-label fw-semibold">Mô tả ý tưởng bộ sưu tập</label>
+                    <textarea asp-for="MoTa" class="form-control" rows="4" placeholder="Nhập tóm tắt mô tả phong cách, chất liệu nổi bật..."></textarea>
+                    <span asp-validation-for="MoTa" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="TrangThai" class="form-label fw-semibold">Trạng thái hiển thị</label>
+                    <select asp-for="TrangThai" class="form-select">
+                        <option value="Hoạt động">Hoạt động (Hiển thị ngoài trang chủ)</option>
+                        <option value="Tạm ẩn">Tạm ẩn</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-3 border rounded-3 bg-light">
+                    <label class="form-label fw-semibold">Hình ảnh bộ sưu tập <span class="text-danger">*</span></label>
+                    <input type="file" name="imageFile" class="form-control mb-3" accept="image/*" id="imageInput" required />
+                    <div class="text-center p-2 border rounded bg-white" style="min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                        <img id="imagePreview" src="#" alt="Xem trước ảnh" style="max-width: 100%; max-height: 280px; object-fit: cover; display: none; border-radius: 8px;" />
+                        <div id="imagePlaceholder" class="text-muted small">
+                            <i class="bi bi-image fs-1 d-block mb-1"></i>
+                            Ảnh xem trước (Tỷ lệ 3:4 hoặc 16:9)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4 pt-3 border-top">
+            <button type="submit" class="btn btn-architect-primary px-4">
+                <i class="bi bi-save2 me-1"></i> Lưu & Cấu hình Điểm Ghim
+            </button>
+            <a asp-action="Index" class="btn btn-outline-secondary px-3">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function (e) {
+            const preview = document.getElementById('imagePreview');
+            const placeholder = document.getElementById('imagePlaceholder');
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                    if (placeholder) placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'block';
+            }
+        });
+    </script>
+}

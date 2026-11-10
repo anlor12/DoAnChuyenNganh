@@ -1,0 +1,41 @@
+﻿@model DoAnCoSo.Models.ChiTietDonHang
+
+@{
+    ViewData["Title"] = "Sửa chi tiết đơn hàng";
+}
+
+<h2>Sửa chi tiết đơn hàng</h2>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <div asp-validation-summary="All"></div>
+    </div>
+}
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="MaChiTietDonHang" />
+
+    <div class="mb-3">
+        <label asp-for="MaDonHang" class="form-label">Đơn hàng</label>
+        <select asp-for="MaDonHang" asp-items="ViewBag.MaDonHang" class="form-control"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="MaBienThe" class="form-label">Biến thể sản phẩm</label>
+        <select asp-for="MaBienThe" asp-items="ViewBag.MaBienThe" class="form-control"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SoLuong" class="form-label">Số lượng</label>
+        <input asp-for="SoLuong" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Đơn giá</label>
+        <input class="form-control" value="@Model.DonGia" readonly />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Cập nhật</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>

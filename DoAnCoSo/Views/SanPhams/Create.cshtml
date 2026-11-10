@@ -1,0 +1,476 @@
+@model DoAnCoSo.Models.SanPham
+
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1 fw-bold">Thêm sản phẩm</h3>
+            <p class="text-muted mb-0">Nhập đầy đủ thông tin sản phẩm mới</p>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label asp-for="TenSanPham" class="form-label">Tên sản phẩm</label>
+                <input asp-for="TenSanPham" class="form-control" placeholder="Ví dụ: Áo thun basic nam" />
+                <span asp-validation-for="TenSanPham" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="MaLoaiSanPham" class="form-label">Loại sản phẩm</label>
+                <select asp-for="MaLoaiSanPham" class="form-select" asp-items="ViewBag.MaLoaiSanPham">
+                    <option value="">-- Chọn loại sản phẩm --</option>
+                </select>
+                <span asp-validation-for="MaLoaiSanPham" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="Gia" class="form-label">Giá bán</label>
+                <input asp-for="Gia" class="form-control" placeholder="Ví dụ: 299000" />
+                <span asp-validation-for="Gia" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="GioiTinh" class="form-label">Giới tính</label>
+                <select asp-for="GioiTinh" class="form-select">
+                    <option value="">-- Chọn giới tính --</option>
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Unisex">Unisex</option>
+                </select>
+                <span asp-validation-for="GioiTinh" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                <select asp-for="TrangThai" class="form-select">
+                    <option value="">-- Chọn trạng thái --</option>
+                    <option value="Đang bán">Đang bán</option>
+                    <option value="Ngừng bán">Ngừng bán</option>
+                    <option value="Sắp ra mắt">Sắp ra mắt</option>
+                </select>
+                <span asp-validation-for="TrangThai" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="KieuCoAo" class="form-label">Kiểu cổ áo</label>
+                <select asp-for="KieuCoAo" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Cổ bẻ">Cổ bẻ</option>
+                    <option value="Cổ tròn">Cổ tròn</option>
+                    <option value="Cổ trụ">Cổ trụ</option>
+                    <option value="Cổ tim">Cổ tim</option>
+                    <option value="Cổ tàu">Cổ tàu</option>
+                </select>
+                <span asp-validation-for="KieuCoAo" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="ChatLieu" class="form-label">Chất liệu</label>
+                <select asp-for="ChatLieu" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Cotton">Cotton</option>
+                    <option value="Linen">Linen</option>
+                    <option value="Bamboo">Bamboo</option>
+                    <option value="Polyester">Polyester</option>
+                    <option value="Spandex">Spandex</option>
+                    <option value="Lụa">Lụa</option>
+                </select>
+                <span asp-validation-for="ChatLieu" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="FormDang" class="form-label">Form dáng</label>
+                <select asp-for="FormDang" class="form-select">
+                    <option value="">-- Không có --</option>
+                    <option value="Slim fit">Slim fit</option>
+                    <option value="Regular fit">Regular fit</option>
+                    <option value="Loose fit">Loose fit</option>
+                    <option value="Oversize">Oversize</option>
+                </select>
+                <span asp-validation-for="FormDang" class="text-danger"></span>
+            </div>
+
+            <!-- Section: Bộ sưu tập 4 hình ảnh sản phẩm -->
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm rounded-3 p-3 p-md-4" style="background: #f8fafc; border: 1px solid #e2e8f0 !important;">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark d-flex align-items-center gap-2">
+                                <i class="bi bi-images text-primary"></i> Bộ sưu tập hình ảnh sản phẩm (Tối đa 4 ảnh)
+                            </h5>
+                            <p class="text-muted small mb-0">Bạn có thể chọn cùng lúc tới 4 ảnh hoặc nhấn từng ô bên dưới để chọn lẻ từng ảnh.</p>
+                        </div>
+                        <div>
+                            <input type="file" id="batchImageInput" name="batchImages" multiple accept="image/*" class="d-none" />
+                            <button type="button" class="btn btn-outline-primary btn-sm px-3 py-2 fw-semibold rounded-pill" onclick="document.getElementById('batchImageInput').click()">
+                                <i class="bi bi-folder-plus me-1"></i> Chọn nhanh 1-4 ảnh từ máy tính
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row g-3" id="imageSlotsContainer">
+                        <!-- Ô 1: Ảnh chính (Đại diện) -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer1" 
+                                 style="border: 2px dashed #3b82f6; background: #fff; min-height: 220px; transition: all 0.2s;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-primary px-2 py-1" style="font-size: 10px; letter-spacing: 0.5px;">ẢNH CHÍNH (BÌA)</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea1" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(1)">
+                                    <div class="empty-state text-muted" id="emptyState1">
+                                        <i class="bi bi-cloud-arrow-up text-primary" style="font-size: 38px;"></i>
+                                        <div class="fw-bold small mt-1 text-dark">Tải ảnh chính</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Nhấn để chọn file</div>
+                                    </div>
+                                    <img src="" id="imgPreview1" class="img-fluid rounded-2 d-none shadow-sm" style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 d-none" id="btnRemove1" onclick="clearSlot(1)" title="Xóa ảnh">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" onclick="triggerSlotInput(1)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText1">Chọn ảnh</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="imageFile" name="imageFile" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 1)" />
+                            </div>
+                        </div>
+
+                        <!-- Ô 2: Ảnh chi tiết 2 -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer2" 
+                                 style="border: 2px dashed #cbd5e1; background: #fff; min-height: 220px; transition: all 0.2s;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-secondary px-2 py-1" style="font-size: 10px;">ẢNH 2</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea2" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(2)">
+                                    <div class="empty-state text-muted" id="emptyState2">
+                                        <i class="bi bi-image" style="font-size: 36px; color: #cbd5e1;"></i>
+                                        <div class="fw-bold small mt-1 text-secondary">Ảnh chi tiết 2</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Góc nghiêng/mẫu</div>
+                                    </div>
+                                    <img src="" id="imgPreview2" class="img-fluid rounded-2 d-none shadow-sm" style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 d-none" id="btnRemove2" onclick="clearSlot(2)" title="Xóa ảnh">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="triggerSlotInput(2)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText2">Chọn ảnh</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="imageFile2" name="imageFile2" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 2)" />
+                            </div>
+                        </div>
+
+                        <!-- Ô 3: Ảnh chi tiết 3 -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer3" 
+                                 style="border: 2px dashed #cbd5e1; background: #fff; min-height: 220px; transition: all 0.2s;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-secondary px-2 py-1" style="font-size: 10px;">ẢNH 3</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea3" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(3)">
+                                    <div class="empty-state text-muted" id="emptyState3">
+                                        <i class="bi bi-image" style="font-size: 36px; color: #cbd5e1;"></i>
+                                        <div class="fw-bold small mt-1 text-secondary">Ảnh chi tiết 3</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Mặt sau/chi tiết vải</div>
+                                    </div>
+                                    <img src="" id="imgPreview3" class="img-fluid rounded-2 d-none shadow-sm" style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 d-none" id="btnRemove3" onclick="clearSlot(3)" title="Xóa ảnh">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="triggerSlotInput(3)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText3">Chọn ảnh</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="imageFile3" name="imageFile3" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 3)" />
+                            </div>
+                        </div>
+
+                        <!-- Ô 4: Ảnh chi tiết 4 -->
+                        <div class="col-6 col-md-3">
+                            <div class="image-slot-card h-100 position-relative p-2 rounded-3 text-center d-flex flex-column justify-content-between" 
+                                 id="slotContainer4" 
+                                 style="border: 2px dashed #cbd5e1; background: #fff; min-height: 220px; transition: all 0.2s;">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge bg-secondary px-2 py-1" style="font-size: 10px;">ẢNH 4</span>
+                                </div>
+                                <div class="slot-preview-area my-auto position-relative" id="previewArea4" style="min-height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="triggerSlotInput(4)">
+                                    <div class="empty-state text-muted" id="emptyState4">
+                                        <i class="bi bi-image" style="font-size: 36px; color: #cbd5e1;"></i>
+                                        <div class="fw-bold small mt-1 text-secondary">Ảnh chi tiết 4</div>
+                                        <div style="font-size: 11px; color: #94a3b8;">Ảnh lookbook/phối đồ</div>
+                                    </div>
+                                    <img src="" id="imgPreview4" class="img-fluid rounded-2 d-none shadow-sm" style="max-height: 160px; width: 100%; object-fit: contain;" />
+                                </div>
+                                <div class="slot-actions mt-2 d-flex justify-content-center gap-1">
+                                    <button type="button" class="btn btn-sm btn-light border py-1 px-2 d-none" id="btnRemove4" onclick="clearSlot(4)" title="Xóa ảnh">
+                                        <i class="bi bi-trash text-danger"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" onclick="triggerSlotInput(4)">
+                                        <i class="bi bi-camera me-1"></i> <span id="btnText4">Chọn ảnh</span>
+                                    </button>
+                                </div>
+                                <input type="file" id="imageFile4" name="imageFile4" accept="image/*" class="d-none" onchange="handleSingleSlotChange(this, 4)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 mt-3">
+                <button type="button" id="btnAIGenerate" class="btn btn-primary px-4 py-2 shadow-sm" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; font-weight: 500; transition: all 0.3s ease;">
+                    <i class="bi bi-magic me-2"></i> Tự động phân tích & Viết mô tả bằng AI
+                </button>
+                <small class="text-muted d-block mt-2"><i class="bi bi-info-circle me-1"></i> Lưu ý: Vui lòng nhập Tên sản phẩm và tải lên ít nhất 1 Hình ảnh trước khi gọi AI.</small>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="IsNoiBat" id="isNoiBatSwitch" />
+                    <label class="form-check-label fw-bold" for="isNoiBatSwitch">Sản phẩm nổi bật (Hiển thị nổi bật trên trang chủ)</label>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" asp-for="IsBanChay" id="isBanChaySwitch" />
+                    <label class="form-check-label fw-bold" for="isBanChaySwitch">Sản phẩm bán chạy nhất</label>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <label asp-for="MoTa" class="form-label">Mô tả</label>
+                <textarea asp-for="MoTa" class="form-control" rows="5" placeholder="Nhập mô tả sản phẩm"></textarea>
+                <span asp-validation-for="MoTa" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn-save">
+                <i class="bi bi-save2"></i> Lưu dữ liệu
+            </button>
+            <a asp-action="Index" class="btn-back">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function triggerSlotInput(index) {
+            const inputId = index === 1 ? 'imageFile' : ('imageFile' + index);
+            const input = document.getElementById(inputId);
+            if (input) input.click();
+        }
+
+        function handleSingleSlotChange(input, index) {
+            if (!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            previewFileInSlot(file, index);
+        }
+
+        function previewFileInSlot(file, index) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('imgPreview' + index);
+                const emptyState = document.getElementById('emptyState' + index);
+                const btnRemove = document.getElementById('btnRemove' + index);
+                const btnText = document.getElementById('btnText' + index);
+                const container = document.getElementById('slotContainer' + index);
+
+                if (previewImg && emptyState) {
+                    previewImg.src = e.target.result;
+                    previewImg.classList.remove('d-none');
+                    emptyState.classList.add('d-none');
+                    if (btnRemove) btnRemove.classList.remove('d-none');
+                    if (btnText) btnText.innerText = 'Đổi ảnh';
+                    if (container) {
+                        container.style.borderColor = index === 1 ? '#3b82f6' : '#10b981';
+                        container.style.borderStyle = 'solid';
+                        container.style.backgroundColor = '#f0fdf4';
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSlot(index) {
+            const inputId = index === 1 ? 'imageFile' : ('imageFile' + index);
+            const input = document.getElementById(inputId);
+            if (input) input.value = '';
+
+            const previewImg = document.getElementById('imgPreview' + index);
+            const emptyState = document.getElementById('emptyState' + index);
+            const btnRemove = document.getElementById('btnRemove' + index);
+            const btnText = document.getElementById('btnText' + index);
+            const container = document.getElementById('slotContainer' + index);
+
+            if (previewImg && emptyState) {
+                previewImg.src = '';
+                previewImg.classList.add('d-none');
+                emptyState.classList.remove('d-none');
+                if (btnRemove) btnRemove.classList.add('d-none');
+                if (btnText) btnText.innerText = 'Chọn ảnh';
+                if (container) {
+                    container.style.borderColor = index === 1 ? '#3b82f6' : '#cbd5e1';
+                    container.style.borderStyle = 'dashed';
+                    container.style.backgroundColor = '#fff';
+                }
+            }
+        }
+
+        // Xử lý chọn hàng loạt 1-4 ảnh từ nút "Chọn nhanh 1-4 ảnh"
+        document.getElementById('batchImageInput').addEventListener('change', function() {
+            if (!this.files || this.files.length === 0) return;
+            distributeFilesToSlots(this.files);
+        });
+
+        function distributeFilesToSlots(fileList) {
+            const count = Math.min(fileList.length, 4);
+            for (let i = 0; i < count; i++) {
+                const slotIndex = i + 1;
+                const file = fileList[i];
+                const inputId = slotIndex === 1 ? 'imageFile' : ('imageFile' + slotIndex);
+                const input = document.getElementById(inputId);
+
+                if (input && window.DataTransfer) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                }
+                previewFileInSlot(file, slotIndex);
+            }
+        }
+
+        // Hỗ trợ kéo thả ảnh vào khu vực 4 ô
+        const dropZone = document.getElementById('imageSlotsContainer');
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.style.opacity = '0.7';
+            }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                dropZone.style.opacity = '1';
+            }, false);
+        });
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                distributeFilesToSlots(dt.files);
+            }
+        });
+
+        // AI Phân tích mô tả sản phẩm
+        document.getElementById('btnAIGenerate').addEventListener('click', async function() {
+            const btn = this;
+            const tenSanPham = document.getElementById('TenSanPham').value;
+            
+            // Tìm ô ảnh đầu tiên có ảnh
+            let targetFile = null;
+            for (let i = 1; i <= 4; i++) {
+                const inputId = i === 1 ? 'imageFile' : ('imageFile' + i);
+                const inp = document.getElementById(inputId);
+                if (inp && inp.files && inp.files.length > 0) {
+                    targetFile = inp.files[0];
+                    break;
+                }
+            }
+
+            if (!tenSanPham) {
+                alert('Vui lòng nhập Tên sản phẩm trước khi phân tích.');
+                document.getElementById('TenSanPham').focus();
+                return;
+            }
+
+            if (!targetFile) {
+                alert('Vui lòng chọn hoặc tải lên ít nhất 1 hình ảnh trước khi phân tích.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const base64Image = e.target.result;
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> AI đang phân tích hình ảnh...';
+
+                try {
+                    const response = await fetch('/api/Ai/GenerateProductAIInfo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            ProductName: tenSanPham,
+                            Base64Image: base64Image
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        if (result.data.kieuCoAo) {
+                            const sel = document.getElementById('KieuCoAo');
+                            Array.from(sel.options).forEach(opt => {
+                                if(opt.value.includes(result.data.kieuCoAo) || result.data.kieuCoAo.includes(opt.value)) sel.value = opt.value;
+                            });
+                        }
+                        if (result.data.chatLieu) {
+                            const sel = document.getElementById('ChatLieu');
+                            Array.from(sel.options).forEach(opt => {
+                                if(opt.value.toLowerCase().includes(result.data.chatLieu.toLowerCase()) || result.data.chatLieu.toLowerCase().includes(opt.value.toLowerCase())) sel.value = opt.value;
+                            });
+                        }
+                        if (result.data.formDang) {
+                            const sel = document.getElementById('FormDang');
+                            Array.from(sel.options).forEach(opt => {
+                                if(opt.value.toLowerCase().includes(result.data.formDang.toLowerCase()) || result.data.formDang.toLowerCase().includes(opt.value.toLowerCase())) sel.value = opt.value;
+                            });
+                        }
+                        if (result.data.gioiTinh) document.getElementById('GioiTinh').value = result.data.gioiTinh;
+                        
+                        if (result.data.moTa) {
+                            document.getElementById('MoTa').value = result.data.moTa;
+                        }
+                        if (result.data.isFallback) {
+                            alert('Đã điền thông tin mẫu dự phòng (Lưu ý: Chưa kết nối được Google Gemini hoặc chưa cấu hình Gemini API Key trong Cấu hình hệ thống).');
+                        } else {
+                            alert('AI đã phân tích và điền thông tin thành công!');
+                        }
+                    } else {
+                        alert(result.message || 'Có lỗi xảy ra khi gọi AI.');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    alert('Lỗi kết nối tới AI API.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            };
+
+            reader.readAsDataURL(targetFile);
+        });
+    </script>
+}

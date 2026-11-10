@@ -1,0 +1,304 @@
+@model DoAnCoSo.Models.DonHang
+@inject DoAnCoSo.Data.ApplicationDbContext _db
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng ORD-" + Model.NgayDat.ToString("yyyyMMdd") + "-" + Model.MaDonHang;
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var customerEmail = _db.TaiKhoans.FirstOrDefault(t => t.MaTaiKhoan == (Model.NguoiDung != null ? Model.NguoiDung.MaTaiKhoan : 0))?.Email ?? "khachvanglai@fashionstore.com";
+
+    var isPending = Model.TrangThaiDonHang == "Chờ xác nhận";
+    var isCancelled = Model.TrangThaiDonHang == "Đã hủy";
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP BAR -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2.5">
+            <a asp-action="Index" class="v22-btn-outline" title="Quay lại danh sách" style="border-radius: 9999px;">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <div>
+                <h3 class="font-display fw-bold mb-0" style="font-size: 18px;">
+                    Đơn hàng <span class="font-mono text-success">ORD-@Model.NgayDat.ToString("yyyyMMdd")-@Model.MaDonHang</span>
+                </h3>
+                <span class="font-mono text-muted" style="font-size: 11px;">Mã CSDL: #@Model.MaDonHang • @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a asp-action="InPhieuGiaoHang" asp-route-id="@Model.MaDonHang" target="_blank" class="v22-btn-outline" style="border-radius: 9999px;">
+                <i class="bi bi-upc-scan"></i> In Waybill
+            </a>
+            <a asp-action="InHoaDon" asp-route-id="@Model.MaDonHang" target="_blank" class="v22-btn-primary" style="border-radius: 9999px;">
+                <i class="bi bi-receipt"></i> In Hóa Đơn
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 rounded-3 py-2 px-3 mb-0" style="background: #ecfdf5; color: #065f46; border-left: 4px solid #10b981 !important;">
+            <i class="bi bi-check-circle-fill me-1"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- 2-COLUMN DETAILS BENTO -->
+    <div class="row g-3">
+        <!-- Col 1: Thông tin đơn & giao hàng -->
+        <div class="col-md-6">
+            <div class="v22-card p-4 h-100 d-flex flex-column gap-3">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom">
+                    <span class="font-display fw-bold d-flex align-items-center gap-2" style="font-size: 14px;">
+                        <i class="bi bi-receipt-cutoff text-success"></i> Thông tin đơn hàng
+                    </span>
+                    <span class="badge rounded-pill @(isPending ? "bg-warning text-dark" : isCancelled ? "bg-danger text-white" : "bg-success text-white") font-mono" style="font-size: 11px;">
+                        ● @Model.TrangThaiDonHang
+                    </span>
+                </div>
+
+                <div class="d-flex flex-column gap-2" style="font-size: 12.5px;">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Phương thức mua:</span>
+                        <strong class="font-mono">@(Model.PhuongThucThanhToan == "ChuyenKhoan" ? "Chuyển khoản (SePay)" : "COD • Nhận hàng")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Trạng thái thanh toán:</span>
+                        <span class="badge rounded-pill bg-light text-dark border font-mono">
+                            @(Model.TrangThaiThanhToan == "Đã thanh toán" || Model.TrangThaiThanhToan == "DaThanhToan" ? "Đã thanh toán" : "Chưa thanh toán")
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Đơn vị vận chuyển:</span>
+                        <span class="fw-bold font-mono text-primary"><i class="bi bi-truck me-1"></i>@(Model.DonViVanChuyen ?? "GHTK") (Phí: @Model.PhiGiaoHang.ToString("N0") ₫)</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Mã vận đơn:</span>
+                        <span class="font-mono fw-bold">@(Model.MaVanDon ?? "Chưa tạo")</span>
+                    </div>
+                    @if (Model.DiemSuDung > 0)
+                    {
+                        <div class="d-flex justify-content-between text-warning fw-bold">
+                            <span>Điểm Loyalty trừ:</span>
+                            <span class="font-mono">-@Model.DiemSuDung.ToString("N0") pts (-@Model.SoTienGiamDiem.ToString("N0") ₫)</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="p-3 rounded-3 bg-light mt-auto">
+                    <div class="fw-bold mb-1" style="font-size: 12px;"><i class="bi bi-geo-alt text-danger me-1"></i>Địa chỉ nhận hàng:</div>
+                    <div class="fw-bold" style="font-size: 13px;">@(!string.IsNullOrEmpty(Model.NguoiDung?.HoTen) ? Model.NguoiDung.HoTen : "Khách vãng lai")</div>
+                    <div class="text-muted" style="font-size: 12px;">@Model.DiaChiGiaoHang</div>
+                    <div class="font-mono text-muted mt-1" style="font-size: 11px;"><i class="bi bi-telephone me-1"></i>@Model.SoDienThoaiNhan</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Col 2: Thông tin khách hàng & AI Risk -->
+        <div class="col-md-6">
+            <div class="v22-card p-4 h-100 d-flex flex-column gap-3">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom">
+                    <span class="font-display fw-bold d-flex align-items-center gap-2" style="font-size: 14px;">
+                        <i class="bi bi-person-fill text-primary"></i> Khách hàng &amp; Đánh giá rủi ro AI
+                    </span>
+                    <span class="font-mono badge rounded-pill bg-light text-muted border">#@Model.MaNguoiDung</span>
+                </div>
+
+                <div class="d-flex flex-column gap-2" style="font-size: 12.5px;">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Họ và tên:</span>
+                        <strong>@(!string.IsNullOrEmpty(Model.NguoiDung?.HoTen) ? Model.NguoiDung.HoTen : "Khách vãng lai")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Email liên lạc:</span>
+                        <span class="font-mono text-truncate" style="max-width: 240px;">@customerEmail</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted">Tổng thanh toán:</span>
+                        <strong class="font-mono text-success" style="font-size: 16px;">@Model.TongTien.ToString("N0") ₫</strong>
+                    </div>
+                </div>
+
+                <!-- AI Fraud Risk Indicator Box -->
+                <div id="fraudRiskContainer" class="p-3 rounded-3 mt-auto" style="display: none; background: #fff1f2; border-left: 4px solid #e11d48;">
+                    <div class="d-flex align-items-center gap-2 mb-1" style="color: #be123c; font-weight: 700; font-size: 12px;">
+                        <i class="bi bi-robot"></i> Google Gemini AI Đánh Giá Rủi Ro Bom Hàng:
+                    </div>
+                    <div id="fraudRiskContent" style="font-size: 12px;">
+                        <span class="spinner-border spinner-border-sm text-danger" role="status"></span>
+                        <span class="text-danger ms-1">Đang phân tích rủi ro...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SẢN PHẨM TRONG ĐƠN HÀNG -->
+    <div class="v22-card overflow-hidden">
+        <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between">
+            <h4 class="font-display fw-bold mb-0" style="font-size: 14px;"><i class="bi bi-box-seam me-1 text-warning"></i> Chi tiết sản phẩm đặt mua</h4>
+            <span class="font-mono text-muted" style="font-size: 11px;">@(Model.ChiTietDonHangs?.Count ?? 0) mặt hàng</span>
+        </div>
+        <div class="table-responsive">
+            <table class="v22-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Sản phẩm</th>
+                        <th style="width: 100px;">Size</th>
+                        <th style="width: 120px;">Màu sắc</th>
+                        <th style="width: 100px;" class="text-center">Số lượng</th>
+                        <th style="width: 140px;" class="text-end">Đơn giá</th>
+                        <th style="width: 150px;" class="text-end">Thành tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.ChiTietDonHangs ?? new List<DoAnCoSo.Models.ChiTietDonHang>())
+                    {
+                        var lineTotal = item.SoLuong * item.DonGia;
+                        var rawImg = !string.IsNullOrWhiteSpace(item.BienTheSanPham?.HinhAnh)
+                            ? item.BienTheSanPham.HinhAnh
+                            : item.BienTheSanPham?.SanPham?.HinhAnh;
+                        var prodImg = string.IsNullOrWhiteSpace(rawImg) || rawImg.Contains("ao-so-mi-trang.jpg.jpg")
+                            ? "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80"
+                            : rawImg;
+
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2.5">
+                                    <img src="@prodImg"
+                                         alt="SP"
+                                         class="v22-thumb"
+                                         style="width: 44px; height: 44px; object-fit: cover; border-radius: 10px; flex-shrink: 0;"
+                                         onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80';" />
+                                    <div>
+                                        <div class="fw-bold">@item.BienTheSanPham?.SanPham?.TenSanPham</div>
+                                        <div class="font-mono text-muted" style="font-size: 10.5px;">Mã SKU: #@item.MaBienThe</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-light text-dark border font-mono px-2.5 py-1">
+                                    @(item.BienTheSanPham?.KichCo ?? "—")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-light text-dark border px-2.5 py-1">
+                                    @(item.BienTheSanPham?.MauSac ?? "—")
+                                </span>
+                            </td>
+                            <td class="text-center font-mono fw-bold">@item.SoLuong</td>
+                            <td class="text-end font-mono">@item.DonGia.ToString("N0") ₫</td>
+                            <td class="text-end font-mono fw-bold text-success">@lineTotal.ToString("N0") ₫</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- UPDATE STATUS & ACTIONS FORM -->
+    <div class="v22-card p-4">
+        <h4 class="font-display fw-bold mb-3" style="font-size: 14px;">Cập Nhật Trạng Thái Đơn Hàng &amp; Vận Hành</h4>
+        <form asp-action="UpdateStatus" method="post" class="m-0">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.MaDonHang" />
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Trạng thái đơn hàng</label>
+                    <select name="status" class="v22-input fw-bold">
+                        <option value="Chờ xác nhận" selected="@(Model.TrangThaiDonHang == "Chờ xác nhận")">Chờ xác nhận</option>
+                        <option value="Đang xử lý" selected="@(Model.TrangThaiDonHang == "Đang xử lý")">Đang xử lý</option>
+                        <option value="Đang giao" selected="@(Model.TrangThaiDonHang == "Đang giao")">Đang giao</option>
+                        <option value="Hoàn thành" selected="@(Model.TrangThaiDonHang == "Hoàn thành")">Hoàn thành</option>
+                        <option value="Đã hủy" selected="@(Model.TrangThaiDonHang == "Đã hủy")">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Trạng thái thanh toán</label>
+                    <select name="paymentStatus" class="v22-input fw-bold">
+                        <option value="Chưa thanh toán" selected="@(Model.TrangThaiThanhToan == "Chưa thanh toán" || Model.TrangThaiThanhToan == "ChuaThanhToan")">Chưa thanh toán</option>
+                        <option value="Đã thanh toán" selected="@(Model.TrangThaiThanhToan == "Đã thanh toán" || Model.TrangThaiThanhToan == "DaThanhToan")">Đã thanh toán</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 pt-2 border-top">
+                <button type="submit" class="v22-btn-primary" style="border-radius: 9999px;">
+                    <i class="bi bi-check2-circle"></i> Lưu Thay Đổi
+                </button>
+
+                @if (Model.TrangThaiDonHang == "Chờ xác nhận" || Model.TrangThaiDonHang == "Đang xử lý")
+                {
+                    <button type="button" onclick="confirmDispatch()" class="v22-btn-coral" style="border-radius: 9999px;">
+                        <i class="bi bi-send-check"></i> Đẩy đơn sang @(Model.DonViVanChuyen ?? "GHTK")
+                    </button>
+                }
+
+                @if (Model.TrangThaiDonHang != "Trả hàng / Hoàn tiền" && (Model.TrangThaiDonHang == "Hoàn thành" || Model.TrangThaiThanhToan == "Đã thanh toán" || Model.TrangThaiThanhToan == "DaThanhToan"))
+                {
+                    <button type="button" onclick="confirmRefund()" class="btn btn-outline-danger rounded-pill px-3 fw-bold" style="font-size: 12.5px;">
+                        <i class="bi bi-arrow-counterclockwise"></i> Hoàn Tiền Đơn Hàng
+                    </button>
+                }
+            </div>
+        </form>
+
+        @if (Model.TrangThaiDonHang == "Chờ xác nhận" || Model.TrangThaiDonHang == "Đang xử lý")
+        {
+            <form asp-action="DayDonVanChuyen" method="post" id="dispatchForm" style="display: none;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.MaDonHang" />
+                <input type="hidden" name="carrierCode" value="@(Model.DonViVanChuyen ?? "GHTK")" />
+            </form>
+        }
+
+        @if (Model.TrangThaiDonHang != "Trả hàng / Hoàn tiền" && (Model.TrangThaiDonHang == "Hoàn thành" || Model.TrangThaiThanhToan == "Đã thanh toán" || Model.TrangThaiThanhToan == "DaThanhToan"))
+        {
+            <form asp-action="RefundOrder" method="post" id="refundForm" style="display: none;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.MaDonHang" />
+            </form>
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        function confirmRefund() {
+            if (confirm("Xác nhận duyệt yêu cầu đổi trả và HOÀN TIỀN đơn hàng này về tài khoản khách hàng?")) {
+                document.getElementById('refundForm').submit();
+            }
+        }
+
+        function confirmDispatch() {
+            if (confirm("Xác nhận tạo mã vận đơn và ĐẨY ĐƠN HÀNG sang đối tác @(Model.DonViVanChuyen ?? "GHTK")?")) {
+                document.getElementById('dispatchForm').submit();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var maNguoiDung = '@Model.MaNguoiDung';
+            if (maNguoiDung && maNguoiDung !== '0' && maNguoiDung !== '') {
+                var container = document.getElementById('fraudRiskContainer');
+                if (container) container.style.display = 'block';
+
+                fetch('/api/Ai/AnalyzeFraudRisk/' + maNguoiDung)
+                    .then(response => response.json())
+                    .then(data => {
+                        var content = document.getElementById('fraudRiskContent');
+                        if (content && data.success) {
+                            var badgeColor = data.riskLevel === 'Cao' ? 'text-danger' : data.riskLevel === 'Trung bình' ? 'text-warning' : 'text-success';
+                            content.innerHTML = `<div><strong class="${badgeColor}">Mức độ: ${data.riskLevel}</strong> — ${data.reason}</div>`;
+                        }
+                    })
+                    .catch(() => {
+                        var content = document.getElementById('fraudRiskContent');
+                        if (content) content.innerHTML = '<span class="text-muted">Hệ thống AI đang trực tuyến.</span>';
+                    });
+            }
+        });
+    </script>
+}

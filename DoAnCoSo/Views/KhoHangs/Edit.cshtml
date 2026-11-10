@@ -1,0 +1,38 @@
+﻿@model DoAnCoSo.Models.KhoHang
+
+@{
+    ViewData["Title"] = "Sửa kho hàng";
+}
+
+<h2>Sửa kho hàng</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="MaKhoHang" />
+
+    <div class="mb-3">
+        <label asp-for="MaBienThe" class="form-label">Biến thể sản phẩm</label>
+        <select asp-for="MaBienThe" asp-items="ViewBag.MaBienThe" class="form-control"></select>
+        <span asp-validation-for="MaBienThe" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="SoLuongTon" class="form-label">Số lượng tồn</label>
+        <input asp-for="SoLuongTon" class="form-control" />
+        <span asp-validation-for="SoLuongTon" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="GhiChu" class="form-label">Ghi chú</label>
+        <textarea asp-for="GhiChu" class="form-control"></textarea>
+        <span asp-validation-for="GhiChu" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Cập nhật</button>
+    <a asp-action="Index" class="btn btn-secondary">Quay lại</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

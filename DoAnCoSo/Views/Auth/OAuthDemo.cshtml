@@ -1,0 +1,193 @@
+@{
+    Layout = null;
+    string provider = ViewBag.Provider as string ?? "Google";
+    string returnUrl = ViewBag.ReturnUrl as string ?? "/";
+    bool isGoogle = provider.Equals("Google", StringComparison.OrdinalIgnoreCase);
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Xác thực một chạm @provider - Fashion Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1e293b;
+        }
+        .oauth-card {
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+            width: 100%;
+            max-width: 480px;
+            overflow: hidden;
+            animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @@keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .oauth-header {
+            padding: 32px 32px 20px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .account-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-radius: 14px;
+            border: 1.5px solid #e2e8f0;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            margin-bottom: 12px;
+        }
+        .account-item:hover {
+            border-color: @(isGoogle ? "#4285F4" : "#1877F2");
+            background: @(isGoogle ? "#f8faff" : "#f0f6ff");
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.06);
+            color: inherit;
+        }
+        .avatar-circle {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+        .badge-brand {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="oauth-card">
+        <div class="oauth-header">
+            <div class="d-flex justify-content-center align-items-center mb-3">
+                @if (isGoogle)
+                {
+                    <svg width="40" height="40" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                }
+                else
+                {
+                    <i class="fab fa-facebook text-primary" style="font-size: 42px;"></i>
+                }
+            </div>
+            <h5 class="fw-bold mb-1">Đăng nhập một chạm với @provider</h5>
+            <p class="text-muted small mb-0">Chọn tài khoản của bạn để kết nối trực tiếp đến <strong>Fashion Store</strong></p>
+        </div>
+
+        <div class="p-4">
+            <div class="mb-3 d-flex align-items-center justify-content-between">
+                <span class="small text-muted fw-bold">Tài khoản có sẵn (1-Click test):</span>
+                <span class="badge-brand"><i class="fas fa-bolt text-warning me-1"></i>Tự động tặng 10.000 điểm</span>
+            </div>
+
+            <!-- Profile 1: Nam Nguyen -->
+            <form asp-controller="Auth" asp-action="FastOAuthLogin" method="post" class="mb-2">
+                <input type="hidden" name="provider" value="@provider" />
+                <input type="hidden" name="email" value="nam.nguyen.fastpay@gmail.com" />
+                <input type="hidden" name="name" value="Nguyễn Hoàng Nam" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button type="submit" class="account-item w-100 text-start border-0">
+                    <div class="avatar-circle bg-primary text-white">
+                        NH
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark">Nguyễn Hoàng Nam</div>
+                        <div class="small text-muted">nam.nguyen.fastpay@gmail.com</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted small"></i>
+                </button>
+            </form>
+
+            <!-- Profile 2: Ha Le -->
+            <form asp-controller="Auth" asp-action="FastOAuthLogin" method="post" class="mb-2">
+                <input type="hidden" name="provider" value="@provider" />
+                <input type="hidden" name="email" value="ha.le.fashion@gmail.com" />
+                <input type="hidden" name="name" value="Lê Thu Hà" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button type="submit" class="account-item w-100 text-start border-0">
+                    <div class="avatar-circle bg-success text-white">
+                        LH
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="fw-bold text-dark">Lê Thu Hà</div>
+                        <div class="small text-muted">ha.le.fashion@gmail.com</div>
+                    </div>
+                    <i class="fas fa-chevron-right text-muted small"></i>
+                </button>
+            </form>
+
+            <!-- Tùy chỉnh Email khác -->
+            <div class="accordion mt-3" id="customAccountAccordion">
+                <div class="accordion-item border rounded-3 overflow-hidden">
+                    <h2 class="accordion-header" id="headingCustom">
+                        <button class="accordion-button collapsed py-2 px-3 small fw-bold bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCustom">
+                            <i class="fas fa-user-plus me-2 text-primary"></i> Nhập email @provider khác của bạn...
+                        </button>
+                    </h2>
+                    <div id="collapseCustom" class="accordion-collapse collapse">
+                        <div class="accordion-body p-3">
+                            <form asp-controller="Auth" asp-action="FastOAuthLogin" method="post">
+                                <input type="hidden" name="provider" value="@provider" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold mb-1">Họ tên của bạn</label>
+                                    <input type="text" name="name" class="form-control form-control-sm" placeholder="VD: Trần Minh Tuấn" required />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold mb-1">Email @provider</label>
+                                    <input type="email" name="email" class="form-control form-control-sm" placeholder="VD: tuan.tran@gmail.com" required />
+                                </div>
+                                <button type="submit" class="btn btn-dark w-100 btn-sm fw-bold">
+                                    <i class="fas fa-check-circle me-1"></i> Xác nhận &amp; Đăng nhập ngay
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top text-center">
+                <a href="@returnUrl" class="text-decoration-none text-muted small">
+                    <i class="fas fa-arrow-left me-1"></i> Quay lại hoặc hủy bỏ
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

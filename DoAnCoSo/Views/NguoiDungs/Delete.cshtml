@@ -1,0 +1,27 @@
+﻿@model DoAnCoSo.Models.NguoiDung
+
+@{
+    ViewData["Title"] = "Xóa người dùng";
+}
+
+<h2>Xóa người dùng</h2>
+
+<h4>Bạn có chắc muốn xóa người dùng này không?</h4>
+<hr />
+
+<dl class="row">
+    <dt class="col-sm-3">Họ tên</dt>
+    <dd class="col-sm-9">@Model.HoTen</dd>
+
+    <dt class="col-sm-3">Tài khoản</dt>
+    <dd class="col-sm-9">@Model.TaiKhoan?.TenDangNhap</dd>
+
+    <dt class="col-sm-3">Địa chỉ</dt>
+    <dd class="col-sm-9">@Model.DiaChi</dd>
+</dl>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="MaNguoiDung" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

@@ -1,0 +1,87 @@
+@model DoAnCoSo.Models.BienTheSanPham
+
+@{
+    ViewData["Title"] = "Thêm biến thể sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1 fw-bold">Thêm biến thể sản phẩm</h3>
+            <p class="text-muted mb-0">Tạo mới size, màu sắc và giá cho sản phẩm</p>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label asp-for="MaSanPham" class="form-label">Sản phẩm</label>
+                <select asp-for="MaSanPham" class="form-select" asp-items="ViewBag.MaSanPham">
+                    <option value="">-- Chọn sản phẩm --</option>
+                </select>
+                <span asp-validation-for="MaSanPham" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Gia" class="form-label">Giá biến thể</label>
+                <input asp-for="Gia" class="form-control" placeholder="Ví dụ: 349000" />
+                <span asp-validation-for="Gia" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="KichCo" class="form-label">Kích cỡ</label>
+                <input asp-for="KichCo" class="form-control" placeholder="Ví dụ: S, M, L, XL" />
+                <span asp-validation-for="KichCo" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="MauSac" class="form-label">Màu sắc</label>
+                <input asp-for="MauSac" class="form-control" placeholder="Ví dụ: Đen, Trắng, Xanh" />
+                <span asp-validation-for="MauSac" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="TrangThai" class="form-label">Trạng thái</label>
+                <select asp-for="TrangThai" class="form-select">
+                    <option value="">-- Chọn trạng thái --</option>
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Ngừng bán">Ngừng bán</option>
+                    <option value="Sắp ra mắt">Sắp ra mắt</option>
+                </select>
+                <span asp-validation-for="TrangThai" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Hình ảnh biến thể</label>
+                <input type="hidden" asp-for="HinhAnh" />
+                <input type="file" name="imageFile" class="form-control" accept="image/*" />
+                @if (!string.IsNullOrEmpty(Model?.HinhAnh))
+                {
+                    <div class="mt-2 d-flex align-items-center gap-2">
+                        <img src="@Model.HinhAnh" alt="Ảnh kế thừa từ sản phẩm" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0;" />
+                        <small class="text-muted">(Đang sử dụng ảnh từ sản phẩm chính, bạn có thể chọn file mới nếu muốn đổi ảnh riêng cho biến thể này)</small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn-save">
+                <i class="bi bi-save2"></i> Lưu dữ liệu
+            </button>
+            <a asp-action="Index" class="btn-back">Hủy</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

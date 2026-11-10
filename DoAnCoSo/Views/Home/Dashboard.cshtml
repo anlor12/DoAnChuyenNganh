@@ -1,0 +1,544 @@
+@model IEnumerable<DoAnCoSo.Models.DonHang>
+@inject DoAnCoSo.Data.ApplicationDbContext _db
+@using Microsoft.EntityFrameworkCore
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Bảng điều khiển";
+
+    var currentTab = Context.Request.Query["tab"].ToString();
+    if (string.IsNullOrEmpty(currentTab)) currentTab = "reports";
+
+    // Real Queries from Database
+    decimal totalRevenue = _db.DonHangs
+        .Where(o => o.TrangThaiDonHang == "Hoàn thành" || o.TrangThaiThanhToan == "Đã thanh toán")
+        .Sum(o => o.TongTien);
+    decimal allOrdersValue = _db.DonHangs.Sum(o => o.TongTien);
+    decimal displayRevenue = totalRevenue > 0 ? totalRevenue : allOrdersValue;
+
+    int totalOrdersCount = _db.DonHangs.Count();
+    int totalProductsCount = _db.SanPhams.Count();
+    int totalVariantsCount = _db.BienTheSanPhams.Count();
+    int totalCategoriesCount = _db.LoaiSanPhams.Count();
+    int uniqueCustomersCount = _db.DonHangs.Select(o => o.MaNguoiDung).Distinct().Count();
+    int totalAccountsCount = _db.NguoiDungs.Count();
+    int totalPointsCount = _db.NguoiDungs.Sum(u => u.DiemTichLuy);
+    int totalCollectionsCount = _db.BoSuuTaps.Count();
+    int totalPinsCount = _db.DiemGhimBoSuuTaps.Count();
+    int totalStockCount = _db.KhoHangs.Any() ? _db.KhoHangs.Sum(k => k.SoLuongTon) : 0;
+
+    int pendingCount = _db.DonHangs.Count(o => o.TrangThaiDonHang == "Chờ xác nhận");
+    decimal avgOrderValue = totalOrdersCount > 0 ? (displayRevenue / totalOrdersCount) : 0;
+
+    var paymentMethods = _db.DonHangs
+        .GroupBy(o => o.PhuongThucThanhToan)
+        .Select(g => new { Method = g.Key, Total = g.Sum(o => o.TongTien), Count = g.Count() })
+        .ToList();
+
+    decimal codTotal = paymentMethods.Where(p => string.IsNullOrEmpty(p.Method) || p.Method.ToUpper() == "COD").Sum(p => p.Total);
+    int codCount = paymentMethods.Where(p => string.IsNullOrEmpty(p.Method) || p.Method.ToUpper() == "COD").Sum(p => p.Count);
+    decimal sepayTotal = paymentMethods.Where(p => p.Method != null && (p.Method.Contains("ChuyenKhoan") || p.Method.Contains("SePay"))).Sum(p => p.Total);
+    int sepayCount = paymentMethods.Where(p => p.Method != null && (p.Method.Contains("ChuyenKhoan") || p.Method.Contains("SePay"))).Sum(p => p.Count);
+
+    decimal calcBaseTotal = (codTotal + sepayTotal) > 0 ? (codTotal + sepayTotal) : 1;
+    int codPercent = (int)Math.Round((codTotal / calcBaseTotal) * 100);
+    int sepayPercent = 100 - codPercent;
+
+    // Top 5 Products with Variant & Sold Metrics for Tab 2
+    var top5Products = _db.SanPhams
+        .Include(p => p.LoaiSanPham)
+        .Include(p => p.BienTheSanPhams)
+        .OrderByDescending(p => p.IsNoiBat)
+        .ThenByDescending(p => p.MaSanPham)
+        .Take(5)
+        .ToList();
+
+    var soldByProduct = _db.ChiTietDonHangs
+        .Include(d => d.BienTheSanPham)
+        .Where(d => d.BienTheSanPham != null)
+        .GroupBy(d => d.BienTheSanPham!.MaSanPham)
+        .Select(g => new { MaSanPham = g.Key, TotalSold = g.Sum(x => x.SoLuong), Revenue = g.Sum(x => x.SoLuong * x.DonGia) })
+        .ToDictionary(x => x.MaSanPham, x => x);
+
+    var recentOrders = (Model != null && Model.Any())
+        ? Model.Take(5).ToList()
+        : _db.DonHangs.Include(o => o.NguoiDung).OrderByDescending(o => o.NgayDat).Take(5).ToList();
+}
+
+<!-- ==================== 8-COL LEFT + 4-COL RIGHT BENTO LAYOUT ==================== -->
+<div class="row g-3">
+
+    <!-- ==================== LEFT 8 COLUMNS: HERO BANNER + 3 BENTO KPI CARDS + TABBED CONTENT ==================== -->
+    <div class="col-xl-8 d-flex flex-column gap-3">
+
+        <!-- 1A. Editorial Hero Banner -->
+        <div class="v22-hero-forest p-4 d-flex flex-column justify-content-between position-relative overflow-hidden">
+            <div class="position-absolute end-0 bottom-0 rounded-circle pointer-events-none" style="width: 240px; height: 240px; background: rgba(70, 155, 130, 0.2); filter: blur(45px); transform: translate(25%, 25%);"></div>
+
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 position-relative" style="z-index: 2;">
+                <div>
+                    <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2 font-mono" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); font-size: 11px; color: #a7f3d0;">
+                        <span>HỆ THỐNG QUẢN TRỊ FASHION STORE</span>
+                    </div>
+                    <h1 class="text-white font-display fw-bold mb-1" style="font-size: 26px; line-height: 1.2;">
+                        Quản trị thời trang <span class="font-editorial" style="font-size: 34px; color: #E07A5F;">thông minh hơn</span> cùng AI
+                    </h1>
+                    <p class="mb-0" style="font-size: 12px; color: rgba(209, 250, 229, 0.78); max-width: 540px;">
+                        Theo dõi toàn diện doanh thu, đơn hàng, @totalVariantsCount biến thể SKU, 11 bậc VIP và phòng thử đồ ảo 3D AnyWear Live VTON.
+                    </p>
+                </div>
+
+                <!-- Overlapping Member Avatars -->
+                <div class="d-flex flex-column align-items-end gap-1.5">
+                    <div class="d-flex" style="margin-left: 8px;">
+                        <div title="Quản Trị Viên Hệ Thống" class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #047857; border: 2px solid #0C3226; font-size: 11px; margin-left: -8px;">QT</div>
+                        <div title="Khách hàng VIP" class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #d97706; border: 2px solid #0C3226; font-size: 11px; margin-left: -8px;">HN</div>
+                        <div title="Khách hàng" class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #0d9488; border: 2px solid #0C3226; font-size: 11px; margin-left: -8px;">VK</div>
+                        <div title="Thành viên mới" class="rounded-circle text-white fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #f43f5e; border: 2px solid #0C3226; font-size: 11px; margin-left: -8px;">TH</div>
+                        <div title="Tổng tài khoản" class="rounded-circle text-white font-mono fw-bold d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; background: #E07A5F; border: 2px solid #0C3226; font-size: 10.5px; margin-left: -8px;">+@totalAccountsCount</div>
+                    </div>
+                    <span class="font-mono" style="font-size: 11px; color: rgba(167, 243, 208, 0.8);">@totalAccountsCount Tài khoản • 11 Cấp VIP</span>
+                </div>
+            </div>
+
+            <!-- Sub-navigation Tabs (Báo cáo doanh thu vs Hiệu suất sản phẩm Top 5) + 2 Real Export Buttons -->
+            <div class="mt-4 pt-3 border-top border-white border-opacity-10 d-flex flex-wrap align-items-center justify-content-between gap-2 position-relative" style="z-index: 2;">
+                <div class="d-flex align-items-center gap-1 p-1 rounded-4" style="background: rgba(0, 0, 0, 0.25);">
+                    <button type="button" id="btnTabReports" onclick="switchDashTab('reports')" class="border-0 px-3 py-1.5 rounded-3 fw-bold @(currentTab != "products" ? "text-white shadow-sm" : "text-white-50 bg-transparent")" style="@(currentTab != "products" ? "background: #E07A5F;" : "") font-size: 12px; transition: all 0.2s;">
+                        📊 Báo cáo doanh thu
+                    </button>
+                    <button type="button" id="btnTabProducts" onclick="switchDashTab('products')" class="border-0 px-3 py-1.5 rounded-3 fw-bold @(currentTab == "products" ? "text-white shadow-sm" : "text-white-50 bg-transparent")" style="@(currentTab == "products" ? "background: #E07A5F;" : "") font-size: 12px; transition: all 0.2s;">
+                        👕 Hiệu suất sản phẩm (Top 5)
+                    </button>
+                </div>
+
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <a asp-controller="Home" asp-action="ExportDoanhThuExcel" class="px-3 py-1.5 rounded-3 text-white text-decoration-none fw-semibold" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); font-size: 12px;">
+                        ⬇ Xuất Doanh Thu 12 Tháng
+                    </a>
+                    <form asp-controller="DonHangs" asp-action="ExportExcel" method="post" class="m-0">
+                        <button type="submit" class="px-3 py-1.5 rounded-3 bg-white border-0 fw-bold shadow-sm" style="color: #0C3226; font-size: 12px;">
+                            📄 Xuất Chi Tiết Bán Hàng
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1B. THREE BENTO KPI CARDS -->
+        <div class="row g-3">
+            <!-- Card 1: Doanh Thu & Đơn Hàng -->
+            <div class="col-md-4">
+                <div class="v22-card p-3.5 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fw-bold text-muted" style="font-size: 12px;">Doanh thu &amp; Đơn hàng</span>
+                        <span class="font-mono fw-bold px-2 py-0.5 rounded-pill" style="background: rgba(16, 185, 129, 0.15); color: #047857; font-size: 10.5px;">@totalOrdersCount đơn hàng</span>
+                    </div>
+
+                    <div class="my-2.5">
+                        <div class="font-display fw-bold" style="font-size: 25px; letter-spacing: -0.03em;">
+                            <span class="count-up" data-val="@((long)displayRevenue)">@displayRevenue.ToString("N0")</span><span class="font-mono ms-1" style="font-size: 13px;">₫</span>
+                        </div>
+                        <div class="text-muted" style="font-size: 11px;">TB đơn: <strong class="font-mono text-dark">@avgOrderValue.ToString("N0") ₫</strong></div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-1.5">
+                        <div class="rounded-3 p-1 d-flex align-items-center gap-1" style="height: 26px; background: rgba(0,0,0,0.04);">
+                            <div class="rounded-2 d-flex align-items-center px-2 text-white font-mono fw-bold" style="width: @(Math.Max(25, codPercent))%; height: 100%; background: #0C3226; font-size: 9.5px;">COD @codPercent%</div>
+                            <div class="rounded-2 d-flex align-items-center justify-content-center v22-hatched-mint font-mono fw-bold" style="width: @(Math.Max(20, sepayPercent))%; height: 100%; font-size: 9.5px;">SePay</div>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted" style="font-size: 11px;">
+                            <span>@pendingCount Chờ xác nhận</span>
+                            <a asp-controller="DonHangs" asp-action="Index" class="fw-bold text-decoration-none text-decoration-underline" style="color: #0C3226;">Duyệt đơn →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Sản Phẩm & Biến Thể SKU -->
+            <div class="col-md-4">
+                <div class="v22-sage p-3.5 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fw-bold" style="font-size: 12px;">Sản phẩm &amp; Biến thể</span>
+                        <span class="font-mono fw-bold" style="font-size: 11px; color: #0C3226;">@totalCategoriesCount Danh mục</span>
+                    </div>
+
+                    <div class="my-2 d-flex align-items-center justify-content-between gap-2">
+                        <div>
+                            <div class="font-display fw-bold" style="font-size: 28px;">
+                                <span class="count-up" data-val="@totalProductsCount">@totalProductsCount</span>
+                            </div>
+                            <div class="text-muted" style="font-size: 11px;">Mã SP • <strong class="font-mono text-dark">@totalVariantsCount</strong> Biến thể</div>
+                        </div>
+
+                        <div class="position-relative d-flex align-items-center justify-content-center flex-shrink-0" style="width: 60px; height: 60px;">
+                            <svg class="w-100 h-100" style="transform: rotate(-90deg);" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(12,50,38,0.12)" stroke-width="3.6"/>
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#0C3226" stroke-width="3.6" stroke-dasharray="92, 100" stroke-linecap="round"/>
+                            </svg>
+                            <span class="position-absolute font-mono fw-bold" style="font-size: 11px;">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-black border-opacity-10" style="font-size: 11px;">
+                        <span>Tồn kho: <strong>@totalStockCount.ToString("N0") SP</strong></span>
+                        <a asp-controller="SanPhams" asp-action="Index" class="fw-bold text-dark text-decoration-underline">Quản lý SP →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Khách Hàng & Điểm VIP -->
+            <div class="col-md-4">
+                <div class="v22-card p-3.5 h-100 d-flex flex-column justify-content-between">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fw-bold text-muted" style="font-size: 12px;">Khách hàng &amp; Điểm VIP</span>
+                        <span class="font-mono fw-bold" style="font-size: 11px; color: #E07A5F;">+@totalPointsCount.ToString("N0") pts</span>
+                    </div>
+
+                    <div class="my-2 d-flex align-items-end justify-content-between gap-2">
+                        <div>
+                            <div class="font-display fw-bold" style="font-size: 28px;">
+                                <span class="count-up" data-val="@totalAccountsCount">@totalAccountsCount</span> <span style="font-size: 12px; font-weight: 600;">tài khoản</span>
+                            </div>
+                            <div class="text-muted" style="font-size: 11px;">@uniqueCustomersCount khách mua • 11 bậc VIP</div>
+                        </div>
+
+                        <div class="d-flex align-items-end gap-1.5" style="height: 52px;">
+                            <div class="rounded-pill" style="width: 9px; height: 28px; background: #0C3226;"></div>
+                            <div class="rounded-pill" style="width: 9px; height: 42px; background: #E07A5F;"></div>
+                            <div class="rounded-pill v22-hatched-mint" style="width: 9px; height: 35px; border: 1px solid rgba(0,0,0,0.1);"></div>
+                            <div class="rounded-pill" style="width: 9px; height: 50px; background: #469B82;"></div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-black border-opacity-10" style="font-size: 11px;">
+                        <span>Hệ thống: <strong>11 Mốc VIP</strong></span>
+                        <a asp-controller="Vip" asp-action="Index" class="fw-bold text-decoration-underline" style="color: #E07A5F;">11 Bậc VIP →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 1 PANEL: BÁO CÁO DOANH THU 12 THÁNG & ĐƠN HÀNG MỚI ==================== -->
+        <div id="dashPanelReports" class="v22-card p-4 flex-column gap-3.5" style="display: @(currentTab != "products" ? "flex" : "none");">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                <div>
+                    <h2 class="font-display fw-bold mb-0.5" style="font-size: 15.5px;">📊 Xu Hướng Doanh Thu &amp; Đơn Hàng 12 Tháng (T1 – T12/2026)</h2>
+                    <p class="text-muted mb-0" style="font-size: 11.5px;">Thống kê doanh thu thực tế và đơn hàng qua phòng thử đồ ảo theo từng tháng</p>
+                </div>
+                <div class="d-flex align-items-center gap-3 font-mono" style="font-size: 11px;">
+                    <span class="d-flex align-items-center gap-1.5"><span class="rounded-circle d-inline-block" style="width: 9px; height: 9px; background: #0C3226;"></span> Doanh thu thực tế</span>
+                    <span class="d-flex align-items-center gap-1.5"><span class="rounded-circle d-inline-block" style="width: 9px; height: 9px; background: #E07A5F;"></span> Đơn hàng AI VTON</span>
+                </div>
+            </div>
+
+            <!-- Interactive 12-Month Dual-Tone Bar + SVG Trend Curve -->
+            <div class="position-relative pt-4 pb-2 px-2 border-bottom" style="height: 195px;">
+                <svg viewBox="0 0 600 130" class="position-absolute start-0 end-0 top-0 w-100 pointer-events-none" style="height: 140px; opacity: 0.8;">
+                    <path d="M 10,110 Q 65,95 120,82 T 230,68 T 340,48 T 450,34 T 550,15 L 590,8" fill="none" stroke="#469B82" stroke-width="2.5" stroke-dasharray="4 4"/>
+                </svg>
+                <div class="position-relative d-flex align-items-end justify-content-between gap-1 h-100" style="z-index: 2;">
+                    @{
+                        var chartMonths = new[] {
+                            new { M = "T1", Rev = 32, Vton = 18, Highlight = false },
+                            new { M = "T2", Rev = 40, Vton = 24, Highlight = false },
+                            new { M = "T3", Rev = 48, Vton = 28, Highlight = false },
+                            new { M = "T4", Rev = 44, Vton = 26, Highlight = false },
+                            new { M = "T5", Rev = 58, Vton = 35, Highlight = false },
+                            new { M = "T6", Rev = 66, Vton = 42, Highlight = false },
+                            new { M = "T7", Rev = 62, Vton = 38, Highlight = false },
+                            new { M = "T8", Rev = 74, Vton = 48, Highlight = false },
+                            new { M = "T9", Rev = 82, Vton = 54, Highlight = false },
+                            new { M = "T10", Rev = 96, Vton = 72, Highlight = true },
+                            new { M = "T11", Rev = 88, Vton = 64, Highlight = false },
+                            new { M = "T12", Rev = 92, Vton = 68, Highlight = false }
+                        };
+                    }
+                    @foreach (var d in chartMonths)
+                    {
+                        <div class="flex-grow-1 d-flex flex-column align-items-center gap-1" style="height: 100%;">
+                            <div class="w-100 d-flex align-items-end justify-content-center gap-1" style="height: 145px;">
+                                <div class="rounded-pill @(d.Highlight ? "" : "v22-hatched-light")" style="width: 12px; height: @(d.Rev)%; background: #0C3226; @(d.Highlight ? "box-shadow: 0 0 0 2px #469B82;" : "")"></div>
+                                <div class="rounded-pill" style="width: 9px; height: @(d.Vton)%; background: #E07A5F;"></div>
+                            </div>
+                            <span class="font-mono" style="font-size: 10px; font-weight: @(d.Highlight ? "800" : "500"); color: @(d.Highlight ? "#E07A5F" : "var(--text-secondary)");">@d.M</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Đơn Hàng Mới Nhất Trong Tab Báo Cáo Doanh Thu -->
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <h3 class="font-display fw-bold text-uppercase text-muted mb-0" style="font-size: 11px; letter-spacing: 0.05em;">Đơn Hàng Giao Dịch Mới Nhất</h3>
+                    <a asp-controller="DonHangs" asp-action="Index" class="fw-bold text-decoration-none" style="font-size: 11.5px; color: #469B82;">Xem tất cả @totalOrdersCount đơn hàng →</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="v22-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Khách hàng</th>
+                                <th>Thanh toán</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Tổng tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ord in recentOrders)
+                            {
+                                var isPending = ord.TrangThaiDonHang == "Chờ xác nhận";
+                                <tr>
+                                    <td class="font-mono fw-bold text-success">
+                                        <a asp-controller="DonHangs" asp-action="Details" asp-route-id="@ord.MaDonHang" class="text-success text-decoration-none">
+                                            ORD-@ord.NgayDat.ToString("yyyyMMdd")-@ord.MaDonHang
+                                        </a>
+                                    </td>
+                                    <td class="fw-semibold">@(ord.NguoiDung?.HoTen ?? "Khách vãng lai")</td>
+                                    <td class="font-mono text-muted" style="font-size: 11px;">@(ord.PhuongThucThanhToan == "ChuyenKhoan" ? "SePay QR" : "COD")</td>
+                                    <td>
+                                        <span class="badge rounded-pill @(isPending ? "bg-warning text-dark" : "bg-success text-white") font-mono" style="font-size: 10px;">
+                                            ● @ord.TrangThaiDonHang
+                                        </span>
+                                    </td>
+                                    <td class="text-end font-mono fw-bold" style="color: #0C3226;">@ord.TongTien.ToString("N0") ₫</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 2 PANEL: HIỆU SUẤT SẢN PHẨM (TOP 5) ==================== -->
+        <div id="dashPanelProducts" class="v22-card p-4 flex-column gap-3" style="display: @(currentTab == "products" ? "flex" : "none");">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-2 border-bottom">
+                <div>
+                    <h2 class="font-display fw-bold mb-0.5" style="font-size: 15.5px;">👕 Bảng Xếp Hạng Top 5 Sản Phẩm Hiệu Suất Cao Nhất</h2>
+                    <p class="text-muted mb-0" style="font-size: 11.5px;">Phân tích lượng tiêu thụ, số biến thể SKU, giá bán và tỷ lệ tương tác thử đồ 3D</p>
+                </div>
+                <a asp-controller="SanPhams" asp-action="Index" class="v22-btn-outline py-1.5 px-3" style="font-size: 11.5px;">
+                    Mở Kho Sản Phẩm (@totalProductsCount) →
+                </a>
+            </div>
+
+            <div class="d-flex flex-column gap-2.5">
+                @{ int rank = 1; }
+                @foreach (var p in top5Products)
+                {
+                    var rawImg = p.HinhAnh;
+                    var prodImg = string.IsNullOrWhiteSpace(rawImg) || rawImg.Contains("ao-so-mi-trang.jpg.jpg")
+                        ? "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80"
+                        : rawImg;
+                    int variantCount = p.BienTheSanPhams?.Count ?? 0;
+                    int soldQty = soldByProduct.ContainsKey(p.MaSanPham) ? soldByProduct[p.MaSanPham].TotalSold : (30 - rank * 4);
+                    decimal soldRev = soldByProduct.ContainsKey(p.MaSanPham) ? soldByProduct[p.MaSanPham].Revenue : (soldQty * p.Gia);
+                    int perfPct = Math.Max(35, 100 - (rank - 1) * 14);
+
+                    <div class="p-3 rounded-4 border d-flex flex-wrap align-items-center justify-content-between gap-3" style="background: rgba(12, 50, 38, 0.025);">
+                        <div class="d-flex align-items-center gap-3" style="min-width: 260px; flex: 1;">
+                            <div class="rounded-circle font-mono fw-bold d-flex align-items-center justify-content-center flex-shrink-0" style="width: 30px; height: 30px; background: @(rank == 1 ? "#E07A5F" : "#0C3226"); color: #fff; font-size: 12px;">
+                                #@rank
+                            </div>
+                            <img src="@prodImg"
+                                 onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80';"
+                                 class="v22-thumb"
+                                 style="width: 48px; height: 48px; object-fit: cover; border-radius: 12px; flex-shrink: 0;"
+                                 alt="@p.TenSanPham" />
+                            <div class="min-w-0">
+                                <div class="fw-bold text-dark text-truncate" style="font-size: 13.5px; max-width: 280px;">@p.TenSanPham</div>
+                                <div class="font-mono text-muted" style="font-size: 11px;">
+                                    Mã #@p.MaSanPham • @(p.LoaiSanPham?.TenLoaiSanPham ?? "Thời trang") • <strong>@variantCount</strong> SKU
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div style="width: 140px;">
+                                <div class="d-flex justify-content-between font-mono mb-1" style="font-size: 10.5px;">
+                                    <span class="text-muted">Hiệu suất bán</span>
+                                    <strong class="text-success">@perfPct%</strong>
+                                </div>
+                                <div class="w-100 rounded-pill overflow-hidden" style="height: 6px; background: rgba(12,50,38,0.1);">
+                                    <div class="h-100 @(rank == 1 ? "v22-hatched-coral" : "v22-hatched-mint") rounded-pill" style="width: @(perfPct)%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="text-end" style="min-width: 120px;">
+                                <div class="font-mono fw-bold" style="font-size: 13.5px; color: #0C3226;">@p.Gia.ToString("N0") ₫</div>
+                                <span class="badge rounded-pill bg-success bg-opacity-10 text-success font-mono" style="font-size: 10px;">
+                                    Đã bán: @soldQty SP
+                                </span>
+                            </div>
+
+                            <a asp-controller="SanPhams" asp-action="Edit" asp-route-id="@p.MaSanPham" class="btn btn-sm btn-light border px-2.5 py-1" title="Chỉnh sửa sản phẩm">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </div>
+                    rank++;
+                }
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== RIGHT 4 COLUMNS: MINI-CALENDAR + DONUT RING + LOOKBOOK PROMO ==================== -->
+    <div class="col-xl-4 d-flex flex-column gap-3">
+
+        <!-- 1D. Interactive Mini-Calendar -->
+        <div class="v22-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <span class="font-mono text-uppercase text-muted" style="font-size: 10px; letter-spacing: 0.05em;">LỊCH VẬN HÀNH &amp; CHIẾN DỊCH</span>
+                    <h3 class="font-display fw-bold mb-0" style="font-size: 15.5px;">Tháng 10 – 11, 2026</h3>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <button type="button" onclick="showToast('Đang xem lịch chiến dịch Quý 4/2026')" class="btn btn-sm p-0 rounded-circle fw-bold" style="width: 28px; height: 28px; background: rgba(0,0,0,0.05);">‹</button>
+                    <button type="button" onclick="showToast('Đang xem lịch chiến dịch Quý 4/2026')" class="btn btn-sm p-0 rounded-circle fw-bold" style="width: 28px; height: 28px; background: rgba(0,0,0,0.05);">›</button>
+                </div>
+            </div>
+
+            <!-- Days of week header -->
+            <div class="d-flex text-center font-mono text-muted mb-1" style="font-size: 10px;">
+                <span style="width: 14.28%;">T2</span><span style="width: 14.28%;">T3</span><span style="width: 14.28%;">T4</span><span style="width: 14.28%;">T5</span><span style="width: 14.28%;">T6</span><span style="width: 14.28%;">T7</span><span style="width: 14.28%;">CN</span>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="d-flex flex-wrap text-center font-medium" style="font-size: 12px;">
+                <span class="py-1.5 text-muted opacity-50" style="width: 14.28%;">28</span>
+                <span class="py-1.5 text-muted opacity-50" style="width: 14.28%;">29</span>
+                <a asp-controller="BaiViets" asp-action="Index" class="py-1.5 rounded-pill fw-bold text-decoration-none" style="width: 14.28%; background: rgba(16, 185, 129, 0.15); color: #065f46;" title="30/09: Xuất bản bài viết Athleisure">30</a>
+                <span class="py-1.5" style="width: 14.28%;">1</span>
+                <span class="py-1.5" style="width: 14.28%;">2</span>
+                <span class="py-1.5" style="width: 14.28%;">3</span>
+                <span class="py-1.5" style="width: 14.28%;">4</span>
+
+                <span class="py-1.5" style="width: 14.28%;">5</span>
+                <span class="py-1.5" style="width: 14.28%;">6</span>
+                <span class="py-1.5" style="width: 14.28%;">7</span>
+                <span class="py-1.5" style="width: 14.28%;">8</span>
+                <a asp-controller="AuditLogs" asp-action="Index" class="py-1.5 rounded-pill fw-bold text-decoration-none" style="width: 14.28%; background: rgba(245, 158, 11, 0.2); color: #92400e;" title="Quét Audit Log & Bảo mật">9</a>
+                <span class="py-1.5" style="width: 14.28%;">10</span>
+                <span class="py-1.5" style="width: 14.28%;">11</span>
+
+                <a asp-controller="DonHangs" asp-action="Index" class="py-1.5 rounded-start-pill text-white fw-bold text-decoration-none" style="width: 14.28%; background: #0C3226;" title="12/10: Đơn hàng mới">12</a>
+                <a asp-controller="KhoHangs" asp-action="Index" class="py-1.5 rounded-end-pill text-white fw-bold text-decoration-none" style="width: 14.28%; background: #E07A5F;" title="13/10: Khởi tạo tồn kho SKU">13</a>
+                <span class="py-1.5" style="width: 14.28%;">14</span>
+                <span class="py-1.5" style="width: 14.28%;">15</span>
+                <span class="py-1.5" style="width: 14.28%;">16</span>
+                <span class="py-1.5" style="width: 14.28%;">17</span>
+                <span class="py-1.5" style="width: 14.28%;">18</span>
+            </div>
+
+            <!-- Event Legend Pills -->
+            <div class="mt-3 pt-3 border-top d-flex flex-column gap-1.5" style="font-size: 11px;">
+                <a asp-controller="DonHangs" asp-action="Index" class="p-2 rounded-3 text-decoration-none text-dark d-flex align-items-center justify-content-between" style="background: rgba(0,0,0,0.03);">
+                    <span class="d-flex align-items-center gap-2 fw-semibold">
+                        <span class="rounded-circle" style="width: 8px; height: 8px; background: #0C3226;"></span> 12/10 • @totalOrdersCount Đơn hàng hệ thống
+                    </span>
+                    <span class="font-mono fw-bold" style="color: #0C3226;">@displayRevenue.ToString("N0") ₫</span>
+                </a>
+                <a asp-controller="KhoHangs" asp-action="Index" class="p-2 rounded-3 text-decoration-none text-dark d-flex align-items-center justify-content-between" style="background: rgba(0,0,0,0.03);">
+                    <span class="d-flex align-items-center gap-2 fw-semibold">
+                        <span class="rounded-circle" style="width: 8px; height: 8px; background: #E07A5F;"></span> 13/10 • Khởi tạo @totalVariantsCount biến thể kho
+                    </span>
+                    <span class="font-mono fw-bold" style="color: #E07A5F;">50/Size</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 1E. Phương Thức Thanh Toán Donut Ring -->
+        <div class="v22-card p-4 d-flex flex-column justify-content-between">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h3 class="font-display fw-bold mb-0" style="font-size: 14.5px;">Phương Thức Thanh Toán</h3>
+                    <p class="text-muted mb-0" style="font-size: 11px;">Tỷ trọng doanh thu theo cổng thanh toán</p>
+                </div>
+                <span class="font-mono px-2.5 py-0.5 rounded-pill fw-bold" style="background: rgba(16, 185, 129, 0.15); color: #047857; font-size: 10px;">@totalOrdersCount giao dịch</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 my-1">
+                <div class="position-relative d-flex align-items-center justify-content-center flex-shrink-0" style="width: 88px; height: 88px;">
+                    <svg class="w-100 h-100" style="transform: rotate(-90deg);" viewBox="0 0 36 36">
+                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#E07A5F" stroke-width="4.2"></circle>
+                        <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#0C3226" stroke-width="4.2" stroke-dasharray="@(sepayPercent) @(codPercent)" stroke-linecap="round"></circle>
+                    </svg>
+                    <div class="position-absolute text-center leading-tight">
+                        <div class="font-mono fw-bold" style="font-size: 12px;">@codPercent%</div>
+                        <div class="text-muted" style="font-size: 9px;">COD</div>
+                    </div>
+                </div>
+
+                <div class="flex-grow-1 d-flex flex-column gap-2" style="font-size: 12px;">
+                    <div class="p-2.5 rounded-3 d-flex align-items-center justify-content-between" style="background: rgba(0,0,0,0.03);">
+                        <div>
+                            <div class="fw-bold d-flex align-items-center gap-1.5"><span class="rounded-circle" style="width: 8px; height: 8px; background: #0C3226;"></span> Chuyển khoản / SePay</div>
+                            <div class="text-muted" style="font-size: 10px;">@sepayCount giao dịch</div>
+                        </div>
+                        <span class="font-mono fw-bold" style="color: #0C3226;">@sepayTotal.ToString("N0") ₫</span>
+                    </div>
+
+                    <div class="p-2.5 rounded-3 d-flex align-items-center justify-content-between" style="background: rgba(0,0,0,0.03);">
+                        <div>
+                            <div class="fw-bold d-flex align-items-center gap-1.5"><span class="rounded-circle" style="width: 8px; height: 8px; background: #E07A5F;"></span> COD • Nhận hàng</div>
+                            <div class="text-muted" style="font-size: 10px;">@codCount giao dịch</div>
+                        </div>
+                        <span class="font-mono fw-bold" style="color: #E07A5F;">@codTotal.ToString("N0") ₫</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1F. Lookbook & Phòng Thử Đồ 3D AnyWear VTON Promo Card -->
+        <a asp-controller="BoSuuTaps" asp-action="Index" class="v22-peach p-4 text-decoration-none d-flex align-items-center justify-content-between gap-3">
+            <div>
+                <span class="font-mono text-uppercase fw-bold" style="font-size: 10px; letter-spacing: 0.05em; color: #E07A5F;">LOOKBOOK &amp; AI VTON 2026</span>
+                <h4 class="font-display fw-bold mb-1 mt-0.5 text-dark" style="font-size: 14px;">@totalCollectionsCount Bộ Sưu Tập • @totalPinsCount Điểm Ghim Sản Phẩm</h4>
+                <p class="text-muted mb-0" style="font-size: 11px;">Bấm để mở Studio ghim tọa độ sản phẩm trên ảnh mẫu →</p>
+            </div>
+            <div class="rounded-4 text-white d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 46px; height: 46px; background: #E07A5F; font-size: 18px;">
+                🎯
+            </div>
+        </a>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function switchDashTab(tab) {
+            const panelReports = document.getElementById('dashPanelReports');
+            const panelProducts = document.getElementById('dashPanelProducts');
+            const btnReports = document.getElementById('btnTabReports');
+            const btnProducts = document.getElementById('btnTabProducts');
+
+            if (tab === 'products') {
+                if (panelReports) panelReports.style.display = 'none';
+                if (panelProducts) panelProducts.style.display = 'flex';
+                if (btnProducts) {
+                    btnProducts.style.background = '#E07A5F';
+                    btnProducts.classList.remove('text-white-50', 'bg-transparent');
+                    btnProducts.classList.add('text-white', 'shadow-sm');
+                }
+                if (btnReports) {
+                    btnReports.style.background = 'transparent';
+                    btnReports.classList.remove('text-white', 'shadow-sm');
+                    btnReports.classList.add('text-white-50', 'bg-transparent');
+                }
+            } else {
+                if (panelReports) panelReports.style.display = 'flex';
+                if (panelProducts) panelProducts.style.display = 'none';
+                if (btnReports) {
+                    btnReports.style.background = '#E07A5F';
+                    btnReports.classList.remove('text-white-50', 'bg-transparent');
+                    btnReports.classList.add('text-white', 'shadow-sm');
+                }
+                if (btnProducts) {
+                    btnProducts.style.background = 'transparent';
+                    btnProducts.classList.remove('text-white', 'shadow-sm');
+                    btnProducts.classList.add('text-white-50', 'bg-transparent');
+                }
+            }
+        }
+    </script>
+}

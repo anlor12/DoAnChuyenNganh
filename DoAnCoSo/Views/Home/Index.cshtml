@@ -1,0 +1,306 @@
+@model IEnumerable<DoAnCoSo.Models.SanPham>
+@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = "FASHION STORE - Lịch lãm thời trang, vững vàng bản lĩnh";
+
+    var categories = (List<DoAnCoSo.Models.LoaiSanPham>?)ViewBag.Categories ?? new List<DoAnCoSo.Models.LoaiSanPham>();
+    var quanTay = categories.FirstOrDefault(c => c.TenLoaiSanPham.ToLower().Contains("tây") || c.TenLoaiSanPham == "Quần")?.MaLoaiSanPham;
+    var soMi = categories.FirstOrDefault(c => c.TenLoaiSanPham.ToLower().Contains("sơ mi"))?.MaLoaiSanPham;
+    var polo = categories.FirstOrDefault(c => c.TenLoaiSanPham.ToLower().Contains("polo"))?.MaLoaiSanPham;
+    var khaki = categories.FirstOrDefault(c => c.TenLoaiSanPham.ToLower().Contains("khaki") || c.TenLoaiSanPham.ToLower().Contains("jean"))?.MaLoaiSanPham;
+    var jacket = categories.FirstOrDefault(c => c.TenLoaiSanPham.ToLower().Contains("jacket"))?.MaLoaiSanPham;
+    var giay = categories.FirstOrDefault(c => c.TenLoaiSanPham == "Giày")?.MaLoaiSanPham;
+}
+
+<!-- 1. FASHION STORE HERO SLIDESHOW (Codazon Top Slide) -->
+<div class="home-codazon-slide1">
+    <div id="fsHeroCarousel" class="carousel slide carousel-fade fs-hero-carousel" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#fsHeroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+            <button type="button" data-bs-target="#fsHeroCarousel" data-bs-slide-to="1"></button>
+            <button type="button" data-bs-target="#fsHeroCarousel" data-bs-slide-to="2"></button>
+            <button type="button" data-bs-target="#fsHeroCarousel" data-bs-slide-to="3"></button>
+            <button type="button" data-bs-target="#fsHeroCarousel" data-bs-slide-to="4"></button>
+            <button type="button" data-bs-target="#fsHeroCarousel" data-bs-slide-to="5"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <a href="/SanPham?sapXep=moi_nhat">
+                    <img src="/images/fashionstore/hero_new_arrivals.jpg" class="d-block w-100" alt="New Arrivals" />
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="/SanPham@(soMi != null ? "?maLoai=" + soMi : "")">
+                    <img src="/images/fashionstore/hero_shirts.jpg" class="d-block w-100" alt="Shirts For Every Moment" />
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="/SanPham@(quanTay != null ? "?maLoai=" + quanTay : "")">
+                    <img src="/images/fashionstore/hero_pants.jpg" class="d-block w-100" alt="The Perfect Fit" />
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="/SanPham@(jacket != null ? "?maLoai=" + jacket : "")">
+                    <img src="/images/fashionstore/hero_jackets.jpg" class="d-block w-100" alt="FASHION STORE Outerwear & Jackets" />
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="/SanPham@(giay != null ? "?maLoai=" + giay : "")">
+                    <img src="/images/fashionstore/hero_shoes.jpg" class="d-block w-100" alt="Giày da & Phụ kiện" />
+                </a>
+            </div>
+            <div class="carousel-item">
+                <a href="/SanPham?sapXep=gia_tang">
+                    <img src="/images/fashionstore/hero_promo.jpg" asp-append-version="true" class="d-block w-100" alt="Chương trình ưu đãi - Tặng túi Tote" />
+                </a>
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#fsHeroCarousel" data-bs-slide="prev">
+            <span class="fs-carousel-nav"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#fsHeroCarousel" data-bs-slide="next">
+            <span class="fs-carousel-nav"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </div>
+</div>
+
+<!-- 2. FASHION STORE 4-COLUMN SUBBANNERS (The Perfect Fit, Shirts, Modern Polo, Khaki) -->
+<section class="home-section home-promo-banners">
+    <div class="home-section-content">
+        <div class="home-banner home-banner-slider home-banner--4column">
+            <div class="home-banner-item">
+                <a href="/SanPham@(quanTay != null ? "?maLoai=" + quanTay : "")" title="Quần Tây FASHION STORE">
+                    <img src="/images/fashionstore/subbanner_pants.jpg" alt="The Perfect Fit - Quần Tây" loading="lazy" />
+                </a>
+            </div>
+            <div class="home-banner-item">
+                <a href="/SanPham@(soMi != null ? "?maLoai=" + soMi : "")" title="Áo Sơ Mi FASHION STORE">
+                    <img src="/images/fashionstore/subbanner_shirts.jpg" alt="Shirts For Every Moment" loading="lazy" />
+                </a>
+            </div>
+            <div class="home-banner-item">
+                <a href="/SanPham@(polo != null ? "?maLoai=" + polo : "")" title="Áo Polo FASHION STORE">
+                    <img src="/images/fashionstore/subbanner_polo.jpg" alt="The Modern Polo" loading="lazy" />
+                </a>
+            </div>
+            <div class="home-banner-item">
+                <a href="/SanPham@(khaki != null ? "?maLoai=" + khaki : "")" title="Quần Khaki FASHION STORE">
+                    <img src="/images/fashionstore/subbanner_khaki.jpg" alt="Effortlessly Well-Dressed - Khaki" loading="lazy" />
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. FASHION STORE 18 YEARS CAMPAIGN VIDEO (Full-width Video) -->
+<section class="home-section home-video-fw">
+    <div class="home-section-content">
+        <div class="banner-video">
+            <video autoplay muted loop playsinline width="100%">
+                <source src="/videos/fashionstore/CAMPAIGN_18_YEAR.mp4" type="video/mp4" />
+            </video>
+        </div>
+    </div>
+</section>
+
+<!-- 4. FEATURED PRODUCTS (Sản Phẩm Mới Về) -->
+<section class="home-section home-products-section">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="fs-section-header">
+            <h2 class="fs-title">HÀNG MỚI VỀ</h2>
+            <p class="fs-subtitle">NEW ARRIVALS 2026</p>
+        </div>
+
+        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3 g-lg-4 fs-product-grid">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model.Take(8))
+                {
+                    <div class="col">
+                        <div class="fs-product-card">
+                            <div class="fs-product-thumb">
+                                <a href="/SanPham/Details/@item.MaSanPham">
+                                    <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/hero_banner.png" : item.HinhAnh)" alt="@item.TenSanPham" loading="lazy" />
+                                </a>
+                                @if (item.IsNoiBat)
+                                {
+                                    <span class="fs-product-tag">NEW</span>
+                                }
+                                <div class="fs-thumb-actions">
+                                    <button type="button" class="fs-quick-cart" onclick="addToCart(@item.MaSanPham, @(item.BienTheSanPhams?.FirstOrDefault()?.MaBienThe ?? 0))" data-product-id="@item.MaSanPham" data-variant-id="@(item.BienTheSanPhams?.FirstOrDefault()?.MaBienThe ?? 0)" title="Thêm vào giỏ hàng">
+                                        <i class="fas fa-shopping-bag"></i> Thêm vào giỏ
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="fs-product-meta">
+                                @if (item.LoaiSanPham != null)
+                                {
+                                    <span class="fs-cat-name">@item.LoaiSanPham.TenLoaiSanPham</span>
+                                }
+                                <h3 class="fs-product-title">
+                                    <a href="/SanPham/Details/@item.MaSanPham">@item.TenSanPham</a>
+                                </h3>
+                                <div class="fs-price-box">
+                                    <span class="fs-current-price">@item.Gia.ToString("N0") đ</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="text-center mt-4 pt-2">
+            <a href="/SanPham?sapXep=moi_nhat" class="fs-view-all-btn">
+                <span>XEM TẤT CẢ SẢN PHẨM</span>
+                <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- 5. FASHION STORE BOTTOM CAMPAIGN SLIDESHOW (Codazon Slide 2: Comfort in Every Detail, Smart Fit) -->
+<section class="home-section home-codazon-slide2">
+    <div class="home-section-content">
+        <div id="fsBottomCarousel" class="carousel slide carousel-fade fs-bottom-carousel" data-bs-ride="carousel" data-bs-interval="4500">
+            <div class="carousel-indicators">
+                <button type="button" data-bs-target="#fsBottomCarousel" data-bs-slide-to="0" class="active"></button>
+                <button type="button" data-bs-target="#fsBottomCarousel" data-bs-slide-to="1"></button>
+                <button type="button" data-bs-target="#fsBottomCarousel" data-bs-slide-to="2"></button>
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <a href="/SanPham@(soMi != null ? "?maLoai=" + soMi : "")">
+                        <img src="/images/fashionstore/bottom_shirts.jpg" class="d-block w-100" alt="Comfort In Every Detail" />
+                    </a>
+                </div>
+                <div class="carousel-item">
+                    <a href="/SanPham@(quanTay != null ? "?maLoai=" + quanTay : "")">
+                        <img src="/images/fashionstore/bottom_pants.jpg" class="d-block w-100" alt="Smart Fit For Modern Men" />
+                    </a>
+                </div>
+                <div class="carousel-item">
+                    <a href="/SanPham@(polo != null ? "?maLoai=" + polo : "")">
+                        <img src="/images/fashionstore/bottom_polo.jpg" class="d-block w-100" alt="Modern Polo" />
+                    </a>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#fsBottomCarousel" data-bs-slide="prev">
+                <span class="fs-carousel-nav"><i class="fas fa-chevron-left"></i></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#fsBottomCarousel" data-bs-slide="next">
+                <span class="fs-carousel-nav"><i class="fas fa-arrow-right"></i></span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 6. FASHION STORE LATEST BLOGS / EDITORIAL -->
+<section class="home-section home-blogs">
+    <div class="container-fluid px-3 px-lg-5">
+        <div class="fs-blog-header">
+            <h2 class="fs-blog-title">BÀI VIẾT MỚI NHẤT</h2>
+        </div>
+        <div class="row g-4">
+            @{
+                var latestArticles = ViewBag.LatestArticles as IEnumerable<DoAnCoSo.Models.BaiViet>;
+            }
+            @if (latestArticles != null && latestArticles.Any())
+            {
+                foreach (var art in latestArticles)
+                {
+                    <div class="col-12 col-md-4">
+                        <div class="fs-blog-card h-100">
+                            <div class="fs-blog-img">
+                                <a href="/BaiViet/ChiTiet/@art.MaBaiViet">
+                                    <img src="@(string.IsNullOrEmpty(art.HinhAnh) ? "/images/fashionstore/blog_white_shirt.jpg" : art.HinhAnh)" alt="@art.TieuDe" loading="lazy" />
+                                </a>
+                            </div>
+                            <div class="fs-blog-body">
+                                <h3 class="fs-blog-headline">
+                                    <a href="/BaiViet/ChiTiet/@art.MaBaiViet">@art.TieuDe</a>
+                                </h3>
+                                <div class="fs-blog-date"><i class="far fa-calendar-alt me-1"></i> @art.NgayTao.ToString("dd/MM/yyyy")</div>
+                                <a href="/BaiViet/ChiTiet/@art.MaBaiViet" class="fs-blog-link">Xem chi tiết &rarr;</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 col-md-4">
+                    <div class="fs-blog-card">
+                        <div class="fs-blog-img">
+                            <a href="/BaiViet">
+                                <img src="/images/fashionstore/blog_tote.jpg" asp-append-version="true" alt="FASHION STORE Tặng Túi Tote Thời Trang" loading="lazy" />
+                            </a>
+                        </div>
+                        <div class="fs-blog-body">
+                            <h3 class="fs-blog-headline">
+                                <a href="/BaiViet">FASHION STORE TẶNG TÚI TOTE THỜI TRANG</a>
+                            </h3>
+                            <div class="fs-blog-date">Chương trình khuyến mãi</div>
+                            <a href="/BaiViet" class="fs-blog-link">Xem chi tiết &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="fs-blog-card">
+                        <div class="fs-blog-img">
+                            <a href="/BaiViet">
+                                <img src="/images/fashionstore/blog_white_shirt.jpg" alt="Chọn Sơ Mi Trắng Chọn FASHION STORE" loading="lazy" />
+                            </a>
+                        </div>
+                        <div class="fs-blog-body">
+                            <h3 class="fs-blog-headline">
+                                <a href="/BaiViet">CHỌN SƠ MI TRẮNG - CHỌN FASHION STORE</a>
+                            </h3>
+                            <div class="fs-blog-date">Xu hướng thời trang</div>
+                            <a href="/BaiViet" class="fs-blog-link">Xem chi tiết &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="fs-blog-card">
+                        <div class="fs-blog-img">
+                            <a href="/Home/GioiThieu">
+                                <img src="/images/fashionstore/blog_cafebiz.jpg" alt="FASHION STORE x CafeBiz" loading="lazy" />
+                            </a>
+                        </div>
+                        <div class="fs-blog-body">
+                            <h3 class="fs-blog-headline">
+                                <a href="/Home/GioiThieu">EMAGAZINE - HÀNH TRÌNH HIỆN ĐẠI HÓA DI SẢN THỜI TRANG</a>
+                            </h3>
+                            <div class="fs-blog-date">Câu chuyện thương hiệu</div>
+                            <a href="/Home/GioiThieu" class="fs-blog-link">Xem chi tiết &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- 7. FASHION STORE SUBSCRIBE & VIDEO PROMO (Split 50/50) -->
+<section class="home-section home-subcribe">
+    <div class="home-subcribe-container">
+        <div class="home-subcribe--left" style="background-image: url('/images/fashionstore/newsletter_bg.jpg');">
+            <div class="fs-subcribe-card">
+                <h3 class="fs-subcribe-heading">ĐĂNG KÝ NHẬN KHUYẾN MÃI</h3>
+                <p class="fs-subcribe-desc">Đừng bỏ lỡ hàng ngàn sản phẩm và chương trình siêu hấp dẫn từ FASHION STORE</p>
+                <form class="fs-subcribe-form" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký nhận tin khuyến mãi từ FASHION STORE!');">
+                    <input type="email" placeholder="Nhập email của bạn" required class="fs-subcribe-input" />
+                    <button type="submit" class="fs-subcribe-submit">ĐĂNG KÝ</button>
+                </form>
+            </div>
+        </div>
+        <div class="home-subcribe--right">
+            <div class="banner-video">
+                <video autoplay muted loop playsinline width="100%">
+                    <source src="/videos/fashionstore/video_email_8.mp4" type="video/mp4" />
+                </video>
+            </div>
+        </div>
+    </div>
+</section>

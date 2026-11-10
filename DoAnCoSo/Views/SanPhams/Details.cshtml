@@ -1,0 +1,253 @@
+@model DoAnCoSo.Models.SanPham
+
+@{
+    ViewData["Title"] = "Chi tiết sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1 fw-bold">Chi tiết sản phẩm</h3>
+            <p class="text-muted mb-0">Thông tin chi tiết của sản phẩm</p>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-5">
+            <div class="preview-box h-100">
+                <span class="detail-label mb-2 d-block">Hình ảnh sản phẩm (@Model.DanhSachHinhAnh.Count ảnh)</span>
+                <div class="d-flex gap-3 align-items-stretch">
+                    <!-- Ảnh lớn xem trước bên trái -->
+                    <div class="flex-grow-1 position-relative rounded-3 overflow-hidden bg-light" style="aspect-ratio: 3/4; border: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: center;">
+                        <img src="@(string.IsNullOrWhiteSpace(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh)"
+                             alt="@Model.TenSanPham"
+                             id="adminMainImg"
+                             style="width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s;"
+                             onerror="this.src='/images/no-image.png'" />
+                    </div>
+
+                    @if (Model.DanhSachHinhAnh.Count > 1)
+                    {
+                        <!-- Cột 4 ảnh thumbnail dọc bên phải -->
+                        <div class="d-flex flex-column justify-content-between gap-2" style="width: 74px; flex-shrink: 0;" id="adminThumbCol">
+                            @for (int i = 0; i < Model.DanhSachHinhAnh.Count; i++)
+                            {
+                                var img = Model.DanhSachHinhAnh[i];
+                                <div class="admin-thumb-slot @(i == 0 ? "active-thumb" : "") rounded-2 overflow-hidden bg-light"
+                                     style="flex: 1; aspect-ratio: 3/4; border: 2px solid @(i == 0 ? "#000" : "transparent"); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;"
+                                     onclick="changeAdminImg('@img', this)"
+                                     title="Nhấn để xem ảnh @(i + 1)">
+                                    <img src="@img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;" onerror="this.src='/images/no-image.png'" />
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-7">
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Mã sản phẩm</span>
+                    <div class="detail-value">
+                        <span class="code-badge">#@Model.MaSanPham</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Tên sản phẩm</span>
+                    <div class="detail-value fw-bold">@Model.TenSanPham</div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Loại sản phẩm</span>
+                    <div class="detail-value">
+                        @(Model.LoaiSanPham != null ? Model.LoaiSanPham.TenLoaiSanPham : "Chưa phân loại")
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Giới tính</span>
+                    <div class="detail-value">
+                        @{
+                            var genderClass = "status-badge status-gray";
+                            if (Model.GioiTinh == "Nam") genderClass = "status-badge status-blue";
+                            else if (Model.GioiTinh == "Nữ") genderClass = "status-badge status-pink";
+                        }
+                        <span class="@genderClass">@Model.GioiTinh</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Giá bán</span>
+                    <div class="detail-value fw-bold text-price">@Model.Gia.ToString("N0") VNĐ</div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Trạng thái</span>
+                    <div class="detail-value">
+                        @{
+                            var statusClass = "status-badge status-gray";
+                            if (!string.IsNullOrWhiteSpace(Model.TrangThai))
+                            {
+                                if (Model.TrangThai == "Đang bán" || Model.TrangThai == "Hoạt động")
+                                {
+                                    statusClass = "status-badge status-green";
+                                }
+                                else if (Model.TrangThai == "Ngừng bán")
+                                {
+                                    statusClass = "status-badge status-red";
+                                }
+                                else
+                                {
+                                    statusClass = "status-badge status-yellow";
+                                }
+                            }
+                        }
+                        <span class="@statusClass">
+                            @(string.IsNullOrWhiteSpace(Model.TrangThai) ? "Chưa cập nhật" : Model.TrangThai)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Mô tả</span>
+                    <div class="detail-value" style="white-space: pre-line;">
+                        @if (string.IsNullOrWhiteSpace(Model.MoTa))
+                        {
+                            <span>Chưa có mô tả</span>
+                        }
+                        else
+                        {
+                            @Html.Raw(Model.MoTa)
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION: DANH SÁCH BIẾN THỂ CỦA SẢN PHẨM -->
+    <div class="mt-4 pt-3 border-top">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h5 class="fw-bold mb-1 d-flex align-items-center gap-2">
+                    <i class="bi bi-palette-fill text-warning"></i> Danh sách biến thể (@(Model.BienTheSanPhams?.Count ?? 0) biến thể)
+                </h5>
+                <p class="text-muted small mb-0">Quản lý kích cỡ, màu sắc và giá riêng của từng biến thể sản phẩm này</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-controller="BienTheSanPhams" asp-action="Create" asp-route-maSanPham="@Model.MaSanPham" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm biến thể cho sản phẩm này
+                </a>
+                <a asp-controller="BienTheSanPhams" asp-action="Index" asp-route-maSanPham="@Model.MaSanPham" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-list-ul me-1"></i> Quản lý toàn bộ biến thể
+                </a>
+            </div>
+        </div>
+
+        @if (Model.BienTheSanPhams != null && Model.BienTheSanPhams.Any())
+        {
+            <div class="table-responsive rounded-3 border" style="background: #fff;">
+                <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 70px;">Ảnh</th>
+                            <th>Mã BT</th>
+                            <th>Kích cỡ</th>
+                            <th>Màu sắc</th>
+                            <th>Giá bán</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center" style="width: 120px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var bt in Model.BienTheSanPhams)
+                        {
+                            <tr>
+                                <td>
+                                    <img src="@(string.IsNullOrWhiteSpace(bt.HinhAnh) ? (string.IsNullOrWhiteSpace(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh) : bt.HinhAnh)"
+                                         alt="@bt.MauSac"
+                                         style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #e2e8f0;"
+                                         onerror="this.src='/images/no-image.png'" />
+                                </td>
+                                <td><span class="code-badge">#@bt.MaBienThe</span></td>
+                                <td><span class="badge bg-light text-dark border px-2 py-1 fw-bold">@bt.KichCo</span></td>
+                                <td>
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <i class="bi bi-circle-fill" style="font-size: 10px; color: #64748b;"></i>
+                                        <strong>@bt.MauSac</strong>
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-primary">@bt.Gia.ToString("N0") VNĐ</td>
+                                <td>
+                                    @{
+                                        var btBadge = "bg-success-subtle text-success";
+                                        if (bt.TrangThai == "Ngừng bán") btBadge = "bg-danger-subtle text-danger";
+                                    }
+                                    <span class="badge @btBadge border">@bt.TrangThai</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-controller="BienTheSanPhams" asp-action="Edit" asp-route-id="@bt.MaBienThe" class="btn btn-outline-primary" title="Sửa biến thể">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-controller="BienTheSanPhams" asp-action="Delete" asp-route-id="@bt.MaBienThe" class="btn btn-outline-danger" title="Xóa biến thể">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 text-center rounded-3 border bg-light text-muted">
+                <i class="bi bi-palette fs-2 d-block mb-2 text-secondary"></i>
+                <p class="mb-2">Sản phẩm này hiện chưa có biến thể size/màu nào.</p>
+                <a asp-controller="BienTheSanPhams" asp-action="Create" asp-route-maSanPham="@Model.MaSanPham" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> Thêm biến thể đầu tiên ngay
+                </a>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2 mt-4 flex-wrap">
+        <a asp-action="Edit" asp-route-id="@Model.MaSanPham" class="btn-save">
+            <i class="bi bi-pencil-square"></i> Chỉnh sửa
+        </a>
+        <a asp-controller="BienTheSanPhams" asp-action="Create" asp-route-maSanPham="@Model.MaSanPham" class="btn btn-outline-success">
+            <i class="bi bi-plus-circle me-1"></i> Thêm biến thể
+        </a>
+        <a asp-action="Index" class="btn-back">Quay lại danh sách</a>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function changeAdminImg(src, el) {
+        var mainImg = document.getElementById('adminMainImg');
+        if (mainImg) {
+            mainImg.style.opacity = '0.35';
+            setTimeout(function() {
+                mainImg.src = src;
+                mainImg.style.opacity = '1';
+            }, 120);
+        }
+        document.querySelectorAll('.admin-thumb-slot').forEach(function(t) {
+            t.style.borderColor = 'transparent';
+        });
+        if (el) {
+            el.style.borderColor = '#000000';
+        }
+    }
+</script>
+}

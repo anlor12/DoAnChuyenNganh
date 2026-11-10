@@ -1,0 +1,397 @@
+@{
+    ViewData["Title"] = "Chính sách & Hỗ trợ khách hàng";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="policy-page py-5 bg-light">
+    <div class="container">
+        <!-- Hero Header -->
+        <div class="text-center mb-5">
+            <span class="text-uppercase tracking-wider text-muted small fw-bold">Trung tâm hỗ trợ FASHION STORE</span>
+            <h1 class="fw-bold mt-2 mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: clamp(26px, 3.5vw, 38px);">CHÍNH SÁCH &amp; HƯỚNG DẪN KHÁCH HÀNG</h1>
+            <p class="text-secondary max-w-700 mx-auto" style="max-width: 650px;">
+                FASHION STORE cam kết mang đến trải nghiệm mua sắm thời trang tiện lợi, minh bạch và an tâm tuyệt đối với dịch vụ chăm sóc khách hàng chuẩn mực.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Sidebar Navigation -->
+            <div class="col-lg-3">
+                <div class="card border-0 shadow-sm rounded-3 p-3 sticky-top" style="top: 100px; z-index: 10;">
+                    <div class="fw-bold text-uppercase small text-dark mb-3 px-2">
+                        <i class="fas fa-list-ul me-2"></i>Mục lục chính sách
+                    </div>
+                    <nav class="nav nav-pills flex-column gap-1 policy-sidebar-nav">
+                        <a class="nav-link text-dark py-2 px-3 rounded-2 active" href="#privacy">
+                            <i class="fas fa-shield-alt me-2 text-primary"></i> Chính sách bảo mật
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#shipping">
+                            <i class="fas fa-shipping-fast me-2 text-success"></i> Vận chuyển & Giao nhận
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#return">
+                            <i class="fas fa-sync-alt me-2 text-warning"></i> Quy định đổi trả hàng
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#payment">
+                            <i class="fas fa-credit-card me-2 text-info"></i> Hướng dẫn thanh toán
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#guide">
+                            <i class="fas fa-shopping-bag me-2 text-danger"></i> Hướng dẫn mua hàng
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#vip">
+                            <i class="fas fa-crown me-2 text-warning"></i> Chính sách thành viên VIP
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#sizing">
+                            <i class="fas fa-ruler-combined me-2 text-secondary"></i> Hướng dẫn chọn size
+                        </a>
+                        <a class="nav-link text-dark py-2 px-3 rounded-2" href="#faq">
+                            <i class="fas fa-question-circle me-2 text-dark"></i> Hỏi đáp thường gặp (FAQ)
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="col-lg-9">
+                <!-- 1. Chính sách bảo mật -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="privacy">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 text-primary">
+                            <i class="fas fa-shield-alt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">1. Chính Sách Bảo Mật Thông Tin</h2>
+                            <small class="text-muted">Bảo vệ quyền riêng tư và dữ liệu cá nhân của người tiêu dùng</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <p>FASHION STORE coi trọng việc bảo mật thông tin và sử dụng các biện pháp tối ưu nhất để bảo vệ thông tin cá nhân và việc thanh toán của quý khách.</p>
+                        <h6 class="fw-bold text-dark mt-3">a. Mục đích thu thập thông tin</h6>
+                        <ul>
+                            <li>Xử lý đơn đặt hàng, giao nhận sản phẩm và thanh toán trực tuyến.</li>
+                            <li>Gửi thông báo về tình trạng đơn hàng, hỗ trợ giải đáp khiếu nại.</li>
+                            <li>Cung cấp thông tin về các chương trình ưu đãi, tích lũy điểm VIP nếu khách hàng đăng ký nhận tin.</li>
+                        </ul>
+                        <h6 class="fw-bold text-dark mt-3">b. Phạm vi sử dụng thông tin</h6>
+                        <p>Hệ thống chỉ sử dụng thông tin khách hàng trong nội bộ doanh nghiệp và các đối tác vận chuyển ủy quyền (Viettel Post, GHN, GHTK). Tuyệt đối không bán, chia sẻ hoặc tiết lộ thông tin cá nhân cho bất kỳ bên thứ ba nào vì mục đích thương mại.</p>
+                        <h6 class="fw-bold text-dark mt-3">c. Thời gian lưu trữ thông tin</h6>
+                        <p>Dữ liệu cá nhân của thành viên sẽ được lưu trữ cho đến khi có yêu cầu hủy bỏ từ phía khách hàng hoặc khi tài khoản ngừng hoạt động theo chính sách hệ thống.</p>
+                    </div>
+                </div>
+
+                <!-- 2. Vận chuyển & Giao nhận -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="shipping">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 text-success">
+                            <i class="fas fa-shipping-fast fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">2. Chính Sách Vận Chuyển &amp; Giao Nhận</h2>
+                            <small class="text-muted">Giao hàng toàn quốc — Nhanh chóng, tin cậy</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <h6 class="fw-bold text-dark">a. Thời gian giao hàng tiêu chuẩn</h6>
+                        <ul>
+                            <li><strong>Nội thành Hà Nội &amp; TP.HCM:</strong> Giao nhanh trong 1 - 2 ngày làm việc.</li>
+                            <li><strong>Các tỉnh thành khác:</strong> Giao hàng từ 2 - 4 ngày làm việc tùy thuộc vào địa chỉ nhận hàng.</li>
+                        </ul>
+                        <h6 class="fw-bold text-dark mt-3">b. Cước phí vận chuyển</h6>
+                        <ul>
+                            <li><strong>Đơn hàng từ 499.000₫ trở lên:</strong> MIỄN PHÍ VẬN CHUYỂN toàn quốc.</li>
+                            <li><strong>Đơn hàng dưới 499.000₫:</strong> Phí vận chuyển đồng giá 30.000₫/đơn hàng.</li>
+                        </ul>
+                        <h6 class="fw-bold text-dark mt-3">c. Kiểm tra hàng trước khi nhận (Đồng kiểm)</h6>
+                        <p>Khách hàng được quyền kiểm tra ngoại quan kiện hàng, số lượng và chủng loại sản phẩm trước khi thanh toán cho nhân viên giao hàng.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Quy định đổi trả hàng -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="return">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 text-warning">
+                            <i class="fas fa-sync-alt fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">3. Quy Định Đổi Trả Hàng</h2>
+                            <small class="text-muted">Đổi hàng linh hoạt trong 15 ngày</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <h6 class="fw-bold text-dark">a. Điều kiện áp dụng đổi hàng</h6>
+                        <ul>
+                            <li>Sản phẩm còn nguyên tem mác, nhãn giá, chưa qua giặt tẩy, không có mùi lạ và không bị hư hỏng do tác nhân bên ngoài.</li>
+                            <li>Thời hạn đổi hàng trong vòng <strong>15 ngày</strong> kể từ ngày quý khách nhận được sản phẩm.</li>
+                            <li>Sản phẩm phát sinh lỗi từ nhà sản xuất (đường may, khóa kéo, lỗi vải) được đổi mới 100% miễn phí vận chuyển 2 chiều.</li>
+                        </ul>
+                        <h6 class="fw-bold text-dark mt-3">b. Quy trình đổi hàng</h6>
+                        <p>Quý khách liên hệ qua Hotline CSKH <strong>1900 8079</strong> hoặc nhắn tin qua <a href="/Home/GioiThieu" class="text-dark fw-bold">Zalo tư vấn</a> kèm mã đơn hàng để được nhân viên hỗ trợ thu hồi và gửi sản phẩm đổi tận nơi.</p>
+                    </div>
+                </div>
+
+                <!-- 4. Hướng dẫn thanh toán -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="payment">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-info bg-opacity-10 p-3 text-info">
+                            <i class="fas fa-credit-card fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">4. Hướng Dẫn Phương Thức Thanh Toán</h2>
+                            <small class="text-muted">Thanh toán an toàn, đa dạng hình thức</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <p>FASHION STORE hỗ trợ các phương thức thanh toán linh hoạt:</p>
+                        <ol>
+                            <li><strong>Thanh toán tiền mặt khi nhận hàng (COD):</strong> Quý khách thanh toán trực tiếp cho nhân viên giao hàng sau khi kiểm tra kiện hàng.</li>
+                            <li><strong>Chuyển khoản ngân hàng qua mã VietQR:</strong> Quét mã QR tự động điền nội dung và số tiền đơn hàng, xác nhận tức thì.</li>
+                            <li><strong>Thẻ ATM / Internet Banking / Thẻ quốc tế (Visa, Mastercard, JCB):</strong> Cổng thanh toán mã hóa SSL 256-bit chuẩn quốc tế.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- 5. Hướng dẫn mua hàng -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="guide">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-danger bg-opacity-10 p-3 text-danger">
+                            <i class="fas fa-shopping-bag fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">5. Hướng Dẫn Đặt Mua Online</h2>
+                            <small class="text-muted">4 bước đơn giản sở hữu trang phục ưng ý</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-2 h-100">
+                                    <span class="badge bg-dark mb-2">Bước 1</span>
+                                    <h6 class="fw-bold text-dark">Chọn sản phẩm</h6>
+                                    <p class="small text-muted mb-0">Tìm kiếm sản phẩm theo danh mục, chọn màu sắc và kích cỡ phù hợp dựa trên bảng thông số size.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-2 h-100">
+                                    <span class="badge bg-dark mb-2">Bước 2</span>
+                                    <h6 class="fw-bold text-dark">Thêm vào giỏ hàng</h6>
+                                    <p class="small text-muted mb-0">Bấm "Thêm vào giỏ hàng" hoặc "Mua ngay" để chuyển sang bước kiểm tra ưu đãi và quà tặng.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-2 h-100">
+                                    <span class="badge bg-dark mb-2">Bước 3</span>
+                                    <h6 class="fw-bold text-dark">Áp dụng mã giảm giá & VIP</h6>
+                                    <p class="small text-muted mb-0">Nhập mã khuyến mãi hoặc hệ thống tự động áp dụng chiết khấu cấp VIP tương ứng với tài khoản.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-2 h-100">
+                                    <span class="badge bg-dark mb-2">Bước 4</span>
+                                    <h6 class="fw-bold text-dark">Xác nhận đặt hàng</h6>
+                                    <p class="small text-muted mb-0">Điền địa chỉ nhận hàng, chọn phương thức thanh toán và bấm hoàn tất để nhận mã đơn hàng.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Chính sách VIP -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="vip">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 text-warning">
+                            <i class="fas fa-crown fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">6. Chính Sách Thành Viên VIP &amp; Đặc Quyền</h2>
+                            <small class="text-muted">Tích lũy chi tiêu — Nâng tầm trải nghiệm</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <div class="table-responsive">
+                            <table class="table table-bordered align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Hạng thành viên</th>
+                                        <th>Điều kiện chi tiêu tích lũy</th>
+                                        <th>Chiết khấu tự động</th>
+                                        <th>Quyền lợi bổ sung</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-bold"><i class="fas fa-user text-secondary me-1"></i> VIP Khởi Đầu</td>
+                                        <td>Từ 0₫ - 1.999.999₫</td>
+                                        <td>Ưu đãi theo voucher</td>
+                                        <td>Tích điểm mua sắm, quà sinh nhật</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-primary"><i class="fas fa-medal me-1"></i> VIP Bạc (Silver)</td>
+                                        <td>Từ 2.000.000₫ trở lên</td>
+                                        <td><span class="badge bg-primary">Giảm 5%</span></td>
+                                        <td>Ưu tiên xử lý đơn, quà sinh nhật đặc biệt</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-warning"><i class="fas fa-gem me-1"></i> VIP Vàng (Gold)</td>
+                                        <td>Từ 5.000.000₫ trở lên</td>
+                                        <td><span class="badge bg-warning text-dark">Giảm 10%</span></td>
+                                        <td>Miễn phí vận chuyển mọi đơn hàng, quà tri ân</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-bold text-danger"><i class="fas fa-crown me-1"></i> VIP Kim Cương (Diamond)</td>
+                                        <td>Từ 10.000.000₫ trở lên</td>
+                                        <td><span class="badge bg-danger">Giảm 15%</span></td>
+                                        <td>Chuyên viên stylist tư vấn riêng, quà tết VIP</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Hướng dẫn chọn size -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 mb-4 bg-white" id="sizing">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-secondary bg-opacity-10 p-3 text-secondary">
+                            <i class="fas fa-ruler-combined fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">7. Bảng Quy Đổi &amp; Hướng Dẫn Chọn Kích Cỡ (Size Chart)</h2>
+                            <small class="text-muted">Phù hợp hoàn hảo với vóc dáng người Việt</small>
+                        </div>
+                    </div>
+                    <div class="policy-body text-secondary lh-lg">
+                        <p>Để chọn được size vừa vặn nhất, quý khách có thể tham khảo bảng kích cỡ chuẩn dưới đây hoặc sử dụng tính năng <strong>Gợi ý kích cỡ thông minh</strong> tại trang chi tiết sản phẩm:</p>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered text-center align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Size</th>
+                                        <th>Chiều cao (cm)</th>
+                                        <th>Cân nặng (kg)</th>
+                                        <th>Vòng ngực (cm)</th>
+                                        <th>Vòng eo (cm)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>S (38)</strong></td>
+                                        <td>155 - 164</td>
+                                        <td>50 - 58</td>
+                                        <td>84 - 88</td>
+                                        <td>70 - 74</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>M (39)</strong></td>
+                                        <td>165 - 170</td>
+                                        <td>59 - 66</td>
+                                        <td>88 - 92</td>
+                                        <td>74 - 78</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>L (40)</strong></td>
+                                        <td>170 - 175</td>
+                                        <td>67 - 74</td>
+                                        <td>92 - 96</td>
+                                        <td>78 - 82</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>XL (41)</strong></td>
+                                        <td>175 - 180</td>
+                                        <td>75 - 82</td>
+                                        <td>96 - 100</td>
+                                        <td>82 - 86</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>XXL (42)</strong></td>
+                                        <td>180 - 188</td>
+                                        <td>83 - 92</td>
+                                        <td>100 - 106</td>
+                                        <td>86 - 92</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. FAQ -->
+                <div class="card border-0 shadow-sm rounded-3 p-4 p-md-5 bg-white" id="faq">
+                    <div class="d-flex align-items-center gap-3 mb-3 pb-2 border-bottom">
+                        <div class="rounded-circle bg-dark bg-opacity-10 p-3 text-dark">
+                            <i class="fas fa-question-circle fa-lg"></i>
+                        </div>
+                        <div>
+                            <h2 class="h4 fw-bold mb-1">8. Câu Hỏi Thường Gặp (FAQ)</h2>
+                            <small class="text-muted">Giải đáp các thắc mắc phổ biến của người mua</small>
+                        </div>
+                    </div>
+                    <div class="accordion accordion-flush" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    Tôi có thể hủy đơn hàng sau khi đã đặt không?
+                                </button>
+                            </h3>
+                            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-secondary">
+                                    Có. Quý khách có thể vào mục <strong>Lịch sử đơn hàng</strong> trong trang cá nhân và bấm nút <strong>Hủy đơn</strong> khi đơn hàng đang ở trạng thái <em>Chờ xác nhận</em>. Hệ thống sẽ tự động hoàn lại số lượng tồn kho và hoàn trả lượt voucher đã sử dụng.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Làm cách nào để kiểm tra tiến trình giao hàng?
+                                </button>
+                            </h3>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-secondary">
+                                    Quý khách đăng nhập tài khoản và vào mục <strong>Lịch sử đơn hàng</strong> để xem chi tiết trạng thái từng đơn hàng theo thời gian thực (Chờ xác nhận &rarr; Đang giao &rarr; Hoàn thành).
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h3 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    FASHION STORE có chính sách hoàn tiền không?
+                                </button>
+                            </h3>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body text-secondary">
+                                    Đối với các đơn hàng đã thanh toán trực tuyến nhưng bị hủy do hết hàng hoặc theo yêu cầu hợp lệ của khách hàng trong vòng 24h, số tiền sẽ được hoàn trả lại tài khoản thanh toán trong 3 - 5 ngày làm việc.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .policy-sidebar-nav .nav-link {
+        font-size: 13.5px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .policy-sidebar-nav .nav-link:hover {
+        background-color: #f3f4f6;
+        color: #111 !important;
+        transform: translateX(3px);
+    }
+    .policy-sidebar-nav .nav-link.active {
+        background-color: #111827 !important;
+        color: #fff !important;
+    }
+    .policy-sidebar-nav .nav-link.active i {
+        color: #fff !important;
+    }
+    .policy-body {
+        font-size: 14.5px;
+    }
+    .policy-body h6 {
+        font-size: 14.5px;
+        margin-top: 18px;
+    }
+</style>

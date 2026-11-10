@@ -1,0 +1,356 @@
+@model IEnumerable<DoAnCoSo.Models.BaiViet>
+@{
+    ViewData["Title"] = "Quản lý bài viết";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var posts = Model ?? Enumerable.Empty<DoAnCoSo.Models.BaiViet>();
+    int totalPosts = posts.Count();
+    int publishedPosts = posts.Count(b => b.TrangThai);
+    int featuredPosts = posts.Count(b => b.NoiBat);
+    int totalViews = posts.Sum(b => b.LuotXem);
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + CONTROLS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="BoSuuTaps" asp-action="Index" class="v22-pill-tab">
+                📸 Bộ sưu tập &amp; Lookbook
+            </a>
+            <a asp-controller="BaiViets" asp-action="Index" class="v22-pill-tab active">
+                📰 Bài viết &amp; Tin tức (@totalPosts)
+            </a>
+            <a asp-controller="CauHinhs" asp-action="GioiThieu" class="v22-pill-tab">
+                🏛️ Trang Giới thiệu
+            </a>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="v22-view-switcher">
+                <button type="button" onclick="switchArticleView('grid')" id="artGridBtn" class="v22-view-btn active">
+                    ⊞ Lưới Tạp Chí
+                </button>
+                <button type="button" onclick="switchArticleView('table')" id="artTableBtn" class="v22-view-btn">
+                    ☰ Bảng Quản Trị
+                </button>
+            </div>
+
+            <a asp-action="Create" class="v22-btn-primary" style="border-radius: 9999px;">
+                + Thêm Bài Viết Mới
+            </a>
+        </div>
+    </div>
+
+    <!-- NOTIFICATION ALERT -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.12); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- 4 KPI BENTO METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng bài viết</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@totalPosts <span style="font-size: 12px; font-weight: 500;" class="text-muted">bài</span></div>
+                    <span class="text-muted" style="font-size: 11px;">Nội dung trên hệ thống</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-file-text-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Đã xuất bản</span>
+                    <div class="font-display fw-bold text-success" style="font-size: 24px;">@publishedPosts <span style="font-size: 12px; font-weight: 500;" class="text-muted">bài</span></div>
+                    <span class="text-success" style="font-size: 11px;">✓ Đang hiển thị trực tuyến</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-check2-circle fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Bài viết nổi bật</span>
+                    <div class="font-display fw-bold text-warning" style="font-size: 24px;">@featuredPosts <span style="font-size: 12px; font-weight: 500;" class="text-muted">bài</span></div>
+                    <span class="text-warning" style="font-size: 11px;">★ Ghim trang chủ</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-star-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng lượt đọc</span>
+                    <div class="font-display fw-bold text-info" style="font-size: 24px;">@totalViews.ToString("N0") <span style="font-size: 12px; font-weight: 500;" class="text-muted">lượt xem</span></div>
+                    <span class="text-muted" style="font-size: 11px;">Tương tác người đọc</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-eye-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER & SEARCH BAR -->
+    <div class="v22-card p-3.5">
+        <form method="get" asp-action="Index" class="row g-2.5 align-items-center m-0">
+            <div class="col-md-5">
+                <input type="text" name="tuKhoa" value="@ViewBag.TuKhoa" class="v22-input" placeholder="Tìm theo tiêu đề bài viết, tác giả..." />
+            </div>
+            <div class="col-md-3">
+                <select name="chuyenMuc" class="v22-input fw-bold">
+                    <option value="">-- Tất cả chuyên mục --</option>
+                    @if (ViewBag.Categories != null)
+                    {
+                        foreach (var cat in (List<string>)ViewBag.Categories)
+                        {
+                            <option value="@cat" selected="@(ViewBag.ChuyenMuc == cat)">@cat</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select name="trangThai" class="v22-input fw-bold">
+                    <option value="">-- Trạng thái --</option>
+                    <option value="true" selected="@(ViewBag.TrangThai == true)">Hiển thị</option>
+                    <option value="false" selected="@(ViewBag.TrangThai == false)">Ẩn / Bản nháp</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="v22-btn-primary w-100 justify-content-center">Lọc</button>
+                <a asp-action="Index" class="v22-btn-outline px-2.5" title="Đặt lại bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+
+    <!-- MODE 1: EDITORIAL MAGAZINE CARDS GRID (DEFAULT - MATCHING DEMO #cmsSub-articles) -->
+    <div id="articleGridView" class="row g-3.5">
+        @if (posts.Any())
+        {
+            @foreach (var item in posts)
+            {
+                var imgUrl = string.IsNullOrEmpty(item.HinhAnh) ? "/images/news_office_gentleman.png" : item.HinhAnh;
+                <div class="col-md-6 col-xl-4">
+                    <div class="v22-popcard overflow-hidden h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="v22-card-media" style="height: 185px; max-height: 185px; overflow: hidden; position: relative;">
+                                <img src="@imgUrl"
+                                     alt="@item.TieuDe"
+                                     class="v22-img-cover"
+                                     style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                                     onerror="this.onerror=null;this.src='/images/news_office_gentleman.png';" />
+                                <div class="position-absolute top-0 start-0 p-2 d-flex gap-1.5">
+                                    <span class="badge rounded-pill bg-dark bg-opacity-75 text-white font-mono" style="font-size: 9.5px;">
+                                        @(item.ChuyenMuc ?? "Thời trang")
+                                    </span>
+                                    @if (item.NoiBat)
+                                    {
+                                        <span class="badge rounded-pill bg-warning text-dark font-mono" style="font-size: 9.5px;">★ Nổi bật</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="p-3.5 pb-2">
+                                <div class="d-flex align-items-center justify-content-between font-mono text-muted mb-1" style="font-size: 10.5px;">
+                                    <span>@item.NgayTao.ToString("dd/MM/yyyy") • @(item.TacGia ?? "Admin")</span>
+                                    <span>👁 @item.LuotXem lượt xem</span>
+                                </div>
+                                <h4 class="font-display fw-bold mb-1.5 text-truncate" style="font-size: 15px;" title="@item.TieuDe">@item.TieuDe</h4>
+                                <p class="text-muted clamp-2 mb-0" style="font-size: 12px;">
+                                    @(string.IsNullOrEmpty(item.TomTat) ? "Chuyên mục xu hướng thời trang & phong cách quý ông hiện đại tại FASHION STORE." : item.TomTat)
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="px-3.5 py-2.5 border-top d-flex align-items-center justify-content-between">
+                            <span class="badge rounded-pill @(item.TrangThai ? "bg-success text-success" : "bg-secondary text-secondary") bg-opacity-10 font-mono" style="font-size: 10px;">
+                                ● @(item.TrangThai ? "Đã xuất bản" : "Bản nháp")
+                            </span>
+                            <div class="d-flex align-items-center gap-1">
+                                <a href="/BaiViet/ChiTiet/@item.MaBaiViet" target="_blank" class="btn btn-sm btn-light border py-1 px-2" title="Xem trên web"><i class="bi bi-box-arrow-up-right"></i></a>
+                                <a asp-action="Edit" asp-route-id="@item.MaBaiViet" class="btn btn-sm btn-light border py-1 px-2" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                                <form asp-action="Delete" asp-route-id="@item.MaBaiViet" method="post" class="d-inline m-0" onsubmit="return confirm('Xóa bài viết này?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" title="Xóa"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="v22-card p-5 text-center text-muted">Chưa có bài viết nào phù hợp.</div>
+            </div>
+        }
+    </div>
+
+    <!-- MODE 2: ARTICLES DATA TABLE (HIDDEN BY DEFAULT SO NO DUPLICATION) -->
+    <div id="articleTableView" class="v22-card p-0 overflow-hidden" style="display: none;">
+        <div class="table-responsive">
+            <table class="v22-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 72px;">Ảnh bìa</th>
+                        <th>Tiêu đề &amp; Tóm tắt nội dung</th>
+                        <th style="width: 150px;">Chuyên mục</th>
+                        <th style="width: 120px;">Tác giả</th>
+                        <th class="text-center" style="width: 90px;">Lượt xem</th>
+                        <th class="text-center" style="width: 80px;">Nổi bật</th>
+                        <th class="text-center" style="width: 110px;">Trạng thái</th>
+                        <th class="text-center" style="width: 100px;">Ngày tạo</th>
+                        <th class="text-end" style="width: 130px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in posts)
+                    {
+                        var imgUrl = string.IsNullOrEmpty(item.HinhAnh) ? "/images/news_office_gentleman.png" : item.HinhAnh;
+                        <tr>
+                            <td>
+                                <img src="@imgUrl"
+                                     alt="@item.TieuDe"
+                                     class="v22-thumb"
+                                     style="width: 46px; height: 46px; object-fit: cover; border-radius: 12px; flex-shrink: 0;"
+                                     onerror="this.onerror=null;this.src='/images/news_office_gentleman.png';" />
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.MaBaiViet" class="fw-bold text-dark text-decoration-none font-display d-block mb-0.5 text-truncate" style="max-width: 360px; font-size: 13.5px;">
+                                    @item.TieuDe
+                                </a>
+                                <div class="text-muted clamp-2" style="font-size: 11.5px; max-width: 360px;">
+                                    @(string.IsNullOrEmpty(item.TomTat) ? "Không có tóm tắt" : item.TomTat)
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border font-mono px-2 py-1" style="font-size: 11px;">
+                                    @(item.ChuyenMuc ?? "Thời trang")
+                                </span>
+                            </td>
+                            <td>
+                                <span class="font-mono text-muted" style="font-size: 11.5px;">@(item.TacGia ?? "Admin")</span>
+                            </td>
+                            <td class="text-center font-mono" style="font-size: 12px;">@item.LuotXem</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm border-0 p-1" onclick="toggleNoiBat(@item.MaBaiViet, this)">
+                                    <i class="bi @(item.NoiBat ? "bi-star-fill text-warning fs-5" : "bi-star text-muted fs-5")"></i>
+                                </button>
+                            </td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm border-0 p-1" onclick="toggleTrangThai(@item.MaBaiViet, this)">
+                                    <span class="badge @(item.TrangThai ? "bg-success" : "bg-secondary") rounded-pill px-2.5 py-1">
+                                        @(item.TrangThai ? "Hiển thị" : "Ẩn")
+                                    </span>
+                                </button>
+                            </td>
+                            <td class="text-center font-mono text-muted" style="font-size: 11.5px;">
+                                @item.NgayTao.ToString("dd/MM/yyyy")
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex align-items-center gap-1">
+                                    <a href="/BaiViet/ChiTiet/@item.MaBaiViet" target="_blank" class="btn btn-sm btn-light border px-2 py-1" title="Xem trên web">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.MaBaiViet" class="btn btn-sm btn-light border px-2 py-1" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-route-id="@item.MaBaiViet" method="post" class="d-inline m-0" onsubmit="return confirm('Xóa bài viết này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function switchArticleView(mode) {
+        const grid = document.getElementById('articleGridView');
+        const table = document.getElementById('articleTableView');
+        const btnGrid = document.getElementById('artGridBtn');
+        const btnTable = document.getElementById('artTableBtn');
+
+        if (mode === 'table') {
+            if (grid) grid.style.display = 'none';
+            if (table) table.style.display = 'block';
+            btnTable?.classList.add('active');
+            btnGrid?.classList.remove('active');
+        } else {
+            if (grid) grid.style.display = '';
+            if (table) table.style.display = 'none';
+            btnGrid?.classList.add('active');
+            btnTable?.classList.remove('active');
+        }
+    }
+
+    function toggleTrangThai(id, btn) {
+        fetch('/BaiViets/ToggleTrangThai/' + id, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                var badge = btn.querySelector('.badge');
+                if (data.trangThai) {
+                    badge.className = 'badge bg-success rounded-pill px-2.5 py-1';
+                    badge.innerText = 'Hiển thị';
+                    showToast('Đã hiển thị bài viết #' + id);
+                } else {
+                    badge.className = 'badge bg-secondary rounded-pill px-2.5 py-1';
+                    badge.innerText = 'Ẩn';
+                    showToast('Đã chuyển bài viết #' + id + ' sang ẩn');
+                }
+            }
+        });
+    }
+
+    function toggleNoiBat(id, btn) {
+        fetch('/BaiViets/ToggleNoiBat/' + id, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                var icon = btn.querySelector('i');
+                if (data.noiBat) {
+                    icon.className = 'bi bi-star-fill text-warning fs-5';
+                    showToast('Đã đánh dấu nổi bật bài viết #' + id);
+                } else {
+                    icon.className = 'bi bi-star text-muted fs-5';
+                    showToast('Đã bỏ nổi bật bài viết #' + id);
+                }
+            }
+        });
+    }
+</script>
+}

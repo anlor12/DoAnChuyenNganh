@@ -1,0 +1,256 @@
+@model DoAnCoSo.Models.KhuyenMai
+@{
+    ViewData["Title"] = "Chỉnh sửa chương trình khuyến mãi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    bool isGift = Model.LoaiKhuyenMai == "TangQua";
+}
+
+<div class="content-wrapper p-4">
+    <!-- BREADCRUMB & HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Khuyến mãi &amp; Quà tặng</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Chỉnh sửa: @Model.Code</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0" style="color: #1e293b; font-size: 24px;">
+                <i class="bi bi-pencil-square text-primary me-2"></i>Chỉnh sửa khuyến mãi / Quà tặng: <span class="font-monospace text-danger">@Model.Code</span>
+            </h2>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary px-3 py-2 rounded-3">
+                <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <form asp-action="Edit" asp-route-id="@Model.Code" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Code" />
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+        <div class="row g-4">
+            <!-- LEFT COLUMN: FORM DETAILS -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-sliders text-primary me-2"></i>Loại hình khuyến mãi</h5>
+                        
+                        <!-- TYPE RADIO -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <input type="radio" class="btn-check" name="LoaiKhuyenMai" id="typeDiscount" value="GiamGia" @(!isGift ? "checked" : "") onchange="togglePromoType()" />
+                                <label class="btn btn-outline-primary w-100 p-3 text-start rounded-4 h-100" for="typeDiscount">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i class="bi bi-ticket-perforated-fill fs-2"></i>
+                                        <div>
+                                            <div class="fw-bold fs-6">Mã giảm giá (%)</div>
+                                            <small class="text-muted">Chiết khấu trực tiếp theo phần trăm đơn hàng</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="radio" class="btn-check" name="LoaiKhuyenMai" id="typeGift" value="TangQua" @(isGift ? "checked" : "") onchange="togglePromoType()" />
+                                <label class="btn btn-outline-danger w-100 p-3 text-start rounded-4 h-100" for="typeGift">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <i class="bi bi-gift-fill fs-2"></i>
+                                        <div>
+                                            <div class="fw-bold fs-6">Ưu đãi tặng quà</div>
+                                            <small class="text-muted">Tặng kèm quà (vớ, bình nước, túi...) khi đạt đơn</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <hr class="mb-4" />
+
+                        <!-- BASIC INFO -->
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Mã khuyến mãi (Code)</label>
+                                <input class="form-control form-control-lg font-monospace text-uppercase fw-bold rounded-3 bg-light" value="@Model.Code" readonly />
+                            </div>
+                            <div class="col-md-8">
+                                <label asp-for="TenChuongTrinh" class="form-label fw-bold">Tên chương trình / Chiến dịch</label>
+                                <input asp-for="TenChuongTrinh" class="form-control form-control-lg rounded-3" />
+                                <span asp-validation-for="TenChuongTrinh" class="text-danger small"></span>
+                            </div>
+
+                            <!-- DISCOUNT FIELDS -->
+                            <div class="col-md-6 field-discount" style="@(isGift ? "display:none;" : "")">
+                                <label asp-for="PhanTramGiam" class="form-label fw-bold">Phần trăm giảm (%) <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input asp-for="PhanTramGiam" type="number" min="0" max="100" class="form-control rounded-start-3" />
+                                    <span class="input-group-text bg-light fw-bold">%</span>
+                                </div>
+                                <span asp-validation-for="PhanTramGiam" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 field-discount" style="@(isGift ? "display:none;" : "")">
+                                <label asp-for="GiamToiDa" class="form-label fw-bold">Giảm tối đa (₫)</label>
+                                <div class="input-group">
+                                    <input asp-for="GiamToiDa" type="number" min="0" step="1000" class="form-control rounded-start-3" />
+                                    <span class="input-group-text bg-light">₫</span>
+                                </div>
+                            </div>
+
+                            <!-- GIFT FIELDS -->
+                            <div class="col-md-12 field-gift" style="@(!isGift ? "display:none;" : "")">
+                                <label asp-for="QuaTangKem" class="form-label fw-bold">Tên món quà tặng kèm <span class="text-danger">*</span></label>
+                                <input asp-for="QuaTangKem" class="form-control rounded-3" />
+                                <span asp-validation-for="QuaTangKem" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 field-gift" style="@(!isGift ? "display:none;" : "")">
+                                <label class="form-label fw-bold">Thay ảnh quà tặng:</label>
+                                <input type="file" name="anhQuaTangFile" class="form-control rounded-3" accept="image/*" onchange="previewGiftFile(this)" />
+                            </div>
+                            <div class="col-md-6 field-gift" style="@(!isGift ? "display:none;" : "")">
+                                <label asp-for="HinhAnhQuaTang" class="form-label fw-bold">Hoặc dán URL ảnh quà tặng:</label>
+                                <input asp-for="HinhAnhQuaTang" id="giftUrlInput" class="form-control rounded-3" oninput="document.getElementById('giftPreviewImg').src=this.value" />
+                            </div>
+
+                            <!-- THRESHOLD & QUANTITY -->
+                            <div class="col-md-6">
+                                <label asp-for="GiaTriDonToiThieu" class="form-label fw-bold">Đơn hàng tối thiểu để áp dụng (₫)</label>
+                                <div class="input-group">
+                                    <input asp-for="GiaTriDonToiThieu" type="number" min="0" step="10000" class="form-control rounded-start-3" />
+                                    <span class="input-group-text bg-light">₫</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="SoLuong" class="form-label fw-bold">Số lượng lượt dùng / Quà tặng <span class="text-danger">*</span></label>
+                                <input asp-for="SoLuong" type="number" min="0" class="form-control rounded-3" required />
+                                <span asp-validation-for="SoLuong" class="text-danger small"></span>
+                            </div>
+
+                            <!-- DATES -->
+                            <div class="col-md-6">
+                                <label asp-for="NgayBatDau" class="form-label fw-bold">Ngày bắt đầu</label>
+                                <input asp-for="NgayBatDau" type="datetime-local" class="form-control rounded-3" value="@Model.NgayBatDau.ToString("yyyy-MM-ddTHH:mm")" />
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="NgayKetThuc" class="form-label fw-bold">Ngày kết thúc <span class="text-danger">*</span></label>
+                                <input asp-for="NgayKetThuc" type="datetime-local" class="form-control rounded-3" value="@Model.NgayKetThuc.ToString("yyyy-MM-ddTHH:mm")" required />
+                                <span asp-validation-for="NgayKetThuc" class="text-danger small"></span>
+                            </div>
+
+                            <!-- DESCRIPTION -->
+                            <div class="col-md-12">
+                                <label asp-for="MoTa" class="form-label fw-bold">Mô tả / Thể lệ chương trình</label>
+                                <textarea asp-for="MoTa" rows="3" class="form-control rounded-3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: OPTIONS & PREVIEW -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white fw-bold py-3">
+                        <i class="bi bi-toggle-on text-primary me-2"></i>Trạng thái &amp; Hiển thị
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="TrangThai" class="form-check-input" type="checkbox" id="checkActive" />
+                            <label class="form-check-label fw-semibold" for="checkActive">
+                                Kích hoạt chương trình
+                            </label>
+                        </div>
+
+                        <div class="form-check form-switch mb-4">
+                            <input asp-for="HienThiTrangChu" class="form-check-input" type="checkbox" id="checkHome" />
+                            <label class="form-check-label fw-semibold" for="checkHome">
+                                Hiển thị banner / badge ở giỏ hàng &amp; thanh toán
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADVANCED RULES -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-header bg-white fw-bold py-3">
+                        <i class="bi bi-shield-check text-warning me-2"></i>Điều kiện nâng cao
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="ChiDanhChoKhachMoi" class="form-check-input" type="checkbox" id="checkNewCustomer" />
+                            <label class="form-check-label fw-semibold" for="checkNewCustomer">
+                                <i class="bi bi-person-plus text-primary me-1"></i>Chỉ khách hàng mới
+                            </label>
+                            <div class="form-text small">Áp dụng cho tài khoản chưa từng hoàn tất đơn hàng nào.</div>
+                        </div>
+
+                        <div class="mb-2">
+                            <label asp-for="MaLoaiSanPhamApDung" class="form-label fw-bold">
+                                <i class="bi bi-tag text-success me-1"></i>Danh mục áp dụng:
+                            </label>
+                            <select asp-for="MaLoaiSanPhamApDung" class="form-select rounded-3">
+                                <option value="">-- Áp dụng cho mọi danh mục --</option>
+                                @if (ViewBag.LoaiSanPhams != null)
+                                {
+                                    foreach (var loai in (IEnumerable<DoAnCoSo.Models.LoaiSanPham>)ViewBag.LoaiSanPhams)
+                                    {
+                                        <option value="@loai.MaLoaiSanPham">@loai.TenLoaiSanPham</option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text small">Chiết khấu sẽ chỉ tính trên các sản phẩm thuộc danh mục đã chọn.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+
+                        <!-- GIFT PREVIEW BOX -->
+                        <div id="giftPreviewBox" style="@(!isGift ? "display:none;" : "")" class="p-3 bg-light rounded-4 border mb-4 text-center">
+                            <label class="form-label small fw-bold text-muted mb-2">Xem trước quà tặng kèm:</label>
+                            <img id="giftPreviewImg" src="@(string.IsNullOrEmpty(Model.HinhAnhQuaTang) ? "https://images.unsplash.com/photo-1582966772680-860e372bb558?w=600&q=80" : Model.HinhAnhQuaTang)" alt="Preview" class="img-fluid rounded-3 shadow-sm object-fit-cover w-100 mb-2" style="max-height: 160px;" />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold rounded-3">
+                                <i class="bi bi-check-circle-fill me-2"></i>Cập nhật chương trình
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    function togglePromoType() {
+        var isGift = document.getElementById('typeGift').checked;
+        var discountFields = document.querySelectorAll('.field-discount');
+        var giftFields = document.querySelectorAll('.field-gift');
+        var giftPreviewBox = document.getElementById('giftPreviewBox');
+
+        if (isGift) {
+            discountFields.forEach(el => el.style.display = 'none');
+            giftFields.forEach(el => el.style.display = 'block');
+            giftPreviewBox.style.display = 'block';
+        } else {
+            discountFields.forEach(el => el.style.display = 'block');
+            giftFields.forEach(el => el.style.display = 'none');
+            giftPreviewBox.style.display = 'none';
+        }
+    }
+
+    function previewGiftFile(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('giftPreviewImg').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+}

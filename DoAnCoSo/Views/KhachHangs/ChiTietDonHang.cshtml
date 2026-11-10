@@ -1,0 +1,544 @@
+@model DoAnCoSo.Models.DonHang
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.MaDonHang;
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group shadow-sm">
+                <a href="/KhachHangs/Profile" class="list-group-item list-group-item-action">Thông tin cá nhân</a>
+                <a href="/KhachHangs/LichSuDonHang" class="list-group-item list-group-item-action active bg-dark border-dark">Lịch sử đơn hàng</a>
+                <a href="/Auth/Logout" class="list-group-item list-group-item-action text-danger">Đăng xuất</a>
+            </div>
+        </div>
+        <div class="col-md-9">
+            @if (TempData["OrderSuccess"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-0 mb-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["OrderSuccess"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["OrderError"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show rounded-0 mb-3" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@TempData["OrderError"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ReviewSuccess"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show rounded-0 mb-3" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["ReviewSuccess"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ReviewError"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show rounded-0 mb-3" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["ReviewError"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <a href="/KhachHangs/LichSuDonHang" class="text-decoration-none text-dark"><i class="fas fa-arrow-left"></i> Quay lại lịch sử</a>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary p-2">TRẠNG THÁI: @Model.TrangThaiDonHang.ToUpper()</span>
+                    @if (Model.TrangThaiDonHang == "Chờ xác nhận" || Model.TrangThaiDonHang == "ChoXacNhan")
+                    {
+                        <button type="button" class="btn btn-outline-danger btn-sm rounded-0 fw-bold px-3" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                            <i class="fas fa-times-circle me-1"></i> Hủy đơn hàng
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-bold">Chi tiết đơn hàng #@Model.MaDonHang</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p class="mb-1 text-muted">Ngày đặt hàng</p>
+                            <p class="fw-bold">@Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="mb-1 text-muted">Số điện thoại nhận</p>
+                            <p class="fw-bold">@Model.SoDienThoaiNhan</p>
+                        </div>
+                        <div class="col-md-4 mt-2">
+                            <p class="mb-1 text-muted">Phương thức thanh toán</p>
+                            <p class="fw-bold mb-0">
+                                @if (Model.PhuongThucThanhToan == "ChuyenKhoan") { <span>Chuyển khoản (VietQR)</span> }
+                                else if (Model.PhuongThucThanhToan == "VNPAY") { <span class="text-primary"><i class="fas fa-qrcode me-1"></i>Cổng VNPAY</span> }
+                                else if (Model.PhuongThucThanhToan == "MOMO") { <span style="color:#a50064;"><i class="fas fa-wallet me-1"></i>Ví MoMo</span> }
+                                else { <span>Thanh toán khi nhận hàng (COD)</span> }
+                            </p>
+                        </div>
+                        <div class="col-md-4 mt-2">
+                            <p class="mb-1 text-muted">Đơn vị vận chuyển</p>
+                            <p class="fw-bold mb-0 text-primary">
+                                <i class="fas fa-shipping-fast me-1"></i>@(Model.DonViVanChuyen ?? "Giao Hàng Tiết Kiệm (GHTK)")
+                            </p>
+                            <small class="text-muted">Mã vận đơn: <strong class="text-dark">@(Model.MaVanDon ?? "Đang cập nhật")</strong></small>
+                        </div>
+                        <div class="col-md-4 mt-2 text-md-end">
+                            <p class="mb-1 text-muted">Trạng thái thanh toán</p>
+                            <p class="fw-bold mb-0">
+                                @if (Model.TrangThaiThanhToan == "DaThanhToan")
+                                {
+                                    <span class="text-success"><i class="fas fa-check-circle me-1"></i>Đã thanh toán</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary"><i class="fas fa-clock me-1"></i>Chưa thanh toán</span>
+                                    @if ((Model.PhuongThucThanhToan == "VNPAY" || Model.PhuongThucThanhToan == "MOMO") && Model.TrangThaiDonHang != "Đã hủy")
+                                    {
+                                        <div class="mt-1">
+                                            <a href="/Cart/PaymentGateway?orderId=@Model.MaDonHang&method=@Model.PhuongThucThanhToan" class="btn btn-sm btn-danger py-0 px-2 fw-semibold" style="font-size: 11px;">
+                                                <i class="fas fa-credit-card me-1"></i>Thanh toán ngay
+                                            </a>
+                                        </div>
+                                    }
+                                }
+                            </p>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <p class="mb-1 text-muted">Địa chỉ giao hàng</p>
+                            <p class="fw-bold">@Model.DiaChiGiaoHang</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.GhiChu))
+                        {
+                            <div class="col-12 mt-2">
+                                <p class="mb-1 text-muted">Ghi chú</p>
+                                <p class="fst-italic border p-2 bg-light">@Model.GhiChu</p>
+                            </div>
+                        }
+                    </div>
+
+                    @{
+                        var tracking = DoAnCoSo.Services.ShippingService.GetOrderTracking(Model);
+                    }
+                    <!-- ORDER TRACKING TIMELINE & BƯU KIỆN TRỰC QUAN -->
+                    <div class="card border-0 rounded-4 shadow-sm mb-4 overflow-hidden" style="border: 1px solid #e2e8f0 !important; background: #fff;">
+                        <div class="card-header bg-light py-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="badge bg-dark px-3 py-2 text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">
+                                    <i class="fas fa-truck-fast me-1 text-warning"></i> @tracking.CarrierName
+                                </span>
+                                <span class="fw-bold text-dark small">Mã vận đơn:</span>
+                                <code class="fs-6 fw-bold text-primary bg-white px-2 py-1 rounded border">@tracking.TrackingCode</code>
+                                <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="navigator.clipboard.writeText('@tracking.TrackingCode'); alert('Đã sao chép mã vận đơn: @tracking.TrackingCode');" title="Sao chép mã">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <div>
+                                <a href="@tracking.TrackingUrl" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3 fw-bold" style="font-size: 11px;">
+                                    <i class="fas fa-external-link-alt me-1"></i> Tra cứu trên web @tracking.CarrierCode
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Shipper & Hotline Bar -->
+                            <div class="p-3 rounded-3 mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="rounded-circle bg-white border d-flex align-items-center justify-content-center text-primary shadow-sm" style="width: 44px; height: 44px; font-size: 18px;">
+                                        <i class="fas fa-motorcycle"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Bưu tá phát hàng:</div>
+                                        <div class="fw-bold text-dark">@tracking.ShipperName</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <a href="tel:@tracking.ShipperPhone" class="btn btn-success btn-sm rounded-pill px-3 fw-bold text-white text-decoration-none">
+                                        <i class="fas fa-phone-alt me-1"></i> @tracking.ShipperPhone
+                                    </a>
+                                    <span class="text-muted small">Hotline bưu cục: <strong>@tracking.CarrierHotline</strong></span>
+                                </div>
+                            </div>
+
+                            <!-- Horizontal Stepper for Milestones -->
+                            <div class="tracking-stepper position-relative mb-4 px-2">
+                                <div class="tracking-progress-bar position-absolute" style="top: 20px; left: 10%; right: 10%; height: 4px; background: #e2e8f0; z-index: 1;">
+                                    @{
+                                        int completedIndex = 0;
+                                        for (int i = 0; i < tracking.Events.Count; i++) {
+                                            if (tracking.Events[i].Status == "completed") completedIndex = i;
+                                        }
+                                        int progressPct = (int)((double)completedIndex / (tracking.Events.Count - 1) * 100);
+                                    }
+                                    <div class="h-100 bg-success transition-all" style="width: @progressPct%;"></div>
+                                </div>
+                                <div class="row text-center position-relative g-2" style="z-index: 2;">
+                                    @for (int i = 0; i < tracking.Events.Count; i++)
+                                    {
+                                        var ev = tracking.Events[i];
+                                        var isDone = ev.Status == "completed";
+                                        var isCurrent = ev.Status == "current";
+                                        var dotBg = isDone ? "bg-success text-white" : (isCurrent ? "bg-primary text-white shadow pulse-dot" : "bg-white text-muted border");
+
+                                        <div class="col">
+                                            <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center @dotBg" style="width: 40px; height: 40px; font-size: 16px; border: 3px solid #fff;">
+                                                <i class="fas @(isDone ? "fa-check" : (isCurrent ? "fa-dot-circle" : "fa-circle"))"></i>
+                                            </div>
+                                            <div class="fw-bold mt-2" style="font-size: 11px; color: @(isDone || isCurrent ? "#0f172a" : "#94a3b8");">
+                                                @ev.Title
+                                            </div>
+                                            <small class="text-muted d-block" style="font-size: 9.5px;">
+                                                @ev.Time.ToString("dd/MM HH:mm")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Detailed log collapse -->
+                            <div class="mt-4 pt-3 border-top">
+                                <a class="text-decoration-none fw-bold small text-dark d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#trackingDetailList" role="button">
+                                    <span><i class="fas fa-history me-1 text-primary"></i> Nhật ký luân chuyển kiện hàng (@tracking.Events.Count mốc)</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </a>
+                                <div class="collapse show mt-3" id="trackingDetailList">
+                                    <div class="list-group list-group-flush">
+                                        @foreach (var ev in tracking.Events.OrderByDescending(e => e.Time))
+                                        {
+                                            <div class="list-group-item px-0 py-2 border-0 d-flex gap-3 align-items-start">
+                                                <span class="badge @(ev.Status == "completed" ? "bg-success" : (ev.Status == "current" ? "bg-primary" : "bg-secondary")) rounded-pill mt-1" style="font-size: 9px; min-width: 75px;">
+                                                    @ev.Time.ToString("HH:mm dd/MM")
+                                                </span>
+                                                <div>
+                                                    <div class="fw-bold text-dark small">@ev.Title — <span class="text-muted fw-normal">@ev.Location</span></div>
+                                                    <div class="text-secondary small" style="font-size: 12px;">@ev.Description</div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <style>
+                        .pulse-dot {
+                            animation: pulseAnimation 2s infinite;
+                        }
+                        @@keyframes pulseAnimation {
+                            0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+                            70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+                            100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+                        }
+                    </style>
+                    {
+                        <div class="card border-warning mb-4 bg-light">
+                            <div class="card-header bg-warning text-dark fw-bold text-uppercase py-2" style="font-size: 12px; letter-spacing: 1px;">
+                                <i class="fas fa-qrcode me-2"></i>Thanh toán chuyển khoản qua mã QR
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-sm-4 text-center">
+                                        @{
+                                            var qrUrl = $"https://img.vietqr.io/image/Vietcombank-1041323524-compact2.png?amount={(long)Model.TongTien}&addInfo=DH{Model.MaDonHang}&accountName=HA%20PHUONG%20BINH";
+                                        }
+                                        <img src="@qrUrl" alt="Mã chuyển khoản VietQR" class="img-fluid rounded border p-1 bg-white" style="max-height: 160px;" />
+                                    </div>
+                                    <div class="col-sm-8" style="font-size: 13px;">
+                                        <p class="mb-1">Vui lòng quét mã QR hoặc chuyển khoản thủ công theo thông tin sau:</p>
+                                        <ul class="list-unstyled mb-2 pl-0">
+                                            <li>- Ngân hàng: <strong>Vietcombank (Ngân hàng Ngoại thương Việt Nam)</strong></li>
+                                            <li>- Số tài khoản: <strong>1041323524</strong></li>
+                                            <li>- Chủ tài khoản: <strong>HA PHUONG BINH</strong></li>
+                                            <li>- Số tiền: <strong class="text-danger">@Model.TongTien.ToString("N0") đ</strong></li>
+                                            <li>- Nội dung: <strong class="text-primary">DH@(Model.MaDonHang)</strong></li>
+                                        </ul>
+                                        <small class="text-muted d-block"><i class="fas fa-info-circle me-1"></i>Hệ thống sẽ cập nhật trạng thái đơn hàng sau khi kiểm tra giao dịch chuyển khoản thành công.</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <h6 class="fw-bold border-bottom pb-2">Sản phẩm đã mua</h6>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Phân loại</th>
+                                    <th>Đơn giá</th>
+                                    <th>Số lượng</th>
+                                    <th class="text-end">Thành tiền</th>
+                                    <th class="text-center" style="width: 220px;">Đánh giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.ChiTietDonHangs != null)
+                                {
+                                    @foreach (var detail in Model.ChiTietDonHangs)
+                                    {
+                                        var thanhTien = detail.SoLuong * detail.DonGia;
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    @if (detail.BienTheSanPham?.SanPham != null)
+                                                    {
+                                                        <span class="fw-bold">@detail.BienTheSanPham.SanPham.TenSanPham</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted fst-italic">Sản phẩm không còn tồn tại</span>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (detail.BienTheSanPham != null)
+                                                {
+                                                    <small class="text-muted">Màu: @detail.BienTheSanPham.MauSac<br>Size: @detail.BienTheSanPham.KichCo</small>
+                                                }
+                                            </td>
+                                            <td>@detail.DonGia.ToString("N0") đ</td>
+                                            <td>@detail.SoLuong</td>
+                                            <td class="text-end fw-bold">@thanhTien.ToString("N0") đ</td>
+                                            <td class="text-center">
+                                                @if (detail.BienTheSanPham?.SanPham != null)
+                                                {
+                                                    var maSP = detail.BienTheSanPham.SanPham.MaSanPham;
+                                                    var daDanhGiaList = ViewBag.MaSanPhamsDaDanhGia as List<int> ?? new List<int>();
+                                                    var danhGiasDict = ViewBag.DanhGiasCuaKhach as Dictionary<int, DoAnCoSo.Models.DanhGia> ?? new Dictionary<int, DoAnCoSo.Models.DanhGia>();
+
+                                                    if (Model.TrangThaiDonHang == "Hoàn thành" || Model.TrangThaiDonHang == "HoanThanh")
+                                                    {
+                                                        if (daDanhGiaList.Contains(maSP) && danhGiasDict.TryGetValue(maSP, out var dg))
+                                                        {
+                                                            <div class="text-start">
+                                                                <div class="text-warning mb-1" style="font-size: 12px;">
+                                                                    @for (int i = 1; i <= 5; i++)
+                                                                    {
+                                                                        if (i <= dg.DiemDanhGia)
+                                                                        {
+                                                                            <i class="fas fa-star text-warning"></i>
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            <i class="far fa-star text-warning"></i>
+                                                                        }
+                                                                    }
+                                                                </div>
+                                                                @if (!string.IsNullOrEmpty(dg.NoiDung))
+                                                                {
+                                                                    <small class="text-muted d-block text-truncate" style="max-width: 180px;" title="@dg.NoiDung">@dg.NoiDung</small>
+                                                                }
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <button type="button" class="btn btn-sm btn-dark px-3 rounded-0 btn-review" 
+                                                                    data-bs-toggle="modal" 
+                                                                    data-bs-target="#reviewModal" 
+                                                                    data-masanpham="@maSP" 
+                                                                    data-tensanpham="@detail.BienTheSanPham.SanPham.TenSanPham"
+                                                                    style="font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">
+                                                                Viết đánh giá
+                                                            </button>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-light text-secondary border rounded-0" style="font-size: 10px; font-weight: normal;">Đang giao hàng / Chờ duyệt</span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span>-</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                @if (Model.ChietKhauVip > 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-end text-muted">Chiết khấu VIP (@Model.ChietKhauVip%):</td>
+                                        <td class="text-end text-danger fw-semibold">-@Model.SoTienGiamVip.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                                @if (Model.DiemSuDung > 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-end text-muted"><i class="fas fa-coins text-warning me-1"></i>Trừ điểm thưởng (@Model.DiemSuDung.ToString("N0") điểm):</td>
+                                        <td class="text-end text-danger fw-semibold">-@Model.SoTienGiamDiem.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                                @if (Model.SoTienGiam > 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-end text-muted">Mã giảm giá (@(Model.MaKhuyenMaiApDung ?? "Voucher")):</td>
+                                        <td class="text-end text-danger fw-semibold">-@Model.SoTienGiam.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                                @if (Model.PhiGiaoHang > 0)
+                                {
+                                    <tr>
+                                        <td colspan="5" class="text-end text-muted">Phí giao hàng:</td>
+                                        <td class="text-end fw-semibold">+@Model.PhiGiaoHang.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="5" class="text-end fw-bold">TỔNG CỘNG THANH TOÁN:</td>
+                                    <td class="text-end fw-bold text-danger fs-5">@Model.TongTien.ToString("N0") đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Đánh Giá -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-0 border-0 shadow-lg">
+            <form asp-controller="KhachHangs" asp-action="ThemDanhGia" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maDonHang" value="@Model.MaDonHang" />
+                <input type="hidden" name="maSanPham" id="modalMaSanPham" value="" />
+                
+                <div class="modal-header bg-dark text-white rounded-0 border-0">
+                    <h5 class="modal-title fw-bold" id="reviewModalLabel">Đánh giá sản phẩm</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body p-4">
+                    <h6 class="fw-bold mb-3 text-uppercase" id="modalTenSanPham" style="font-size: 14px; letter-spacing: 0.5px; border-left: 3px solid #000; padding-left: 8px;">Tên sản phẩm</h6>
+                    
+                    <!-- Chọn sao -->
+                    <div class="mb-4">
+                        <label class="form-label d-block fw-bold text-muted mb-2" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Chọn số sao đánh giá</label>
+                        <div class="star-rating fs-3 d-flex gap-2">
+                            <input type="hidden" name="diemDanhGia" id="inputDiemDanhGia" value="5" />
+                            <i class="fas fa-star text-warning star-btn" data-value="1" style="cursor: pointer; transition: transform 0.2s;"></i>
+                            <i class="fas fa-star text-warning star-btn" data-value="2" style="cursor: pointer; transition: transform 0.2s;"></i>
+                            <i class="fas fa-star text-warning star-btn" data-value="3" style="cursor: pointer; transition: transform 0.2s;"></i>
+                            <i class="fas fa-star text-warning star-btn" data-value="4" style="cursor: pointer; transition: transform 0.2s;"></i>
+                            <i class="fas fa-star text-warning star-btn" data-value="5" style="cursor: pointer; transition: transform 0.2s;"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Ý kiến nhận xét -->
+                    <div class="mb-3">
+                        <label for="noiDung" class="form-label fw-bold text-muted mb-2" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Ý kiến nhận xét của bạn</label>
+                        <textarea class="form-control rounded-0" id="noiDung" name="noiDung" rows="4" placeholder="Sản phẩm mặc có vừa không? Chất vải thế nào? Hãy chia sẻ cảm nhận thực tế của bạn nhé..." maxlength="500" style="font-size: 13px;"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer border-0 p-3 bg-light">
+                    <button type="button" class="btn btn-secondary rounded-0 px-4" data-bs-dismiss="modal" style="font-size: 12px; text-transform: uppercase; font-weight: 700;">Hủy</button>
+                    <button type="submit" class="btn btn-dark rounded-0 px-4" style="font-size: 12px; text-transform: uppercase; font-weight: 700;">Gửi đánh giá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hủy Đơn Hàng -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-0 border-0 shadow-lg">
+            <form asp-controller="KhachHangs" asp-action="HuyDonHang" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maDonHang" value="@Model.MaDonHang" />
+
+                <div class="modal-header bg-danger text-white rounded-0 border-0">
+                    <h5 class="modal-title fw-bold" id="cancelOrderModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Xác nhận hủy đơn hàng #@Model.MaDonHang
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <p class="text-danger fw-bold mb-3">Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
+                    <p class="small text-muted mb-3">Sau khi hủy, hệ thống sẽ tự động hoàn trả số lượng sản phẩm về kho hàng. Hành động này không thể hoàn tác.</p>
+                    <div class="mb-3">
+                        <label for="lyDoHuy" class="form-label fw-bold small text-muted text-uppercase">Lý do hủy đơn (tùy chọn):</label>
+                        <select class="form-select rounded-0 mb-2" id="selectLyDo" onchange="if(this.value) document.getElementById('lyDoHuy').value=this.value;">
+                            <option value="">-- Chọn lý do thường gặp --</option>
+                            <option value="Muốn thay đổi địa chỉ nhận hàng">Muốn thay đổi địa chỉ nhận hàng</option>
+                            <option value="Muốn thay đổi kích cỡ hoặc màu sắc sản phẩm">Muốn thay đổi kích cỡ hoặc màu sắc sản phẩm</option>
+                            <option value="Tìm thấy giá tốt hơn ở nơi khác">Tìm thấy giá tốt hơn ở nơi khác</option>
+                            <option value="Đổi ý, không muốn mua nữa">Đổi ý, không muốn mua nữa</option>
+                            <option value="Đặt nhầm sản phẩm / số lượng">Đặt nhầm sản phẩm / số lượng</option>
+                        </select>
+                        <textarea class="form-control rounded-0" id="lyDoHuy" name="lyDoHuy" rows="3" placeholder="Nhập lý do cụ thể nếu có..."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 p-3 bg-light">
+                    <button type="button" class="btn btn-secondary rounded-0 px-4 fw-bold" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger rounded-0 px-4 fw-bold">Xác nhận hủy đơn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Khi mở Modal đánh giá, gán tên sản phẩm và mã sản phẩm
+            $('.btn-review').on('click', function () {
+                var maSanPham = $(this).data('masanpham');
+                var tenSanPham = $(this).data('tensanpham');
+                
+                $('#modalMaSanPham').val(maSanPham);
+                $('#modalTenSanPham').text(tenSanPham);
+                
+                // Reset số sao về 5
+                resetStars(5);
+                $('#inputDiemDanhGia').val(5);
+            });
+            
+            // Xử lý hover sao
+            $('.star-btn').hover(
+                function () {
+                    var val = $(this).data('value');
+                    highlightStars(val);
+                },
+                function () {
+                    var currentRating = $('#inputDiemDanhGia').val();
+                    highlightStars(currentRating);
+                }
+            );
+
+            // Xử lý chọn sao
+            $('.star-btn').on('click', function () {
+                var rating = $(this).data('value');
+                $('#inputDiemDanhGia').val(rating);
+                resetStars(rating);
+            });
+            
+            function highlightStars(rating) {
+                $('.star-btn').each(function () {
+                    var val = $(this).data('value');
+                    if (val <= rating) {
+                        $(this).removeClass('far').addClass('fas text-warning');
+                    } else {
+                        $(this).removeClass('fas text-warning').addClass('far');
+                    }
+                });
+            }
+
+            // Hàm tô màu sao dựa trên rating
+            function resetStars(rating) {
+                highlightStars(rating);
+            }
+        });
+    </script>
+}

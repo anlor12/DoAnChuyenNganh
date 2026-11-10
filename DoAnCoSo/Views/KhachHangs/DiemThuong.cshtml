@@ -1,0 +1,424 @@
+@model DoAnCoSo.Services.LoyaltySummaryViewModel
+@{
+    ViewData["Title"] = "Điểm thưởng & Giới thiệu bạn bè";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var user = ViewBag.User as DoAnCoSo.Models.NguoiDung;
+    var vipStatus = ViewBag.VipStatus as DoAnCoSo.Models.VipStatusViewModel;
+}
+
+@section Styles {
+<style>
+    .account-page {
+        padding: 48px 0 80px;
+        background: #f8fafc;
+        min-height: calc(100vh - 120px);
+    }
+
+    .account-sidebar {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    .account-sidebar-header {
+        padding: 24px 20px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        color: #fff;
+        text-align: center;
+    }
+
+    .user-avatar-circle {
+        width: 64px;
+        height: 64px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        margin: 0 auto 12px;
+        border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .sidebar-nav .sidebar-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #64748b;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .sidebar-nav .sidebar-nav-item:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+        border-left-color: #cbd5e1;
+    }
+
+    .sidebar-nav .sidebar-nav-item.active {
+        background: #f8fafc;
+        color: #0f172a;
+        font-weight: 700;
+        border-left-color: #0f172a;
+    }
+
+    .sidebar-nav hr { margin: 4px 20px; border-color: #f1f5f9; }
+
+    /* LOYALTY CARD STYLES */
+    .loyalty-card-vip {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+        border-radius: 16px;
+        color: #ffffff;
+        padding: 28px 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .loyalty-card-vip::after {
+        content: '';
+        position: absolute;
+        top: -60px;
+        right: -60px;
+        width: 180px;
+        height: 180px;
+        background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .card-chip {
+        width: 44px;
+        height: 32px;
+        background: linear-gradient(135deg, #fef08a 0%, #ca8a04 100%);
+        border-radius: 6px;
+        border: 1px solid #a16207;
+        display: inline-block;
+        margin-bottom: 16px;
+        box-shadow: inset 0 1px 3px rgba(255,255,255,0.6);
+    }
+
+    .referral-box {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.02);
+    }
+
+    .copy-badge-btn {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .copy-badge-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .step-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #0f172a;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+</style>
+}
+
+<div class="account-page">
+    <div class="container">
+        <!-- BREADCRUMB -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb small">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-muted">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/KhachHangs/Profile" class="text-decoration-none text-muted">Tài khoản</a></li>
+                <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Điểm thưởng & Giới thiệu</li>
+            </ol>
+        </nav>
+
+        <div class="row g-4">
+            <!-- SIDEBAR TRÁI -->
+            <div class="col-lg-3">
+                <div class="account-sidebar">
+                    <div class="account-sidebar-header">
+                        <div class="user-avatar-circle">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">@(user?.HoTen ?? "Khách hàng")</h6>
+                        <span class="badge bg-warning text-dark small fw-bold">@(user?.HangVip ?? "VIP Khởi Đầu")</span>
+                    </div>
+                    <nav class="sidebar-nav">
+                        <a href="/KhachHangs/Profile" class="sidebar-nav-item">
+                            <i class="fas fa-user-circle"></i> Thông tin cá nhân
+                        </a>
+                        <a href="/KhachHangs/LichSuDonHang" class="sidebar-nav-item">
+                            <i class="fas fa-shopping-bag"></i> Lịch sử đơn hàng
+                        </a>
+                        <a href="/KhachHangs/DiemThuong" class="sidebar-nav-item active">
+                            <i class="fas fa-coins text-warning"></i> Điểm thưởng & Giới thiệu
+                        </a>
+                        <hr />
+                        <a href="/Auth/Logout" class="sidebar-nav-item text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- NỘI DUNG CHÍNH PHẢI -->
+            <div class="col-lg-9">
+                <!-- THẺ THÀNH VIÊN VÀ ĐIỂM THƯỞNG -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-7">
+                        <div class="loyalty-card-vip">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="card-chip"></div>
+                                    <div class="text-uppercase small tracking-wide text-warning fw-bold">FASHION STORE REWARDS</div>
+                                </div>
+                                <span class="badge bg-warning text-dark fw-bold px-3 py-2 rounded-pill">
+                                    <i class="fas fa-crown me-1"></i>@Model.HangVip
+                                </span>
+                            </div>
+
+                            <div class="mt-4 mb-3">
+                                <div class="small text-white-50">Số dư điểm khả dụng</div>
+                                <div class="display-6 fw-bold text-white">
+                                    @Model.DiemHienTai.ToString("N0") <span class="fs-5 text-warning fw-normal">điểm</span>
+                                </div>
+                                <div class="small text-white-50 mt-1">
+                                    Tương đương <strong class="text-white">@Model.GiaTriDiemVnd.ToString("N0") ₫</strong> khi thanh toán đơn hàng (1 điểm = 1 ₫)
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-end pt-3 border-top border-white border-opacity-10">
+                                <div>
+                                    <div class="small text-white-50" style="font-size: 11px;">CHỦ THẺ</div>
+                                    <div class="fw-bold small text-white text-uppercase">@(user?.HoTen ?? "QUÝ KHÁCH HÀNG")</div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small text-white-50" style="font-size: 11px;">MÃ THÀNH VIÊN</div>
+                                    <div class="fw-bold font-monospace text-warning">@Model.MaGioiThieu</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THỐNG KÊ GIỚI THIỆU -->
+                    <div class="col-md-5">
+                        <div class="h-100 d-flex flex-column gap-3">
+                            <div class="referral-box flex-fill d-flex align-items-center gap-3">
+                                <div class="rounded-circle p-3 bg-primary bg-opacity-10 text-primary fs-3">
+                                    <i class="fas fa-user-friends"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">Bạn bè đã giới thiệu</div>
+                                    <div class="fs-3 fw-bold text-dark">@Model.SoNguoiDaGioiThieu <span class="fs-6 fw-normal text-muted">người</span></div>
+                                    <div class="small text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>Đã tham gia</div>
+                                </div>
+                            </div>
+
+                            <div class="referral-box flex-fill d-flex align-items-center gap-3">
+                                <div class="rounded-circle p-3 bg-warning bg-opacity-10 text-warning fs-3">
+                                    <i class="fas fa-gift"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">Điểm thưởng từ giới thiệu</div>
+                                    <div class="fs-3 fw-bold text-dark">@Model.TongDiemThuongGioiThieu.ToString("N0") <span class="fs-6 fw-normal text-muted">điểm</span></div>
+                                    <div class="small text-muted">+50.000 điểm mỗi bạn hoàn thành đơn</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HỘP MÃ GIỚI THIỆU VÀ CHIA SẺ -->
+                <div class="referral-box mb-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <i class="fas fa-share-alt text-warning fs-4"></i>
+                        <div>
+                            <h5 class="fw-bold mb-0">Giới thiệu bạn bè - Cùng nhận thưởng</h5>
+                            <small class="text-muted">Mỗi người bạn tham gia mua sắm là thêm niềm vui và đặc quyền cho cả hai!</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 align-items-center mb-4">
+                        <div class="col-md-5">
+                            <label class="small text-muted fw-bold mb-1">MÃ GIỚI THIỆU CỦA BẠN</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control fw-bold font-monospace text-center fs-5 bg-light" id="txtRefCode" value="@Model.MaGioiThieu" readonly />
+                                <button class="btn btn-dark fw-bold px-3" type="button" onclick="copyRefCode()">
+                                    <i class="fas fa-copy me-1"></i> Sao chép
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="small text-muted fw-bold mb-1">LINK GIỚI THIỆU TRỰC TIẾP</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control small bg-light" id="txtRefLink" value="@Model.LinkGioiThieu" readonly />
+                                <button class="btn btn-warning fw-bold px-3 text-dark" type="button" onclick="copyRefLink()">
+                                    <i class="fas fa-link me-1"></i> Sao chép link
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="small fw-bold text-uppercase text-muted mb-3">Cách thức nhận thưởng 3 bước:</div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <div class="step-circle">1</div>
+                                    <div class="small">
+                                        <strong class="d-block text-dark">Gửi link / mã</strong>
+                                        <span class="text-muted">Chia sẻ mã hoặc link đăng ký cho bạn bè qua Zalo, Messenger hoặc MXH.</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <div class="step-circle">2</div>
+                                    <div class="small">
+                                        <strong class="d-block text-dark">Bạn bè nhận quà</strong>
+                                        <span class="text-muted">Bạn của bạn đăng ký nhận ngay +10.000 điểm & Voucher giảm 20% (mã BANMOI50K).</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex align-items-start gap-2">
+                                    <div class="step-circle">3</div>
+                                    <div class="small">
+                                        <strong class="d-block text-dark">Nhận +50.000 điểm</strong>
+                                        <span class="text-muted">Khi người bạn đó đặt và hoàn tất đơn hàng đầu tiên, bạn nhận ngay 50.000 điểm!</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BẢNG LỊCH SỬ BIẾN ĐỘNG ĐIỂM -->
+                <div class="referral-box">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-0">Lịch sử biến động điểm thưởng</h5>
+                            <small class="text-muted">Ghi nhận toàn bộ giao dịch tích điểm và tiêu điểm minh bạch</small>
+                        </div>
+                        <span class="badge bg-light text-dark border">@Model.LichSu.Count giao dịch</span>
+                    </div>
+
+                    @if (Model.LichSu.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light small text-muted">
+                                    <tr>
+                                        <th>Thời gian</th>
+                                        <th>Loại giao dịch</th>
+                                        <th>Nội dung chi tiết</th>
+                                        <th>Đơn hàng</th>
+                                        <th class="text-end">Biến động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var log in Model.LichSu)
+                                    {
+                                        var badgeColor = "bg-secondary";
+                                        var typeName = log.LoaiGiaoDich;
+
+                                        if (log.LoaiGiaoDich == "TichDiemDonHang")
+                                        {
+                                            badgeColor = "bg-success";
+                                            typeName = "Tích điểm đơn hàng";
+                                        }
+                                        else if (log.LoaiGiaoDich == "TieuDiemThanhToan")
+                                        {
+                                            badgeColor = "bg-danger";
+                                            typeName = "Tiêu điểm thanh toán";
+                                        }
+                                        else if (log.LoaiGiaoDich == "ThuongGioiThieu")
+                                        {
+                                            badgeColor = "bg-primary";
+                                            typeName = "Thưởng giới thiệu bạn";
+                                        }
+                                        else if (log.LoaiGiaoDich == "ChaoMungDangKy")
+                                        {
+                                            badgeColor = "bg-warning text-dark";
+                                            typeName = "Quà tặng chào mừng";
+                                        }
+                                        else if (log.LoaiGiaoDich == "HoanDiem")
+                                        {
+                                            badgeColor = "bg-info text-dark";
+                                            typeName = "Hoàn điểm hủy đơn";
+                                        }
+
+                                        <tr>
+                                            <td class="small text-muted">@log.NgayGiaoDich.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="badge @badgeColor small">@typeName</span>
+                                            </td>
+                                            <td class="small fw-semibold text-dark">@log.MoTa</td>
+                                            <td>
+                                                @if (log.MaDonHang.HasValue)
+                                                {
+                                                    <a href="/KhachHangs/ChiTietDonHang/@log.MaDonHang" class="badge bg-light text-dark border text-decoration-none">
+                                                        #@log.MaDonHang
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small">-</span>
+                                                }
+                                            </td>
+                                            <td class="text-end fw-bold @(log.SoDiem > 0 ? "text-success" : "text-danger")">
+                                                @(log.SoDiem > 0 ? "+" : "")@log.SoDiem.ToString("N0") điểm
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="fas fa-coins fs-1 text-warning mb-2 opacity-50"></i>
+                            <p class="mb-0">Bạn chưa có giao dịch biến động điểm nào. Hãy mua sắm để tích lũy điểm ngay hôm nay!</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function copyRefCode() {
+        var copyText = document.getElementById("txtRefCode");
+        navigator.clipboard.writeText(copyText.value).then(function() {
+            alert("Đã sao chép mã giới thiệu: " + copyText.value);
+        });
+    }
+
+    function copyRefLink() {
+        var copyText = document.getElementById("txtRefLink");
+        navigator.clipboard.writeText(copyText.value).then(function() {
+            alert("Đã sao chép đường link giới thiệu thành công! Bạn có thể gửi cho bạn bè ngay.");
+        });
+    }
+</script>
+}

@@ -1,0 +1,191 @@
+@model IEnumerable<DoAnCoSo.Models.NhatKyHeThong>
+@{
+    ViewData["Title"] = "Nhật ký kiểm soát hệ thống (Audit Logs)";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var logs = Model ?? Enumerable.Empty<DoAnCoSo.Models.NhatKyHeThong>();
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS (MATCHING DEMO #mod-settings) -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="CauHinhs" asp-action="Index" class="v22-pill-tab">
+                🔑 Tích hợp AI &amp; Khóa API
+            </a>
+            <a asp-controller="AuditLogs" asp-action="Index" class="v22-pill-tab active">
+                🛡️ Nhật ký kiểm soát (Audit Logs) (@(ViewBag.TotalLogs ?? logs.Count()))
+            </a>
+        </div>
+
+        <span class="badge rounded-pill bg-light text-dark border px-3 py-2 font-mono" style="font-size: 11.5px;">
+            <i class="bi bi-broadcast text-danger me-1"></i> Ghi vết tự động 100%
+        </span>
+    </div>
+
+    <!-- 4 KPI BENTO METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5">
+                <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng lượt thao tác</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px;">@(ViewBag.TotalLogs ?? 0)</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-peach p-3.5">
+                <span class="font-mono text-uppercase" style="font-size: 10px; color: #E07A5F;">Thao tác nhạy cảm</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px; color: #E07A5F;">@(ViewBag.SensitiveLogs ?? 0) <span style="font-size: 11px;">(Sửa giá / Kho)</span></div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5">
+                <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Ghi nhận hôm nay</span>
+                <div class="font-display fw-bold mt-1 text-success" style="font-size: 24px;">@(ViewBag.LogsToday ?? 0)</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-sage p-3.5">
+                <span class="font-mono text-uppercase" style="font-size: 10px;">Quản trị viên hoạt động</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px;">@(ViewBag.DistinctUsers ?? 0) <span style="font-size: 12px;">tài khoản</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADVANCED FILTER BAR -->
+    <div class="v22-card p-3.5">
+        <form method="get" asp-action="Index" class="m-0">
+            <div class="row g-2.5 align-items-end">
+                <div class="col-md-3">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tìm kiếm từ khóa</label>
+                    <input type="text" name="search" value="@ViewBag.CurrentSearch" placeholder="Tên nhân sự, mô tả, IP..." class="v22-input" />
+                </div>
+                <div class="col-md-2">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Loại hành vi</label>
+                    <select name="actionType" class="v22-input fw-bold">
+                        <option value="">Tất cả hành vi</option>
+                        <option value="SUA_GIA_SAN_PHAM" selected="@(ViewBag.CurrentActionType == "SUA_GIA_SAN_PHAM")">Sửa giá sản phẩm</option>
+                        <option value="CHINH_KHO_THU_CONG" selected="@(ViewBag.CurrentActionType == "CHINH_KHO_THU_CONG")">Chỉnh kho thủ công</option>
+                        <option value="HUY_DON_HANG" selected="@(ViewBag.CurrentActionType == "HUY_DON_HANG")">Hủy đơn hàng</option>
+                        <option value="DOI_TRANG_THAI_DON" selected="@(ViewBag.CurrentActionType == "DOI_TRANG_THAI_DON")">Đổi trạng thái đơn</option>
+                        <option value="HOAN_TIEN_DON_HANG" selected="@(ViewBag.CurrentActionType == "HOAN_TIEN_DON_HANG")">Hoàn tiền đơn hàng</option>
+                        <option value="XUAT_BAO_CAO" selected="@(ViewBag.CurrentActionType == "XUAT_BAO_CAO")">Xuất báo cáo Excel</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Mức độ rủi ro</label>
+                    <select name="severity" class="v22-input fw-bold">
+                        <option value="">Tất cả mức độ</option>
+                        <option value="Nguy hiểm" selected="@(ViewBag.CurrentSeverity == "Nguy hiểm")">Nguy hiểm</option>
+                        <option value="Cao" selected="@(ViewBag.CurrentSeverity == "Cao")">Cao</option>
+                        <option value="Trung bình" selected="@(ViewBag.CurrentSeverity == "Trung bình")">Trung bình</option>
+                        <option value="Thấp" selected="@(ViewBag.CurrentSeverity == "Thấp")">Thấp</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Từ ngày</label>
+                    <input type="date" name="fromDate" value="@ViewBag.FromDate" class="v22-input font-mono" />
+                </div>
+                <div class="col-md-2">
+                    <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Đến ngày</label>
+                    <input type="date" name="toDate" value="@ViewBag.ToDate" class="v22-input font-mono" />
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="v22-btn-primary w-100 justify-content-center">
+                        Lọc
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- AUDIT LOGS DATA TABLE -->
+    <div class="v22-card p-0 overflow-hidden">
+        <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between">
+            <h3 class="font-display fw-bold mb-0" style="font-size: 15px;">Nhật Ký Kiểm Soát Hệ Thống</h3>
+            <span class="font-mono text-muted" style="font-size: 11px;">Ghi nhận thời gian thực kèm địa chỉ IP</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="v22-table mb-0" id="auditTable">
+                <thead>
+                    <tr>
+                        <th style="width: 110px;">Mức độ</th>
+                        <th style="width: 160px;">Thời gian &amp; IP</th>
+                        <th style="width: 170px;">Người thực hiện</th>
+                        <th style="width: 170px;">Hành vi</th>
+                        <th>Nội dung chi tiết &amp; Đối tượng</th>
+                        <th style="width: 200px;">Thay đổi (Cũ → Mới)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!logs.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                Không tìm thấy bản ghi nhật ký nào phù hợp với bộ lọc hiện tại.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var log in logs)
+                        {
+                            var sevBadge = "badge bg-secondary font-mono";
+                            if (log.MucDo == "Nguy hiểm") sevBadge = "badge bg-danger bg-opacity-10 text-danger border border-danger-subtle font-mono";
+                            else if (log.MucDo == "Cao") sevBadge = "badge bg-warning bg-opacity-10 text-dark border border-warning-subtle font-mono";
+                            else if (log.MucDo == "Trung bình") sevBadge = "badge bg-info bg-opacity-10 text-info border border-info-subtle font-mono";
+                            else if (log.MucDo == "Thấp") sevBadge = "badge bg-success bg-opacity-10 text-success border border-success-subtle font-mono";
+
+                            <tr>
+                                <td>
+                                    <span class="@sevBadge px-2 py-1" style="font-size: 10.5px;">@log.MucDo</span>
+                                </td>
+                                <td>
+                                    <div class="font-mono fw-bold" style="font-size: 11.5px;">@log.ThoiGian.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                                    <span class="font-mono text-muted" style="font-size: 10.5px;">@log.DiaChiIp</span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold font-display" style="font-size: 13px;">@(log.HoTen ?? log.TenDangNhap)</div>
+                                    <span class="font-mono text-muted" style="font-size: 10.5px;">@log.VaiTro</span>
+                                </td>
+                                <td>
+                                    <span class="font-mono fw-bold" style="font-size: 11.5px;">@log.HanhDong</span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold clamp-2" style="font-size: 12px; max-width: 320px;">@log.MoTa</div>
+                                    @if (!string.IsNullOrEmpty(log.DoiTuongAnhHuong))
+                                    {
+                                        <span class="badge bg-light text-muted border font-mono mt-1" style="font-size: 10px;">@log.DoiTuongAnhHuong</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(log.GiaTriCu) || !string.IsNullOrEmpty(log.GiaTriMoi))
+                                    {
+                                        <div class="font-mono" style="font-size: 11px; line-height: 1.4;">
+                                            @if (!string.IsNullOrEmpty(log.GiaTriCu))
+                                            {
+                                                <div class="text-danger text-decoration-line-through">@log.GiaTriCu</div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(log.GiaTriMoi))
+                                            {
+                                                <div class="text-success fw-bold">@log.GiaTriMoi</div>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted font-mono" style="font-size: 11px;">—</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

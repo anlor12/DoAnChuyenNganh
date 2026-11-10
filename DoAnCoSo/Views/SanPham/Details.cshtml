@@ -1,0 +1,1084 @@
+@model DoAnCoSo.Models.SanPham
+@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = Model.TenSanPham;
+}
+
+@section Styles {
+<style>
+    .variant-option {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        height: 44px;
+        padding: 0 16px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #fff;
+        color: #111;
+        user-select: none;
+    }
+    .variant-option:hover { border-color: #111; }
+    .variant-option.selected { background: #0a0a0a; color: #fff; border-color: #0a0a0a; }
+    .color-dot {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #e0e0e0;
+        display: inline-block;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+    .detail-feature {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+        color: #555;
+    }
+    .detail-feature i { font-size: 16px; color: #0a0a0a; width: 20px; }
+    .variant-option.is-out-of-stock {
+        background: #fbfbfb;
+        color: #888;
+        border-color: #e5e5e5;
+    }
+    .variant-option.is-out-of-stock.selected {
+        background: #71717a;
+        color: #fff;
+        border-color: #71717a;
+    }
+    .review-thumb-img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .review-thumb-img:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .rating-star-interactive {
+        font-size: 26px;
+        color: #e2e8f0;
+        cursor: pointer;
+        transition: color 0.15s, transform 0.15s;
+    }
+    .rating-star-interactive:hover,
+    .rating-star-interactive.active {
+        color: #f59e0b;
+        transform: scale(1.1);
+    }
+
+    /* ========================================================
+       4-IMAGE PRODUCT GALLERY (MAIN PREVIEW + VERTICAL THUMBS)
+       ======================================================== */
+    .product-gallery-layout {
+        display: flex;
+        gap: 14px;
+        align-items: stretch;
+        width: 100%;
+    }
+    .product-gallery-main {
+        flex: 1;
+        min-width: 0;
+        background: #f4f5f7;
+        border-radius: 18px;
+        overflow: hidden;
+        position: relative;
+        aspect-ratio: 3 / 4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+    }
+    .product-gallery-main img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: opacity 0.22s ease-in-out, transform 0.35s ease;
+    }
+    .product-gallery-main:hover img {
+        transform: scale(1.02);
+    }
+    .product-gallery-thumbs {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 10px;
+        width: clamp(75px, 20%, 96px);
+        flex-shrink: 0;
+    }
+    .product-thumb-slot {
+        flex: 1;
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        background: #f4f5f7;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+        border: 2px solid transparent;
+        box-sizing: border-box;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .product-thumb-slot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        border-radius: 10px;
+        transition: transform 0.2s ease;
+    }
+    .product-thumb-slot:hover {
+        opacity: 0.95;
+        border-color: #d1d5db;
+        transform: translateY(-2px);
+    }
+    .product-thumb-slot.active-thumb {
+        border-color: #000000 !important;
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+    .product-thumb-slot.active-thumb:hover {
+        border-color: #000000 !important;
+    }
+
+    @@media (max-width: 575.98px) {
+        .product-gallery-layout {
+            gap: 8px;
+        }
+        .product-gallery-thumbs {
+            width: 64px;
+            gap: 6px;
+        }
+        .product-gallery-main {
+            border-radius: 14px;
+        }
+        .product-thumb-slot {
+            border-radius: 8px;
+        }
+        .product-thumb-slot img {
+            border-radius: 6px;
+        }
+    }
+</style>
+}
+
+<div class="detail-section">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-custom" aria-label="breadcrumb">
+        <a href="/">Trang chủ</a>
+        <span class="sep">/</span>
+        <a href="/SanPham">Sản phẩm</a>
+        <span class="sep">/</span>
+        <span style="color:#0a0a0a; font-weight:700;">@Model.TenSanPham</span>
+    </nav>
+
+    <div class="row g-5">
+        <!-- Product Image Gallery (Main Left + 4 Vertical Thumbs Right) -->
+        <div class="col-md-6">
+            <div class="product-gallery-layout">
+                <!-- Large Main Preview Image -->
+                <div class="product-gallery-main">
+                    <img src="@(string.IsNullOrEmpty(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh)"
+                         alt="@Model.TenSanPham"
+                         id="product2DImage"
+                         onerror="this.src='/images/no-image.png'" />
+                </div>
+
+                @if (Model.DanhSachHinhAnh.Count > 1)
+                {
+                    <!-- Up to 4 Vertical Thumbnails Column -->
+                    <div class="product-gallery-thumbs" id="galleryThumbnailsRow">
+                        @for (int i = 0; i < Model.DanhSachHinhAnh.Count; i++)
+                        {
+                            var imgUrl = Model.DanhSachHinhAnh[i];
+                            <div class="product-thumb-slot @(i == 0 ? "active-thumb" : "")"
+                                 onclick="changeProductGalleryImage('@imgUrl', this)"
+                                 title="Xem ảnh @(i + 1)">
+                                <img src="@imgUrl" alt="@Model.TenSanPham ảnh @(i + 1)" onerror="this.src='/images/no-image.png'" />
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="col-md-6">
+            <div class="detail-info">
+                <div class="detail-category">
+                    @(Model.LoaiSanPham?.TenLoaiSanPham ?? "Fashion") &nbsp;·&nbsp; @Model.GioiTinh
+                </div>
+
+                <h1 class="detail-name">@Model.TenSanPham</h1>
+
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <div class="text-warning" style="font-size: 13px;">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Floor((double)ViewBag.DiemTrungBinh))
+                            {
+                                <i class="fas fa-star text-warning"></i>
+                            }
+                            else if (i - 0.5 <= (double)ViewBag.DiemTrungBinh)
+                            {
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star text-warning"></i>
+                            }
+                        }
+                    </div>
+                    <span class="fw-bold text-dark" style="font-size: 13px;">@ViewBag.DiemTrungBinh/5</span>
+                    <span class="text-muted" style="font-size: 13px;">(@ViewBag.TongSoDanhGia đánh giá)</span>
+                </div>
+
+                <div class="detail-price">@Model.Gia.ToString("N0") ₫</div>
+
+                @if (!string.IsNullOrEmpty(Model.MoTa))
+                {
+                    <div class="detail-desc">
+                        <div style="font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#aaa; margin-bottom:10px;">Mô tả sản phẩm</div>
+                        <div style="font-size:14px; color:#555; line-height:1.7; margin:0; white-space: pre-line;">@Html.Raw(Model.MoTa)</div>
+                    </div>
+                }
+
+                @if (Model.BienTheSanPhams != null && Model.BienTheSanPhams.Any())
+                {
+                    <form id="addToCartForm" asp-controller="Cart" asp-action="AddToCart" method="post">
+                        <input type="hidden" name="maBienThe" id="selectedVariant" value="@Model.BienTheSanPhams.First().MaBienThe" />
+
+                        <!-- Variant Selector -->
+                        <div class="mb-4">
+                            <div class="d-flex align-items-center mb-2 flex-wrap">
+                                <span class="detail-label" style="margin-bottom: 0 !important; display: inline-block; vertical-align: middle;">Chọn biến thể:</span>
+                                @if (!string.IsNullOrEmpty(ViewBag.RecommendedSize))
+                                {
+                                    <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: #666; margin-left: 8px; display: inline-block; vertical-align: middle;">
+                                        (Gợi ý size của bạn: <span style="color: #b45309; font-weight: 800;">@ViewBag.RecommendedSize</span>)
+                                    </span>
+                                }
+                            </div>
+                            @{
+                                var stockMap = ViewBag.StockMap as Dictionary<int, int> ?? new Dictionary<int, int>();
+                                var firstBt = Model.BienTheSanPhams?.FirstOrDefault();
+                                int firstStock = firstBt != null && stockMap.ContainsKey(firstBt.MaBienThe) ? stockMap[firstBt.MaBienThe] : 50;
+                            }
+                            <div class="d-flex flex-wrap gap-2" id="variantOptions">
+                                @foreach (var bt in Model.BienTheSanPhams!)
+                                {
+                                    bool isRec = !string.IsNullOrEmpty(ViewBag.RecommendedSize) && bt.KichCo.Trim().Equals(ViewBag.RecommendedSize.Trim(), StringComparison.OrdinalIgnoreCase);
+                                    int stock = stockMap.ContainsKey(bt.MaBienThe) ? stockMap[bt.MaBienThe] : 50;
+                                    bool isOutOfStock = stock <= 0;
+                                    <div class="variant-option @(bt == firstBt ? "selected" : "") @(isOutOfStock ? "is-out-of-stock" : "")"
+                                         data-variant-id="@bt.MaBienThe"
+                                         data-stock="@stock"
+                                         data-size="@bt.KichCo"
+                                         data-color="@bt.MauSac"
+                                         onclick="selectVariant(this, @bt.MaBienThe, @stock, '@bt.KichCo', '@bt.MauSac')">
+                                        <span>@bt.KichCo</span>
+                                        @if (isRec)
+                                        {
+                                            <i class="fas fa-star text-warning ms-1" style="font-size:10px;" title="Vóc dáng của bạn vừa vặn với kích cỡ này nhất"></i>
+                                        }
+                                        <span style="opacity:0.5; margin: 0 4px;">·</span>
+                                        <span>@bt.MauSac</span>
+                                        @if (isOutOfStock)
+                                        {
+                                            <span class="badge bg-secondary ms-1" style="font-size: 8px;">Hết</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="mb-4" id="qtyWrapper" style="@(firstStock <= 0 ? "display:none;" : "")">
+                            <span class="detail-label">Số lượng:</span>
+                            <div class="detail-qty-wrap">
+                                <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+                                <input type="number" name="soLuong" id="soLuong" class="qty-input" value="1" min="1" max="99" readonly />
+                                <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Add to Cart OR Back in Stock Alert Button -->
+                        <div id="buyActionButtons">
+                            <button type="submit" class="btn-add-to-cart-lg @(firstStock <= 0 ? "d-none" : "")" id="addToCartBtn">
+                                <span><i class="fas fa-cart-plus me-2"></i>Thêm vào giỏ hàng</span>
+                            </button>
+                            <button type="button" class="btn btn-warning w-100 py-3 fw-bold text-dark text-uppercase rounded-0 @(firstStock <= 0 ? "" : "d-none")" id="outOfStockBtn" onclick="openBackInStockModal()">
+                                <span><i class="fas fa-bell me-2"></i>Hết hàng — Đăng ký nhận thông báo</span>
+                            </button>
+                        </div>
+
+                        <!-- Nút Thử phối đồ Mix & Match -->
+                        <a href="/Outfit?topId=@Model.MaSanPham" class="btn btn-outline-dark w-100 mt-2 py-3 text-uppercase fw-bold d-flex align-items-center justify-content-center gap-2" style="font-family: var(--font-primary); font-size: 11px; letter-spacing: 2px; border-radius: 0; border: 1px solid #0a0a0a; color: #0a0a0a; transition: var(--transition);">
+                            <i class="fas fa-layer-group me-1"></i> Thử phối đồ Mix &amp; Match với sản phẩm này
+                        </a>
+
+                        <!-- Nút Thử đồ ảo AI (Live Virtual Fitting Room - Đồng bộ chuẩn Theme FASHION STORE) -->
+                        <button type="button" class="btn w-100 mt-2 py-3 text-uppercase fw-bold d-flex align-items-center justify-content-center gap-2" style="background: #0a0a0a; color: #ffffff; border: 1px solid #0a0a0a; border-radius: 0; font-family: var(--font-primary); font-size: 11px; letter-spacing: 2px; transition: var(--transition);" onmouseover="this.style.background='#262626'; this.style.borderColor='#262626';" onmouseout="this.style.background='#0a0a0a'; this.style.borderColor='#0a0a0a';" onclick="openVtonModal({ id: @Model.MaSanPham, name: '@Html.Raw(Model.TenSanPham?.Replace("'", "\\'"))', price: '@Model.Gia.ToString("N0") đ', imageUrl: (document.getElementById('product2DImage')?.src || '@(Model.HinhAnh ?? "/images/no-image.png")'), category: 'upper_body' })">
+                            <i class="fas fa-camera me-1"></i>
+                            <span>Phòng Thử Đồ Ảo AI (Live Try-On)</span>
+                            <span class="badge bg-danger rounded-pill px-2 py-1 ms-1 text-white" style="font-size: 9px; letter-spacing: 0.5px;">LIVE</span>
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div style="padding: 20px; background: #f7f7f7; border-left: 3px solid #0a0a0a; font-size:13px; color:#666;">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Sản phẩm này hiện chưa có biến thể. Vui lòng quay lại sau.
+                    </div>
+                }
+
+                <!-- Features -->
+                <div class="mt-4">
+                    <div class="detail-feature">
+                        <i class="fas fa-truck"></i>
+                        Miễn phí giao hàng cho đơn trên 2.000.000₫
+                    </div>
+                    <div class="detail-feature">
+                        <i class="fas fa-undo"></i>
+                        Đổi trả dễ dàng trong vòng 30 ngày
+                    </div>
+                    <div class="detail-feature">
+                        <i class="fas fa-shield-alt"></i>
+                        Sản phẩm chính hãng 100%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Product Specifications & Description -->
+    <hr class="my-5" />
+    <div class="product-specs mb-5">
+        <h3 class="fw-bold mb-4 text-uppercase" style="font-size: 16px; letter-spacing: 1px; border-left: 3px solid #000; padding-left: 8px;">Thông tin sản phẩm</h3>
+        <div class="row">
+            <div class="col-md-6 mb-4 mb-md-0">
+                <div class="pe-md-4" style="font-size: 14px; color: #444; line-height: 1.8; white-space: pre-line;">
+                    @if (string.IsNullOrWhiteSpace(Model.MoTa))
+                    {
+                        <span>Chưa có mô tả cho sản phẩm này.</span>
+                    }
+                    else
+                    {
+                        @Html.Raw(Model.MoTa)
+                    }
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="bg-light p-4" style="border: 1px solid #eee;">
+                    <ul class="list-unstyled m-0" style="font-size: 13px; color: #333;">
+                        <li class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                            <span class="fw-bold text-muted">Kiểu cổ áo:</span>
+                            <span>@(string.IsNullOrWhiteSpace(Model.KieuCoAo) ? "-" : Model.KieuCoAo)</span>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                            <span class="fw-bold text-muted">Chất liệu:</span>
+                            <span>@(string.IsNullOrWhiteSpace(Model.ChatLieu) ? "-" : Model.ChatLieu)</span>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                            <span class="fw-bold text-muted">Form dáng:</span>
+                            <span>@(string.IsNullOrWhiteSpace(Model.FormDang) ? "-" : Model.FormDang)</span>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span class="fw-bold text-muted">Giới tính:</span>
+                            <span>@Model.GioiTinh</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <hr class="my-5" />
+    <div class="reviews-section mb-5">
+        @if (TempData["ReviewSuccess"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["ReviewSuccess"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ReviewError"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-4 shadow-sm" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>@TempData["ReviewError"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 1.5px;">Phản hồi từ khách hàng</span>
+                <h3 class="fw-bold mb-0 mt-1" style="font-size: 22px;">Đánh giá &amp; Trải nghiệm Form dáng thực tế</h3>
+            </div>
+            <button type="button" class="btn btn-dark rounded-pill px-4 py-2 fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 1px;" onclick="openReviewModal()">
+                <i class="fas fa-camera me-1 text-warning"></i> Viết đánh giá &amp; Gửi ảnh dáng
+            </button>
+        </div>
+
+        <div class="row g-4">
+            <!-- Summary & Fit Meter Column -->
+            <div class="col-lg-5 col-md-6">
+                <div class="p-4 bg-light border rounded-4 text-center mb-4">
+                    <h2 class="fw-bold text-dark display-4 mb-1">@ViewBag.DiemTrungBinh</h2>
+                    <div class="text-warning mb-2 fs-4">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            if (i <= Math.Floor((double)ViewBag.DiemTrungBinh))
+                            {
+                                <i class="fas fa-star text-warning"></i>
+                            }
+                            else if (i - 0.5 <= (double)ViewBag.DiemTrungBinh)
+                            {
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star text-warning"></i>
+                            }
+                        }
+                    </div>
+                    <p class="text-muted mb-0" style="font-size: 13px;">Dựa trên <strong>@ViewBag.TongSoDanhGia</strong> lượt đánh giá thực tế</p>
+                </div>
+
+                <!-- THƯỚC ĐO ĐỘ VỪA VẶN THỰC TẾ (FIT METER) -->
+                <div class="p-4 bg-white border rounded-4 shadow-sm text-start">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="fw-bold text-dark text-uppercase small" style="letter-spacing: 0.5px;">
+                            <i class="fas fa-ruler-combined text-primary me-2"></i>Độ vừa vặn thực tế (Fit Meter)
+                        </div>
+                        <span class="badge bg-secondary rounded-pill" style="font-size: 10px;">@ViewBag.FitReviewsCount phản hồi</span>
+                    </div>
+
+                    <div class="progress" style="height: 12px; border-radius: 6px; background: #e5e7eb; overflow: hidden;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: @ViewBag.FitTightPercent%;" title="Hơi chật: @ViewBag.FitTightPercent%"></div>
+                        <div class="progress-bar bg-success" role="progressbar" style="width: @ViewBag.FitTruePercent%;" title="Vừa vặn chuẩn: @ViewBag.FitTruePercent%"></div>
+                        <div class="progress-bar bg-info" role="progressbar" style="width: @ViewBag.FitLoosePercent%;" title="Hơi rộng: @ViewBag.FitLoosePercent%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 11.5px;">
+                        <span>Hơi chật (@ViewBag.FitTightPercent%)</span>
+                        <span class="fw-bold text-success">Vừa vặn chuẩn (@ViewBag.FitTruePercent%)</span>
+                        <span>Hơi rộng (@ViewBag.FitLoosePercent%)</span>
+                    </div>
+
+                    <div class="mt-3 pt-3 border-top text-secondary" style="font-size: 12px; line-height: 1.6;">
+                        <i class="fas fa-info-circle text-primary me-1"></i>
+                        @(ViewBag.FitTruePercent >= 60
+                            ? "Khách hàng xác nhận sản phẩm có form chuẩn kích cỡ (True to size). Khuyên bạn nên chọn đúng size theo bảng số đo tiêu chuẩn."
+                            : "Sản phẩm có xu hướng đặc thù theo sở thích ôm/rộng. Bạn có thể tham khảo thêm chiều cao và cân nặng của người mua bên cạnh.")
+                    </div>
+                </div>
+            </div>
+
+            <!-- List of Reviews Column -->
+            <div class="col-lg-7 col-md-6">
+                @{
+                    var listDanhGia = ViewBag.DanhGias as List<DoAnCoSo.Models.DanhGia> ?? new List<DoAnCoSo.Models.DanhGia>();
+                }
+                @if (listDanhGia.Any())
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var dg in listDanhGia)
+                        {
+                            var displayName = dg.NguoiDung?.HoTen ?? "Khách hàng";
+                            if (displayName.Length > 2)
+                            {
+                                var parts = displayName.Split(' ');
+                                if (parts.Length > 1)
+                                {
+                                    displayName = parts[0] + " *** " + parts[parts.Length - 1];
+                                }
+                                else
+                                {
+                                    displayName = displayName.Substring(0, 1) + "***" + displayName.Substring(displayName.Length - 1);
+                                }
+                            }
+
+                            <div class="p-3 border rounded-3 bg-white shadow-sm">
+                                <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+                                    <div>
+                                        <span class="fw-bold text-dark" style="font-size: 13.5px;">@displayName</span>
+                                        <div class="text-warning d-inline-block ms-2" style="font-size: 11px;">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= dg.DiemDanhGia)
+                                                {
+                                                    <i class="fas fa-star text-warning"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star text-warning"></i>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                    <small class="text-muted" style="font-size: 11px;">@dg.NgayTao.ToString("dd/MM/yyyy HH:mm")</small>
+                                </div>
+
+                                @* Thông số vóc dáng và feedback độ vừa vặn *@
+                                @if (dg.ChieuCao.HasValue || dg.CanNang.HasValue || !string.IsNullOrEmpty(dg.SizeDaMua) || !string.IsNullOrEmpty(dg.DoVuaVan))
+                                {
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2 py-1 px-2 rounded-2" style="background: #f8fafc; border: 1px dashed #cbd5e1; font-size: 11.5px;">
+                                        @if (dg.ChieuCao.HasValue && dg.CanNang.HasValue)
+                                        {
+                                            <span class="text-secondary">
+                                                <i class="fas fa-user-alt text-muted me-1"></i>Số đo: <strong>@dg.ChieuCao cm</strong> / <strong>@dg.CanNang kg</strong>
+                                            </span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(dg.SizeDaMua))
+                                        {
+                                            <span class="text-secondary">· Size đã mua: <strong class="text-dark">@dg.SizeDaMua</strong></span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(dg.DoVuaVan))
+                                        {
+                                            var badgeBg = dg.DoVuaVan.Contains("chật") ? "bg-warning text-dark" : (dg.DoVuaVan.Contains("rộng") ? "bg-info text-dark" : "bg-success text-white");
+                                            <span class="badge @badgeBg ms-auto" style="font-size: 10px;">@dg.DoVuaVan</span>
+                                        }
+                                    </div>
+                                }
+
+                                <p class="mb-2 text-secondary" style="font-size: 13.5px; line-height: 1.6; white-space: pre-line;">@dg.NoiDung</p>
+
+                                @* Ảnh mặc thực tế *@
+                                @if (!string.IsNullOrEmpty(dg.HinhAnh))
+                                {
+                                    <div class="mt-2">
+                                        <div class="d-inline-block position-relative" style="cursor: pointer;" onclick="openReviewImage('@dg.HinhAnh')">
+                                            <img src="@dg.HinhAnh" alt="Ảnh mặc thực tế" class="review-thumb-img" onerror="this.style.display='none'" />
+                                            <span class="position-absolute bottom-0 start-0 bg-dark bg-opacity-75 text-white px-1 rounded-bottom" style="font-size: 9px; width: 100%; text-align: center;">
+                                                <i class="fas fa-search-plus"></i> Phóng to
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center p-5 border rounded-4 bg-white">
+                        <i class="far fa-comments text-muted mb-3" style="font-size: 3rem;"></i>
+                        <h6 class="fw-bold text-dark">Chưa có đánh giá nào cho sản phẩm này</h6>
+                        <p class="text-muted small mb-3">Hãy mua hàng và trở thành người đầu tiên chia sẻ cảm nhận cùng ảnh mặc thực tế!</p>
+                        <button type="button" class="btn btn-outline-dark btn-sm rounded-pill px-3" onclick="openReviewModal()">
+                            <i class="fas fa-pen me-1"></i> Viết đánh giá ngay
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- UPSELL & CROSS-SELL: GỢI Ý PHỐI ĐỒ (MIX & MATCH) -->
+    @{
+        var crossSell = ViewBag.CrossSellProducts as List<DoAnCoSo.Models.SanPham>;
+    }
+    @if (crossSell != null && crossSell.Any())
+    {
+        var comboTotal = Model.Gia + crossSell.Sum(p => p.Gia);
+        var comboDiscount = Math.Round(comboTotal * 0.1m, 0); // Giảm thêm 10% khi mua combo
+        var comboPayable = comboTotal - comboDiscount;
+
+        <div class="mt-5 pt-4 border-top">
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <span class="text-danger fw-bold text-uppercase small" style="letter-spacing: 1.5px;">
+                        <i class="fas fa-magic me-1"></i> Gợi ý phối đồ (Mix &amp; Match)
+                    </span>
+                    <h3 class="fw-bold mb-0 mt-1" style="font-size: 22px;">Trọn bộ Outfit chuẩn phong cách</h3>
+                </div>
+                <span class="badge bg-danger text-white px-3 py-2 rounded-pill fw-bold" style="font-size: 12px;">
+                    Ưu đãi mua kèm Combo
+                </span>
+            </div>
+
+            <div class="card border-0 rounded-4 shadow-sm p-4" style="background: #fafafa; border: 1px solid #eee !important;">
+                <div class="row align-items-center g-4">
+                    <!-- SẢN PHẨM HIỆN TẠI -->
+                    <div class="col-lg-3 col-6 text-center">
+                        <div class="bg-white p-2 rounded-3 border mb-2 position-relative" style="aspect-ratio: 1; overflow: hidden;">
+                            <img src="@(string.IsNullOrEmpty(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh)" alt="@Model.TenSanPham" class="w-100 h-100 object-fit-cover" />
+                            <span class="badge bg-dark text-white position-absolute top-0 start-0 m-2" style="font-size: 10px;">Đang xem</span>
+                        </div>
+                        <div class="small fw-bold text-truncate" title="@Model.TenSanPham">@Model.TenSanPham</div>
+                        <div class="fw-bold text-danger small">@Model.Gia.ToString("N0") ₫</div>
+                    </div>
+
+                    <!-- CÁC SẢN PHẨM GỢI Ý KÈM THEO -->
+                    @foreach (var cp in crossSell)
+                    {
+                        <div class="col-lg-3 col-6 text-center position-relative">
+                            <a href="/SanPham/Details/@cp.MaSanPham" class="text-decoration-none">
+                                <div class="bg-white p-2 rounded-3 border mb-2" style="aspect-ratio: 1; overflow: hidden;">
+                                    <img src="@(string.IsNullOrEmpty(cp.HinhAnh) ? "/images/no-image.png" : cp.HinhAnh)" alt="@cp.TenSanPham" class="w-100 h-100 object-fit-cover" />
+                                </div>
+                                <div class="small fw-bold text-dark text-truncate" title="@cp.TenSanPham">@cp.TenSanPham</div>
+                                <div class="fw-bold text-danger small">@cp.Gia.ToString("N0") ₫</div>
+                            </a>
+                        </div>
+                    }
+
+                    <!-- TỔNG TIỀN COMBO & HÀNH ĐỘNG -->
+                    <div class="col-lg-3 col-12 text-center text-lg-start border-start-lg pt-3 pt-lg-0">
+                        <div class="text-muted small">Tổng giá trị combo:</div>
+                        <div class="text-muted text-decoration-line-through small">@comboTotal.ToString("N0") ₫</div>
+                        <div class="fs-4 fw-bold text-danger mb-2">@comboPayable.ToString("N0") ₫</div>
+                        <small class="text-success fw-semibold d-block mb-3">
+                            <i class="fas fa-check-circle me-1"></i>Tiết kiệm ngay @comboDiscount.ToString("N0") ₫
+                        </small>
+                        <a href="/Outfit?topId=@Model.MaSanPham" class="btn btn-dark w-100 rounded-pill py-2 fw-bold text-uppercase" style="font-size: 11px; letter-spacing: 1px;">
+                            <i class="fas fa-magic me-1 text-warning"></i> Trải nghiệm Outfit Builder
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- STICKY MOBILE BOTTOM BUY BAR -->
+@if (Model.BienTheSanPhams != null && Model.BienTheSanPhams.Any())
+{
+    <div class="mobile-sticky-buy-bar d-flex d-lg-none" id="mobileStickyBuyBar">
+        <div class="sticky-buy-thumb">
+            <img src="@(string.IsNullOrEmpty(Model.HinhAnh) ? "/images/no-image.png" : Model.HinhAnh)" alt="@Model.TenSanPham" onerror="this.src='/images/no-image.png'" />
+        </div>
+        <div class="sticky-buy-info">
+            <div class="sticky-buy-name">@Model.TenSanPham</div>
+            <div class="sticky-buy-price">@Model.Gia.ToString("N0") ₫</div>
+        </div>
+        <button type="button" class="sticky-buy-btn" onclick="triggerMobileBuy()">
+            <i class="fas fa-cart-plus me-1"></i> Thêm vào giỏ
+        </button>
+    </div>
+}
+
+<!-- MODAL VIẾT ĐÁNH GIÁ & FIT FEEDBACK -->
+<div class="modal fade" id="modalVietDanhGia" tabindex="-1" aria-labelledby="modalVietDanhGiaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <form asp-controller="SanPham" asp-action="GuiDanhGia" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maSanPham" value="@Model.MaSanPham" />
+                <input type="hidden" name="diemDanhGia" id="inputDiemDanhGia" value="5" />
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalVietDanhGiaLabel">
+                        <i class="fas fa-star text-warning me-2"></i>Đánh giá &amp; Chia sẻ Form dáng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+                <div class="modal-body pt-3">
+                    <div class="text-muted small mb-3">
+                        Sản phẩm: <strong>@Model.TenSanPham</strong>
+                    </div>
+
+                    <!-- Chọn sao đánh giá -->
+                    <div class="mb-3 text-center py-2 bg-light rounded-3">
+                        <div class="small fw-bold mb-1 text-muted text-uppercase" style="letter-spacing: 0.5px; font-size: 11px;">Mức độ hài lòng</div>
+                        <div class="d-flex justify-content-center gap-2 fs-3" id="starRatingSelect">
+                            <i class="fas fa-star rating-star-interactive active" data-score="1" onclick="setStarRating(1)"></i>
+                            <i class="fas fa-star rating-star-interactive active" data-score="2" onclick="setStarRating(2)"></i>
+                            <i class="fas fa-star rating-star-interactive active" data-score="3" onclick="setStarRating(3)"></i>
+                            <i class="fas fa-star rating-star-interactive active" data-score="4" onclick="setStarRating(4)"></i>
+                            <i class="fas fa-star rating-star-interactive active" data-score="5" onclick="setStarRating(5)"></i>
+                        </div>
+                        <small id="starScoreLabel" class="text-warning fw-bold d-block mt-1">Tuyệt vời (5 sao)</small>
+                    </div>
+
+                    <!-- Thông số vóc dáng khách hàng (Fit Feedback) -->
+                    <div class="border rounded-3 p-3 mb-3" style="background: #fafafa;">
+                        <div class="small fw-bold text-dark text-uppercase mb-2" style="letter-spacing: 0.5px; font-size: 11px;">
+                            <i class="fas fa-ruler-combined text-primary me-1"></i>Số đo thực tế của bạn
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small text-muted mb-1">Chiều cao (cm)</label>
+                                <input type="number" name="chieuCao" class="form-control form-control-sm" placeholder="VD: 172" value="@(ViewBag.UserHeight ?? "")" step="0.5" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-muted mb-1">Cân nặng (kg)</label>
+                                <input type="number" name="canNang" class="form-control form-control-sm" placeholder="VD: 65" value="@(ViewBag.UserWeight ?? "")" step="0.5" />
+                            </div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label small text-muted mb-1">Size bạn đã mua</label>
+                                <select name="sizeDaMua" class="form-select form-select-sm">
+                                    @if (Model.BienTheSanPhams != null && Model.BienTheSanPhams.Any())
+                                    {
+                                        var sizes = Model.BienTheSanPhams.Select(b => b.KichCo).Distinct().ToList();
+                                        foreach (var s in sizes)
+                                        {
+                                            <option value="@s">Size @s</option>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option value="S">Size S</option>
+                                        <option value="M" selected>Size M</option>
+                                        <option value="L">Size L</option>
+                                        <option value="XL">Size XL</option>
+                                        <option value="XXL">Size XXL</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-muted mb-1">Cảm nhận độ vừa vặn</label>
+                                <select name="doVuaVan" class="form-select form-select-sm">
+                                    <option value="Hơi chật so với dáng">Hơi chật so với dáng</option>
+                                    <option value="Vừa vặn hoàn hảo" selected>Vừa vặn hoàn hảo</option>
+                                    <option value="Hơi rộng / Thoải mái">Hơi rộng / Thoải mái</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tải ảnh mặc thực tế -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark mb-1">
+                            <i class="fas fa-camera text-secondary me-1"></i>Ảnh mặc thực tế (Feedback)
+                        </label>
+                        <input type="file" name="hinhAnhFile" id="inputReviewPhoto" accept="image/*" class="form-control form-control-sm" onchange="previewReviewPhoto(this)" />
+                        <div id="reviewPhotoPreview" class="mt-2 d-none">
+                            <img id="reviewPhotoImg" src="" alt="Xem trước ảnh" class="rounded-3 border" style="max-height: 120px; object-fit: cover;" />
+                            <button type="button" class="btn btn-outline-danger btn-sm ms-2" onclick="removeReviewPhoto()"><i class="fas fa-times"></i> Xóa ảnh</button>
+                        </div>
+                        <small class="text-muted d-block mt-1" style="font-size: 11px;">Tải ảnh giúp cộng đồng hình dung rõ form dáng và chất liệu thực tế.</small>
+                    </div>
+
+                    <!-- Nội dung cảm nhận -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark mb-1">Nhận xét chi tiết</label>
+                        <textarea name="noiDung" class="form-control" rows="3" placeholder="Chia sẻ cảm nhận về đường may, chất liệu vải, độ co giãn và cảm giác khi mặc..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold">Gửi đánh giá</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ĐĂNG KÝ BÁO CÓ HÀNG (BACK-IN-STOCK ALERT) -->
+<div class="modal fade" id="modalBaoCoHang" tabindex="-1" aria-labelledby="modalBaoCoHangLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalBaoCoHangLabel">
+                    <i class="fas fa-bell text-warning me-2"></i>Đăng ký nhận tin khi có hàng lại
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            </div>
+            <div class="modal-body pt-3">
+                <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <div class="small text-muted">Sản phẩm:</div>
+                    <div class="fw-bold text-dark">@Model.TenSanPham</div>
+                    <div class="mt-1 small text-secondary">
+                        Biến thể đang chọn: <span class="badge bg-dark" id="modalVariantInfo">Size - Màu</span>
+                    </div>
+                </div>
+                <p class="small text-muted mb-3" style="line-height: 1.6;">
+                    Biến thể này hiện đang tạm hết trong kho. Hãy để lại Email hoặc Số điện thoại, chúng tôi sẽ lập tức thông báo cho bạn ngay khi hàng về lại kho!
+                </p>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark">Email hoặc Số điện thoại <span class="text-danger">*</span></label>
+                    <input type="text" id="backInStockContact" class="form-control" placeholder="VD: 0912345678 hoặc customer@gmail.com" />
+                    <div class="text-danger small mt-1 d-none" id="backInStockError">Vui lòng nhập email hoặc số điện thoại.</div>
+                </div>
+                <div id="backInStockSuccessAlert" class="alert alert-success d-none py-2 small mb-0">
+                    <i class="fas fa-check-circle me-1"></i> Đăng ký thành công! Bạn sẽ nhận được thông báo ngay khi kho có hàng lại.
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-warning text-dark fw-bold rounded-pill px-4" id="btnSubmitBackInStock" onclick="submitBackInStock()">
+                    <i class="fas fa-paper-plane me-1"></i> Đăng ký thông báo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL XEM ẢNH ĐÁNH GIÁ PHÓNG TO -->
+<div class="modal fade" id="modalReviewImage" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 bg-transparent text-center">
+            <div class="position-relative d-inline-block mx-auto">
+                <button type="button" class="btn btn-light btn-sm rounded-circle position-absolute top-0 end-0 m-3 shadow" data-bs-dismiss="modal" style="width: 36px; height: 36px;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <img id="modalPreviewReviewImg" src="" alt="Ảnh phản hồi thực tế" class="img-fluid rounded-4 shadow-lg" style="max-height: 85vh; object-fit: contain; background: #fff;" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Thử đồ ảo AI (Anywear Live Fitting) -->
+@await Html.PartialAsync("_VirtualTryOnModal")
+
+@section Scripts {
+<script type="module" src="~/js/virtual-tryon.js" asp-append-version="true"></script>
+<script>
+    @{
+        var scriptStockMap = ViewBag.StockMap as Dictionary<int, int> ?? new Dictionary<int, int>();
+        var scriptFirstBt = Model.BienTheSanPhams?.FirstOrDefault();
+        int scriptFirstStock = scriptFirstBt != null && scriptStockMap.ContainsKey(scriptFirstBt.MaBienThe) ? scriptStockMap[scriptFirstBt.MaBienThe] : 50;
+    }
+    var currentVariant = {
+        id: @(scriptFirstBt != null ? scriptFirstBt.MaBienThe : 0),
+        stock: @scriptFirstStock,
+        size: '@(scriptFirstBt?.KichCo ?? "")',
+        color: '@(scriptFirstBt?.MauSac ?? "")'
+    };
+
+    function selectVariant(el, variantId, stock, size, color) {
+        document.querySelectorAll('.variant-option').forEach(function (v) { v.classList.remove('selected'); });
+        el.classList.add('selected');
+        document.getElementById('selectedVariant').value = variantId;
+        currentVariant = { id: variantId, stock: stock, size: size, color: color };
+
+        var addToCartBtn = document.getElementById('addToCartBtn');
+        var outOfStockBtn = document.getElementById('outOfStockBtn');
+        var qtyWrapper = document.getElementById('qtyWrapper');
+
+        if (stock <= 0) {
+            if (addToCartBtn) addToCartBtn.classList.add('d-none');
+            if (outOfStockBtn) outOfStockBtn.classList.remove('d-none');
+            if (qtyWrapper) qtyWrapper.style.display = 'none';
+        } else {
+            if (addToCartBtn) addToCartBtn.classList.remove('d-none');
+            if (outOfStockBtn) outOfStockBtn.classList.add('d-none');
+            if (qtyWrapper) qtyWrapper.style.display = '';
+        }
+    }
+
+    function changeQty(delta) {
+        var input = document.getElementById('soLuong');
+        var val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        if (val > 99) val = 99;
+        input.value = val;
+    }
+
+    $('#addToCartForm').on('submit', function (e) {
+        e.preventDefault();
+        var form = $(this);
+        var submitBtn = form.find('#addToCartBtn');
+        var originalHtml = submitBtn.html();
+        submitBtn.prop('disabled', true).html('<span><i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...</span>');
+        $.ajax({
+            url: '/Cart/AddToCart',
+            type: 'POST',
+            data: form.serialize(),
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function (response) {
+                submitBtn.prop('disabled', false).html(originalHtml);
+                if (response.success) {
+                    showCartToast(response.message, true);
+                    updateCartBadge(response.cartCount);
+                } else {
+                    if (response.redirectUrl) {
+                        showCartToast(response.message + ' Đang chuyển hướng...', false);
+                        setTimeout(function () { window.location.href = response.redirectUrl; }, 1500);
+                    } else {
+                        showCartToast(response.message, false);
+                    }
+                }
+            },
+            error: function () {
+                submitBtn.prop('disabled', false).html(originalHtml);
+                showCartToast('Đã xảy ra lỗi. Vui lòng thử lại.', false);
+            }
+        });
+    });
+
+    // Sticky Mobile Buy Bar scroll detection
+    window.addEventListener('scroll', function () {
+        var mainBuyBtn = document.getElementById('addToCartBtn');
+        var stickyBar = document.getElementById('mobileStickyBuyBar');
+        if (!mainBuyBtn || !stickyBar) return;
+
+        var rect = mainBuyBtn.getBoundingClientRect();
+        if (rect.bottom < 0) {
+            stickyBar.classList.add('visible');
+        } else {
+            stickyBar.classList.remove('visible');
+        }
+    });
+
+    function triggerMobileBuy() {
+        var form = document.getElementById('addToCartForm');
+        if (form) {
+            $(form).submit();
+        }
+    }
+
+    // Modal Viết đánh giá
+    function openReviewModal() {
+        var modalEl = document.getElementById('modalVietDanhGia');
+        if (modalEl) {
+            var myModal = new bootstrap.Modal(modalEl);
+            myModal.show();
+        }
+    }
+
+    function setStarRating(score) {
+        document.getElementById('inputDiemDanhGia').value = score;
+        var labels = {
+            1: "Rất không hài lòng (1 sao)",
+            2: "Chưa hài lòng (2 sao)",
+            3: "Bình thường (3 sao)",
+            4: "Hài lòng (4 sao)",
+            5: "Tuyệt vời (5 sao)"
+        };
+        document.getElementById('starScoreLabel').innerText = labels[score] || (score + " sao");
+        var stars = document.querySelectorAll('#starRatingSelect i');
+        stars.forEach(function (star) {
+            var s = parseInt(star.getAttribute('data-score'));
+            if (s <= score) {
+                star.classList.add('active');
+            } else {
+                star.classList.remove('active');
+            }
+        });
+    }
+
+    function previewReviewPhoto(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                document.getElementById('reviewPhotoImg').src = e.target.result;
+                document.getElementById('reviewPhotoPreview').classList.remove('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeReviewPhoto() {
+        document.getElementById('inputReviewPhoto').value = '';
+        document.getElementById('reviewPhotoPreview').classList.add('d-none');
+        document.getElementById('reviewPhotoImg').src = '';
+    }
+
+    function openReviewImage(src) {
+        document.getElementById('modalPreviewReviewImg').src = src;
+        var modalEl = document.getElementById('modalReviewImage');
+        if (modalEl) {
+            var myModal = new bootstrap.Modal(modalEl);
+            myModal.show();
+        }
+    }
+
+    // Back-in-Stock Alert Modal
+    function openBackInStockModal() {
+        var variantText = (currentVariant.size || '') + (currentVariant.color ? ' · ' + currentVariant.color : '');
+        document.getElementById('modalVariantInfo').innerText = variantText || 'Mặc định';
+        document.getElementById('backInStockContact').value = '';
+        document.getElementById('backInStockError').classList.add('d-none');
+        document.getElementById('backInStockSuccessAlert').classList.add('d-none');
+        document.getElementById('btnSubmitBackInStock').disabled = false;
+
+        var modalEl = document.getElementById('modalBaoCoHang');
+        if (modalEl) {
+            var myModal = new bootstrap.Modal(modalEl);
+            myModal.show();
+        }
+    }
+
+    function submitBackInStock() {
+        var contact = document.getElementById('backInStockContact').value.trim();
+        var errorEl = document.getElementById('backInStockError');
+        if (!contact) {
+            errorEl.classList.remove('d-none');
+            return;
+        }
+        errorEl.classList.add('d-none');
+
+        var btn = document.getElementById('btnSubmitBackInStock');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang đăng ký...';
+
+        $.ajax({
+            url: '/SanPham/DangKyBaoCoHang',
+            type: 'POST',
+            data: {
+                maSanPham: @Model.MaSanPham,
+                maBienThe: currentVariant.id,
+                lienHe: contact,
+                size: currentVariant.size,
+                mauSac: currentVariant.color
+            },
+            success: function (res) {
+                if (res.success) {
+                    document.getElementById('backInStockSuccessAlert').classList.remove('d-none');
+                    btn.innerHTML = '<i class="fas fa-check me-1"></i> Đã đăng ký';
+                    if (typeof showCartToast === 'function') {
+                        showCartToast(res.message, true);
+                    }
+                    setTimeout(function () {
+                        var modalEl = document.getElementById('modalBaoCoHang');
+                        var modalInstance = bootstrap.Modal.getInstance(modalEl);
+                        if (modalInstance) modalInstance.hide();
+                    }, 2000);
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Đăng ký thông báo';
+                    alert(res.message || 'Đã có lỗi xảy ra.');
+                }
+            },
+            error: function () {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Đăng ký thông báo';
+                alert('Không thể kết nối đến máy chủ. Vui lòng thử lại sau.');
+            }
+        });
+    }
+
+    function changeProductGalleryImage(src, el) {
+        var mainImg = document.getElementById('product2DImage');
+        if (mainImg) {
+            mainImg.style.opacity = '0.35';
+            setTimeout(function() {
+                mainImg.src = src;
+                mainImg.style.opacity = '1';
+            }, 120);
+        }
+        document.querySelectorAll('.product-thumb-slot').forEach(function(t) {
+            t.classList.remove('active-thumb');
+            t.style.borderColor = 'transparent';
+        });
+        if (el) {
+            el.classList.add('active-thumb');
+            el.style.borderColor = '#000000';
+        }
+    }
+</script>
+}

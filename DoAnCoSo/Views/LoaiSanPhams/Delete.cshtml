@@ -1,0 +1,50 @@
+﻿@model DoAnCoSo.Models.LoaiSanPham
+
+@{
+    ViewData["Title"] = "Xóa loại sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="delete-box">
+        <div class="delete-icon">
+            <i class="bi bi-trash3-fill"></i>
+        </div>
+
+        <h3 class="fw-bold mb-2">Xác nhận xóa loại sản phẩm</h3>
+        <p class="text-muted mb-4">
+            Bạn có chắc chắn muốn xóa mục này không? Thao tác này có thể ảnh hưởng đến dữ liệu liên quan.
+        </p>
+
+        <div class="detail-grid text-start mb-4">
+            <div class="detail-item">
+                <span class="detail-label">Mã loại sản phẩm</span>
+                <div class="detail-value">
+                    <span class="code-badge">#@Model.MaLoaiSanPham</span>
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Tên loại sản phẩm</span>
+                <div class="detail-value fw-bold">@Model.TenLoaiSanPham</div>
+            </div>
+
+            <div class="detail-item">
+                <span class="detail-label">Mô tả</span>
+                <div class="detail-value">
+                    @(string.IsNullOrWhiteSpace(Model.MoTa) ? "Chưa có mô tả" : Model.MoTa)
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="MaLoaiSanPham" />
+            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                <button type="submit" class="btn-delete-solid">
+                    <i class="bi bi-trash3"></i> Xác nhận xóa
+                </button>
+                <a asp-action="Index" class="btn-back">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>

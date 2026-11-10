@@ -1,0 +1,346 @@
+@model IEnumerable<DoAnCoSo.Models.DonHang>
+@inject DoAnCoSo.Data.ApplicationDbContext _db
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int pendingCount = Model?.Count(o => o.TrangThaiDonHang == "Chờ xác nhận") ?? 0;
+    int processingCount = Model?.Count(o => o.TrangThaiDonHang == "Đang xử lý" || o.TrangThaiDonHang == "Đang giao") ?? 0;
+    int completedCount = Model?.Count(o => o.TrangThaiDonHang == "Hoàn thành") ?? 0;
+    decimal totalRevenue = Model?
+        .Where(o => o.TrangThaiDonHang == "Hoàn thành" || o.TrangThaiThanhToan == "Đã thanh toán")
+        .Sum(o => o.TongTien) ?? 0;
+    int totalOrders = Model?.Count() ?? 0;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- HEADER & CONTROLS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <div class="text-muted font-mono" style="font-size: 11px;">Bảng điều khiển › Đơn hàng hệ thống</div>
+            <h2 class="font-display fw-bold mb-0.5" style="font-size: 20px;">Quản Lý Đơn Hàng</h2>
+            <p class="text-muted mb-0" style="font-size: 12px;">Theo dõi, lọc, xử lý vận chuyển và in hóa đơn giao dịch của khách hàng</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <!-- View Mode Switcher -->
+            <div class="v22-view-switcher">
+                <button type="button" onclick="toggleOrderViewMode('table')" id="ordViewTableBtn" class="v22-view-btn active">
+                    ☰ Bảng chi tiết
+                </button>
+                <button type="button" onclick="toggleOrderViewMode('kanban')" id="ordViewKanbanBtn" class="v22-view-btn">
+                    ⊞ Kanban 3 cột
+                </button>
+            </div>
+
+            <a asp-controller="Marketing" asp-action="AbandonedCarts" class="v22-btn-secondary" style="border-radius: 9999px;">
+                <i class="bi bi-cart-x text-danger"></i> Giải cứu giỏ hàng (Email)
+            </a>
+
+            <form asp-controller="DonHangs" asp-action="ExportExcel" method="post" class="m-0">
+                <button class="v22-btn-primary" type="submit" style="border-radius: 9999px;">
+                    <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4 ORDER KPI CARDS -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-lg-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Chờ Xác Nhận</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@pendingCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">đơn</span></div>
+                    <span class="text-warning font-mono" style="font-size: 11px;">● Cần xử lý ngay</span>
+                </div>
+                <div class="rounded-3 bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; font-size: 18px;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Đang Xử Lý &amp; Giao</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@processingCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">đơn</span></div>
+                    <span class="text-primary font-mono" style="font-size: 11px;">● Đang trên hành trình</span>
+                </div>
+                <div class="rounded-3 bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; font-size: 18px;">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Đã Hoàn Thành</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@completedCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">đơn</span></div>
+                    <span class="text-success font-mono" style="font-size: 11px;">✓ Giao thành công</span>
+                </div>
+                <div class="rounded-3 bg-success bg-opacity-10 text-success d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; font-size: 18px;">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="v22-sage p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-uppercase" style="font-size: 10px;">Tổng Giá Trị Đơn Đặt</span>
+                    <div class="font-display fw-bold font-mono" style="font-size: 21px;">@totalRevenue.ToString("N0") ₫</div>
+                    <span class="text-success font-mono" style="font-size: 11px;">● @totalOrders đơn (COD + SePay)</span>
+                </div>
+                <div class="rounded-3 bg-dark text-white d-flex align-items-center justify-content-center font-mono fw-bold" style="width: 42px; height: 42px;">
+                    ₫
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- HORIZONTAL FILTER BAR -->
+    <div class="v22-card p-3.5">
+        <div class="row g-2.5 align-items-end">
+            <div class="col-md-3">
+                <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tìm kiếm</label>
+                <input type="text" id="searchInput" placeholder="Tìm ORD-..., tên khách, SĐT..." class="v22-input" />
+            </div>
+            <div class="col-md-3">
+                <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Trạng thái</label>
+                <select id="statusFilter" class="v22-input fw-bold">
+                    <option value="">Tất cả trạng thái (@totalOrders)</option>
+                    <option value="Chờ xác nhận">Chờ xác nhận (@pendingCount)</option>
+                    <option value="Đang xử lý">Đang xử lý</option>
+                    <option value="Đang giao">Đang giao</option>
+                    <option value="Hoàn thành">Hoàn thành (@completedCount)</option>
+                    <option value="Đã hủy">Đã hủy</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Từ ngày</label>
+                <input type="date" id="fromDateFilter" class="v22-input font-mono" />
+            </div>
+            <div class="col-md-2">
+                <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Đến ngày</label>
+                <input type="date" id="toDateFilter" class="v22-input font-mono" />
+            </div>
+            <div class="col-md-2 d-flex gap-1">
+                <button type="button" onclick="showToast('Đã áp dụng bộ lọc dữ liệu đơn hàng!')" class="v22-btn-primary w-100 justify-content-center">
+                    Lọc dữ liệu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. TABLE VIEW -->
+    <div id="ordersTableView" class="v22-card overflow-hidden">
+        <div class="p-3 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <select class="v22-input py-1.5 px-2.5 fw-bold" style="font-size: 12px; width: 220px;">
+                    <option value="">Thao tác hàng loạt</option>
+                    <option value="complete">Đánh dấu Hoàn thành</option>
+                    <option value="process">Đánh dấu Đang xử lý</option>
+                    <option value="cancel">Hủy các đơn đã chọn</option>
+                </select>
+                <button class="v22-btn-outline py-1.5 px-3" type="button" onclick="showToast('Đã thực hiện thao tác hàng loạt!')">Áp dụng</button>
+            </div>
+            <span class="font-mono text-muted" style="font-size: 11px;">Hiển thị <strong>@totalOrders</strong> đơn hàng</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="v22-table" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="selectAllCheckbox" class="form-check-input" />
+                        </th>
+                        <th>Đơn hàng</th>
+                        <th>Khách hàng</th>
+                        <th>Trạng thái đơn</th>
+                        <th>Thanh toán</th>
+                        <th>Tổng tiền</th>
+                        <th class="text-end" style="width: 170px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            int itemsCount = _db.ChiTietDonHangs.Count(d => d.MaDonHang == item.MaDonHang);
+                            var customerEmail = _db.TaiKhoans.FirstOrDefault(t => t.MaTaiKhoan == (item.NguoiDung != null ? item.NguoiDung.MaTaiKhoan : 0))?.Email ?? "khachvanglai@fashionstore.com";
+
+                            var isPending = item.TrangThaiDonHang == "Chờ xác nhận";
+                            var isCancelled = item.TrangThaiDonHang == "Đã hủy";
+
+                            <tr class="order-table-row">
+                                <td style="text-align: center;">
+                                    <input type="checkbox" class="form-check-input order-checkbox" />
+                                </td>
+                                <td>
+                                    <div class="font-mono fw-bold text-success">ORD-@item.NgayDat.ToString("yyyyMMdd")-@item.MaDonHang</div>
+                                    <div class="font-mono text-muted" style="font-size: 10px;">ID #@item.MaDonHang • @item.NgayDat.ToString("dd/MM/yyyy HH:mm")</div>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">@(!string.IsNullOrEmpty(item.NguoiDung?.HoTen) ? item.NguoiDung.HoTen : "Khách vãng lai")</div>
+                                    <div class="text-muted text-truncate" style="font-size: 11px; max-width: 220px;">@customerEmail</div>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill @(isPending ? "bg-warning text-dark" : isCancelled ? "bg-danger text-white" : "bg-success text-white") font-mono" style="font-size: 11px;">
+                                        ● @item.TrangThaiDonHang
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold" style="font-size: 12px;">@(item.PhuongThucThanhToan == "ChuyenKhoan" ? "Chuyển khoản (SePay)" : "COD • Nhận hàng")</div>
+                                    <span class="badge rounded-pill bg-light text-muted border font-mono" style="font-size: 10px;">
+                                        @(item.TrangThaiThanhToan == "Đã thanh toán" || item.TrangThaiThanhToan == "DaThanhToan" ? "Đã thanh toán" : "Chưa thanh toán")
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="font-mono fw-bold text-success" style="font-size: 14px;">@item.TongTien.ToString("N0") ₫</div>
+                                    <div class="text-muted" style="font-size: 10.5px;">@itemsCount sản phẩm</div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a asp-action="Details" asp-route-id="@item.MaDonHang" class="btn btn-sm btn-light border px-2 py-1" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                                        <a asp-action="InPhieuGiaoHang" asp-route-id="@item.MaDonHang" target="_blank" class="btn btn-sm btn-light border px-2 py-1" title="In phiếu giao hàng"><i class="bi bi-upc-scan"></i></a>
+                                        <a asp-action="InHoaDon" asp-route-id="@item.MaDonHang" target="_blank" class="btn btn-sm btn-light border px-2 py-1" title="In hóa đơn"><i class="bi bi-receipt"></i></a>
+                                        <button type="button" onclick="confirmDelete(@item.MaDonHang)" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa"><i class="bi bi-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">Chưa có đơn hàng nào</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 2. KANBAN 3 COLUMNS VIEW -->
+    <div id="ordersKanbanView" class="row g-3" style="display: none;">
+        <!-- Cột 1: Chờ xác nhận -->
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex flex-column gap-2.5 h-100">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom">
+                    <span class="font-display fw-bold text-uppercase" style="font-size: 12px;">⏳ Chờ xác nhận</span>
+                    <span class="badge rounded-pill bg-warning text-dark font-mono">@pendingCount</span>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var ord in (Model?.Where(o => o.TrangThaiDonHang == "Chờ xác nhận") ?? Enumerable.Empty<DoAnCoSo.Models.DonHang>()))
+                    {
+                        <div class="p-3 rounded-3 bg-light d-flex flex-column gap-1">
+                            <div class="d-flex justify-content-between font-mono fw-bold" style="font-size: 12px;">
+                                <span>ORD-@ord.NgayDat.ToString("yyyyMMdd")-@ord.MaDonHang</span>
+                                <span class="text-success">@ord.TongTien.ToString("N0") ₫</span>
+                            </div>
+                            <div class="fw-bold" style="font-size: 12.5px;">@(!string.IsNullOrEmpty(ord.NguoiDung?.HoTen) ? ord.NguoiDung.HoTen : "Khách vãng lai")</div>
+                            <div class="text-muted" style="font-size: 11px;">@(ord.PhuongThucThanhToan == "ChuyenKhoan" ? "SePay QR" : "COD") • @ord.NgayDat.ToString("dd/MM HH:mm")</div>
+                            <a asp-action="Details" asp-route-id="@ord.MaDonHang" class="v22-btn-outline py-1 px-2 justify-content-center mt-1" style="font-size: 11px;">Xem &amp; Duyệt →</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột 2: Đang xử lý & Giao -->
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex flex-column gap-2.5 h-100">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom">
+                    <span class="font-display fw-bold text-uppercase" style="font-size: 12px;">🚚 Đang xử lý &amp; Giao</span>
+                    <span class="badge rounded-pill bg-primary text-white font-mono">@processingCount</span>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var ord in (Model?.Where(o => o.TrangThaiDonHang == "Đang xử lý" || o.TrangThaiDonHang == "Đang giao") ?? Enumerable.Empty<DoAnCoSo.Models.DonHang>()))
+                    {
+                        <div class="p-3 rounded-3 bg-light d-flex flex-column gap-1">
+                            <div class="d-flex justify-content-between font-mono fw-bold" style="font-size: 12px;">
+                                <span>ORD-@ord.NgayDat.ToString("yyyyMMdd")-@ord.MaDonHang</span>
+                                <span class="text-success">@ord.TongTien.ToString("N0") ₫</span>
+                            </div>
+                            <div class="fw-bold" style="font-size: 12.5px;">@(!string.IsNullOrEmpty(ord.NguoiDung?.HoTen) ? ord.NguoiDung.HoTen : "Khách vãng lai")</div>
+                            <div class="text-muted" style="font-size: 11px;">@ord.NgayDat.ToString("dd/MM HH:mm")</div>
+                            <a asp-action="Details" asp-route-id="@ord.MaDonHang" class="v22-btn-outline py-1 px-2 justify-content-center mt-1" style="font-size: 11px;">Xem chi tiết →</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột 3: Hoàn thành & Đã hủy -->
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex flex-column gap-2.5 h-100">
+                <div class="d-flex align-items-center justify-content-between pb-2 border-bottom">
+                    <span class="font-display fw-bold text-uppercase" style="font-size: 12px;">✓ Đã hoàn thành / Hủy</span>
+                    <span class="badge rounded-pill bg-success text-white font-mono">@completedCount</span>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var ord in (Model?.Where(o => o.TrangThaiDonHang == "Hoàn thành" || o.TrangThaiDonHang == "Đã hủy") ?? Enumerable.Empty<DoAnCoSo.Models.DonHang>()))
+                    {
+                        <div class="p-3 rounded-3 bg-light d-flex flex-column gap-1">
+                            <div class="d-flex justify-content-between font-mono fw-bold" style="font-size: 12px;">
+                                <span>ORD-@ord.NgayDat.ToString("yyyyMMdd")-@ord.MaDonHang</span>
+                                <span class="@(ord.TrangThaiDonHang == "Đã hủy" ? "text-danger" : "text-success")">@ord.TongTien.ToString("N0") ₫</span>
+                            </div>
+                            <div class="fw-bold" style="font-size: 12.5px;">@(!string.IsNullOrEmpty(ord.NguoiDung?.HoTen) ? ord.NguoiDung.HoTen : "Khách vãng lai")</div>
+                            <div class="d-flex justify-content-between align-items-center text-muted" style="font-size: 11px;">
+                                <span>@ord.NgayDat.ToString("dd/MM HH:mm")</span>
+                                <span class="badge rounded-pill @(ord.TrangThaiDonHang == "Đã hủy" ? "bg-danger text-white" : "bg-success text-white") font-mono" style="font-size: 9px;">@ord.TrangThaiDonHang</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        const selectAll = document.getElementById('selectAllCheckbox');
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                checkboxes.forEach(cb => {
+                    cb.checked = selectAll.checked;
+                });
+            });
+        }
+
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const fromDateFilter = document.getElementById('fromDateFilter');
+        const toDateFilter = document.getElementById('toDateFilter');
+        const rows = document.querySelectorAll('#ordersTable tbody tr.order-table-row');
+
+        function applyFilters() {
+            const query = searchInput ? searchInput.value.toLowerCase() : '';
+            const selectedStatus = statusFilter ? statusFilter.value.toLowerCase() : '';
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                let matchesSearch = text.includes(query);
+                let matchesStatus = selectedStatus === "" || text.includes(selectedStatus);
+                row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('keyup', applyFilters);
+        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+        if (fromDateFilter) fromDateFilter.addEventListener('change', applyFilters);
+        if (toDateFilter) toDateFilter.addEventListener('change', applyFilters);
+
+        function confirmDelete(id) {
+            alert("Thông báo: Để đảm bảo an toàn dữ liệu kế toán, tính năng xóa đơn hàng trực tiếp bị vô hiệu hóa. Vui lòng chuyển trạng thái đơn sang 'Đã hủy'.");
+        }
+    </script>
+}

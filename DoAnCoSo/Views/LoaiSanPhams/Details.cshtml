@@ -1,0 +1,46 @@
+﻿@model DoAnCoSo.Models.LoaiSanPham
+
+@{
+    ViewData["Title"] = "Chi tiết loại sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="mb-1 fw-bold">Chi tiết loại sản phẩm</h3>
+            <p class="text-muted mb-0">Thông tin chi tiết của loại sản phẩm</p>
+        </div>
+        <a asp-action="Index" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <span class="detail-label">Mã loại sản phẩm</span>
+            <div class="detail-value">
+                <span class="code-badge">#@Model.MaLoaiSanPham</span>
+            </div>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">Tên loại sản phẩm</span>
+            <div class="detail-value fw-bold">@Model.TenLoaiSanPham</div>
+        </div>
+
+        <div class="detail-item">
+            <span class="detail-label">Mô tả</span>
+            <div class="detail-value">
+                @(string.IsNullOrWhiteSpace(Model.MoTa) ? "Chưa có mô tả" : Model.MoTa)
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-4">
+        <a asp-action="Edit" asp-route-id="@Model.MaLoaiSanPham" class="btn-save">
+            <i class="bi bi-pencil-square"></i> Chỉnh sửa
+        </a>
+        <a asp-action="Index" class="btn-back">Quay lại danh sách</a>
+    </div>
+</div>

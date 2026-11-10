@@ -1,0 +1,190 @@
+@model IEnumerable<DoAnCoSo.Models.LichSuDiemThuong>
+@{
+    ViewData["Title"] = "Chương trình Điểm tích lũy & Giới thiệu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var topMembers = ViewBag.TopMembers as List<DoAnCoSo.Models.NguoiDung> ?? new();
+    var logs = Model ?? Enumerable.Empty<DoAnCoSo.Models.LichSuDiemThuong>();
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="KhuyenMais" asp-action="Index" class="v22-pill-tab">
+                🎟️ Khuyến mãi &amp; Quà tặng
+            </a>
+            <a asp-controller="Marketing" asp-action="AbandonedCarts" class="v22-pill-tab">
+                🛒 Giải cứu giỏ hàng
+            </a>
+            <a asp-controller="Vip" asp-action="Index" class="v22-pill-tab">
+                👑 Chính sách VIP 11 Bậc
+            </a>
+            <a asp-controller="Marketing" asp-action="LoyaltyProgram" class="v22-pill-tab active">
+                🪙 Điểm thưởng &amp; Giới thiệu
+            </a>
+            <a asp-controller="NguoiDungs" asp-action="Index" class="v22-pill-tab">
+                👥 Hồ sơ khách hàng
+            </a>
+            <a asp-controller="DanhGias" asp-action="Index" class="v22-pill-tab">
+                ⭐ Đánh giá &amp; Gemini AI
+            </a>
+        </div>
+
+        <span class="badge rounded-pill bg-light text-dark border px-3 py-2 font-mono" style="font-size: 11.5px;">
+            <i class="bi bi-shield-check text-success me-1"></i> Tích 1% đơn hàng • 1 Pts = 1 ₫
+        </span>
+    </div>
+
+    <!-- 4 KPI BENTO METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5">
+                <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng điểm đang lưu hành</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px;">@(((int)(ViewBag.TotalPointsCirculating ?? 0)).ToString("N0")) <span style="font-size: 12px;" class="text-muted">pts</span></div>
+                <span class="font-mono text-success" style="font-size: 11px;">● Tương đương @(((int)(ViewBag.TotalPointsCirculating ?? 0)).ToString("N0")) ₫</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5">
+                <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng điểm đã tiêu dùng</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px;">@(((int)(ViewBag.TotalPointsSpent ?? 0)).ToString("N0")) <span style="font-size: 12px;" class="text-muted">pts</span></div>
+                <span class="font-mono text-muted" style="font-size: 11px;">Trừ trực tiếp khi thanh toán</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-peach p-3.5">
+                <span class="font-mono text-uppercase" style="font-size: 10px; color: #E07A5F;">Điểm thưởng giới thiệu</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px; color: #E07A5F;">@(((int)(ViewBag.TotalPointsAwardedRef ?? 0)).ToString("N0")) <span style="font-size: 12px;">pts</span></div>
+                <span class="font-mono text-muted" style="font-size: 11px;">+50.000 pts / bạn bè mua đơn đầu</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-sage p-3.5">
+                <span class="font-mono text-uppercase" style="font-size: 10px;">Lượt giới thiệu thành công</span>
+                <div class="font-display fw-bold mt-1" style="font-size: 24px;">@(ViewBag.TotalReferralsSuccessful ?? 0) <span style="font-size: 12px;">khách mới</span></div>
+                <span class="font-mono text-success" style="font-size: 11px;">✓ Tăng trưởng tự nhiên</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP MEMBERS HALL OF FAME + LEDGER -->
+    <div class="row g-3">
+        <!-- Left 6 Cols: Top Members -->
+        <div class="col-lg-6">
+            <div class="v22-card p-0 overflow-hidden h-100">
+                <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between">
+                    <h3 class="font-display fw-bold mb-0" style="font-size: 15px;">🏆 Bảng Vinh Danh Khách Hàng Tích Điểm &amp; Mời Bạn</h3>
+                    <span class="font-mono text-muted" style="font-size: 11px;">Top @topMembers.Count</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="v22-table mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 56px;">Hạng</th>
+                                <th>Khách hàng</th>
+                                <th>Mã mời</th>
+                                <th class="text-center">Đã mời</th>
+                                <th class="text-end">Điểm hiện có</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!topMembers.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">Chưa có thành viên tích lũy điểm.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @for (int i = 0; i < topMembers.Count; i++)
+                                {
+                                    var m = topMembers[i];
+                                    string medal = i switch
+                                    {
+                                        0 => "🥇",
+                                        1 => "🥈",
+                                        2 => "🥉",
+                                        _ => $"#{i + 1}"
+                                    };
+
+                                    <tr>
+                                        <td class="font-mono fw-bold">@medal</td>
+                                        <td>
+                                            <div class="fw-bold font-display" style="font-size: 13px;">@m.HoTen</div>
+                                            <span class="text-muted font-mono" style="font-size: 10.5px;">@(m.HangVip ?? "Thành viên")</span>
+                                        </td>
+                                        <td>
+                                            <span class="font-mono badge bg-light text-dark border">@m.MaGioiThieu</span>
+                                        </td>
+                                        <td class="text-center font-mono fw-bold">@m.SoNguoiDaGioiThieu</td>
+                                        <td class="text-end font-mono fw-bold text-success">@m.DiemTichLuy.ToString("N0") pts</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right 6 Cols: Points Transaction Ledger -->
+        <div class="col-lg-6">
+            <div class="v22-card p-0 overflow-hidden h-100">
+                <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between">
+                    <h3 class="font-display fw-bold mb-0" style="font-size: 15px;">📜 Nhật Ký Biến Động Điểm Thưởng Gần Đây</h3>
+                    <span class="font-mono text-muted" style="font-size: 11px;">@logs.Count() giao dịch</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="v22-table mb-0" id="pointsLedgerTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 115px;">Thời gian</th>
+                                <th>Khách hàng</th>
+                                <th>Nội dung</th>
+                                <th class="text-end" style="width: 115px;">Biến động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (!logs.Any())
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">Chưa có giao dịch biến động điểm.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var log in logs)
+                                {
+                                    <tr>
+                                        <td class="font-mono text-muted" style="font-size: 11px;">@log.NgayGiaoDich.ToString("dd/MM HH:mm")</td>
+                                        <td>
+                                            <div class="fw-bold" style="font-size: 12.5px;">@(log.NguoiDung?.HoTen ?? "Khách hàng")</div>
+                                            @if (log.MaDonHang.HasValue)
+                                            {
+                                                <a asp-controller="DonHangs" asp-action="Details" asp-route-id="@log.MaDonHang" class="font-mono text-primary text-decoration-none" style="font-size: 10px;">
+                                                    ORD-#@log.MaDonHang
+                                                </a>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="text-muted clamp-2" style="font-size: 11.5px; max-width: 220px;">@log.MoTa</div>
+                                        </td>
+                                        <td class="text-end font-mono fw-bold @(log.SoDiem > 0 ? "text-success" : "text-danger")" style="font-size: 12.5px;">
+                                            @(log.SoDiem > 0 ? "+" : "")@log.SoDiem.ToString("N0") pts
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

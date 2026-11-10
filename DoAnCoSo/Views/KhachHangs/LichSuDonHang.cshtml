@@ -1,0 +1,582 @@
+@model IEnumerable<DoAnCoSo.Models.DonHang>
+@{
+    ViewData["Title"] = "Lịch sử đơn hàng";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+
+    var filterStatus = Context.Request.Query["trangThai"].ToString();
+    var filtered = string.IsNullOrEmpty(filterStatus)
+        ? Model
+        : Model.Where(x => x.TrangThaiDonHang == filterStatus);
+}
+
+@section Styles {
+<style>
+    /* ==================== ACCOUNT LAYOUT ==================== */
+    .account-page {
+        padding: 48px 0 80px;
+        background: #f7f7f7;
+        min-height: calc(100vh - 120px);
+    }
+
+    /* Sidebar */
+    .account-sidebar {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+
+    .account-sidebar-header {
+        padding: 20px;
+        background: #111;
+        color: #fff;
+    }
+
+    .account-sidebar-header .user-avatar {
+        width: 48px;
+        height: 48px;
+        background: #333;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .account-sidebar-header h6 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .account-sidebar-header small {
+        font-size: 12px;
+        color: #aaa;
+    }
+
+    .sidebar-nav .sidebar-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #555;
+        text-decoration: none;
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .sidebar-nav .sidebar-nav-item:hover {
+        background: #f9f9f9;
+        color: #111;
+        border-left-color: #ddd;
+    }
+
+    .sidebar-nav .sidebar-nav-item.active {
+        background: #f5f5f5;
+        color: #111;
+        font-weight: 700;
+        border-left-color: #111;
+    }
+
+    .sidebar-nav .sidebar-nav-item i {
+        width: 18px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .sidebar-nav .sidebar-nav-item.text-danger { color: #c00 !important; }
+    .sidebar-nav .sidebar-nav-item.text-danger:hover { background: #fff5f5; border-left-color: #c00; }
+
+    .sidebar-nav hr { margin: 4px 20px; border-color: #f0f0f0; }
+
+    /* ==================== MAIN CONTENT ==================== */
+    .account-content {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+
+    .content-top {
+        padding: 24px 28px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .content-top h4 {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .content-top p { font-size: 13px; color: #999; margin-bottom: 20px; }
+
+    /* Tab filter */
+    .status-tabs {
+        display: flex;
+        gap: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .status-tabs::-webkit-scrollbar { display: none; }
+
+    .status-tab {
+        flex-shrink: 0;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #888;
+        text-decoration: none;
+        border-bottom: 2.5px solid transparent;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .status-tab:hover { color: #333; }
+    .status-tab.active { color: #111; border-bottom-color: #111; }
+
+    /* ==================== ORDERS ==================== */
+    .orders-wrap { padding: 20px 28px 28px; }
+
+    /* Empty state */
+    .empty-orders {
+        text-align: center;
+        padding: 60px 20px;
+        color: #bbb;
+    }
+
+    .empty-orders i { font-size: 52px; display: block; margin-bottom: 16px; }
+    .empty-orders h5 { font-size: 17px; font-weight: 600; color: #777; margin-bottom: 8px; }
+    .empty-orders p { font-size: 14px; margin-bottom: 20px; }
+
+    /* Order card */
+    .order-card {
+        border: 1px solid #ebebeb;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: box-shadow 0.2s;
+    }
+
+    .order-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+
+    .order-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 20px;
+        background: #fafafa;
+        border-bottom: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .order-id {
+        font-size: 14px;
+        font-weight: 800;
+        color: #111;
+        letter-spacing: 0.5px;
+    }
+
+    .order-date {
+        font-size: 12px;
+        color: #aaa;
+        margin-top: 2px;
+    }
+
+    .order-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 13px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+    }
+
+    .status-cho-xac-nhan { background: #fff8e1; color: #f57f17; }
+    .status-dang-xu-ly   { background: #e3f2fd; color: #1565c0; }
+    .status-dang-giao    { background: #e8f5e9; color: #2e7d32; }
+    .status-hoan-thanh   { background: #e8f5e9; color: #1b5e20; border: 1px solid #c8e6c9; }
+    .status-da-huy       { background: #fce4ec; color: #b71c1c; }
+    .status-other        { background: #f5f5f5; color: #555; }
+
+    .order-card-body {
+        padding: 16px 20px;
+    }
+
+    .order-meta-row {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+    }
+
+    .order-meta-item label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: #aaa;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .order-meta-item .val {
+        font-size: 14px;
+        font-weight: 600;
+        color: #222;
+    }
+
+    .order-meta-item .val.price { color: #c8102e; font-size: 16px; }
+
+    .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .payment-paid   { background: #e8f5e9; color: #2e7d32; }
+    .payment-unpaid { background: #f5f5f5; color: #888; }
+
+    /* Order items preview */
+    .order-items-preview {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .order-item-chip {
+        background: #f5f5f5;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: #555;
+    }
+
+    .order-card-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding: 12px 20px;
+        border-top: 1px solid #f5f5f5;
+        background: #fafafa;
+    }
+
+    .btn-order-detail {
+        padding: 8px 20px;
+        background: #111;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-order-detail:hover { background: #333; color: #fff; }
+
+    @@media (max-width: 768px) {
+        .account-page { padding: 20px 0 60px; }
+        .orders-wrap { padding: 16px; }
+        .content-top { padding: 16px 16px 0; }
+        .order-meta-row { gap: 16px; }
+    }
+</style>
+}
+
+<div class="account-page">
+    <div class="container">
+        <div class="row g-4">
+
+            <!-- ===================== SIDEBAR ===================== -->
+            <div class="col-lg-3 col-md-4">
+                <div class="account-sidebar">
+                    <div class="account-sidebar-header">
+                        <div class="user-avatar"><i class="fas fa-user"></i></div>
+                        <h6>@Context.Session.GetString("AdminUser")</h6>
+                        <small>Tài khoản khách hàng</small>
+                        @{
+                            var vipStatus = ViewBag.VipStatus as DoAnCoSo.Models.VipStatusViewModel;
+                        }
+                        @if (vipStatus != null)
+                        {
+                            <div class="mt-3 pt-3 border-top border-secondary text-start">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="badge" style="background-color: @vipStatus.CurrentTier.MauSac; color: #fff; font-size: 11px; padding: 5px 10px; border-radius: 20px;">
+                                        <i class="fas fa-crown text-warning me-1"></i> @vipStatus.CurrentTier.TenHang
+                                    </span>
+                                    <span class="badge bg-danger text-white" style="font-size: 11px;">Giảm @vipStatus.CurrentTier.PhanTramGiam%</span>
+                                </div>
+                                <div class="text-white-50 mt-2" style="font-size: 12px;">
+                                    Đã tích lũy: <strong class="text-warning">@vipStatus.CurrentAmount.ToString("N0")₫</strong>
+                                </div>
+                                @if (vipStatus.NextTier != null)
+                                {
+                                    <div class="progress mt-2" style="height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px;">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: @vipStatus.ProgressPercent%" aria-valuenow="@vipStatus.ProgressPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="mt-1 d-flex justify-content-between text-white-50" style="font-size: 10px;">
+                                        <span>+@vipStatus.AmountToNextTier.ToString("N0")₫</span>
+                                        <span>Lên @vipStatus.NextTier.TenHang (@vipStatus.NextTier.PhanTramGiam%)</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                    <nav class="sidebar-nav">
+                        <a href="/KhachHangs/Profile" class="sidebar-nav-item">
+                            <i class="fas fa-user-circle"></i> Thông tin cá nhân
+                        </a>
+                        <a href="/KhachHangs/LichSuDonHang" class="sidebar-nav-item active">
+                            <i class="fas fa-shopping-bag"></i> Lịch sử đơn hàng
+                        </a>
+                        <a href="/KhachHangs/DiemThuong" class="sidebar-nav-item">
+                            <i class="fas fa-coins text-warning"></i> Điểm thưởng & Giới thiệu
+                        </a>
+                        <hr />
+                        <a href="/Auth/Logout" class="sidebar-nav-item text-danger">
+                            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- ===================== MAIN ===================== -->
+            <div class="col-lg-9 col-md-8">
+                <div class="account-content">
+                    <div class="content-top">
+                        <h4><i class="fas fa-shopping-bag me-2" style="font-size:16px;"></i>Lịch sử đơn hàng</h4>
+                        <p>Theo dõi tất cả đơn hàng bạn đã đặt</p>
+
+                        @if (TempData["OrderSuccess"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show rounded-0 mt-3 mb-0" role="alert">
+                                <i class="fas fa-check-circle me-2"></i>@TempData["OrderSuccess"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+                        @if (TempData["OrderError"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show rounded-0 mt-3 mb-0" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>@TempData["OrderError"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <!-- Tab lọc trạng thái -->
+                        <div class="status-tabs">
+                            <a href="/KhachHangs/LichSuDonHang" class="status-tab @(string.IsNullOrEmpty(filterStatus) ? "active" : "")">
+                                Tất cả <span class="text-muted fw-normal">(</span>@Model.Count()<span class="text-muted fw-normal">)</span>
+                            </a>
+                             <a href="/KhachHangs/LichSuDonHang?trangThai=Chờ xác nhận" class="status-tab @(filterStatus == "Chờ xác nhận" ? "active" : "")">
+                                Chờ xác nhận <span class="text-muted fw-normal">(</span>@Model.Count(x => x.TrangThaiDonHang == "Chờ xác nhận")<span class="text-muted fw-normal">)</span>
+                            </a>
+                            <a href="/KhachHangs/LichSuDonHang?trangThai=Đang xử lý" class="status-tab @(filterStatus == "Đang xử lý" ? "active" : "")">
+                                Đang xử lý <span class="text-muted fw-normal">(</span>@Model.Count(x => x.TrangThaiDonHang == "Đang xử lý")<span class="text-muted fw-normal">)</span>
+                            </a>
+                            <a href="/KhachHangs/LichSuDonHang?trangThai=Đang giao" class="status-tab @(filterStatus == "Đang giao" ? "active" : "")">
+                                Đang giao <span class="text-muted fw-normal">(</span>@Model.Count(x => x.TrangThaiDonHang == "Đang giao")<span class="text-muted fw-normal">)</span>
+                            </a>
+                            <a href="/KhachHangs/LichSuDonHang?trangThai=Hoàn thành" class="status-tab @(filterStatus == "Hoàn thành" ? "active" : "")">
+                                Hoàn thành <span class="text-muted fw-normal">(</span>@Model.Count(x => x.TrangThaiDonHang == "Hoàn thành")<span class="text-muted fw-normal">)</span>
+                            </a>
+                            <a href="/KhachHangs/LichSuDonHang?trangThai=Đã hủy" class="status-tab @(filterStatus == "Đã hủy" ? "active" : "")">
+                                Đã hủy <span class="text-muted fw-normal">(</span>@Model.Count(x => x.TrangThaiDonHang == "Đã hủy")<span class="text-muted fw-normal">)</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="orders-wrap">
+                        @if (!filtered.Any())
+                        {
+                            <div class="empty-orders">
+                                <i class="fas fa-box-open"></i>
+                                <h5>Không có đơn hàng nào</h5>
+                                <p>@(string.IsNullOrEmpty(filterStatus) ? "Bạn chưa có đơn hàng nào." : $"Không có đơn hàng nào ở trạng thái này.")</p>
+                                <a href="/SanPham" class="btn-order-detail">
+                                    <i class="fas fa-store"></i> Mua sắm ngay
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var item in filtered)
+                            {
+                                string badgeClass;
+                                string badgeIcon;
+                                string statusLabel;
+
+                                if (item.TrangThaiDonHang == "Chờ xác nhận")
+                                {
+                                    badgeClass = "status-cho-xac-nhan";
+                                    badgeIcon = "fa-clock";
+                                    statusLabel = "Chờ xác nhận";
+                                }
+                                else if (item.TrangThaiDonHang == "Đang xử lý")
+                                {
+                                    badgeClass = "status-dang-xu-ly";
+                                    badgeIcon = "fa-cog";
+                                    statusLabel = item.TrangThaiDonHang;
+                                }
+                                else if (item.TrangThaiDonHang == "Đang giao")
+                                {
+                                    badgeClass = "status-dang-giao";
+                                    badgeIcon = "fa-truck";
+                                    statusLabel = item.TrangThaiDonHang;
+                                }
+                                else if (item.TrangThaiDonHang == "Hoàn thành")
+                                {
+                                    badgeClass = "status-hoan-thanh";
+                                    badgeIcon = "fa-check-circle";
+                                    statusLabel = item.TrangThaiDonHang;
+                                }
+                                else if (item.TrangThaiDonHang == "Đã hủy")
+                                {
+                                    badgeClass = "status-da-huy";
+                                    badgeIcon = "fa-times-circle";
+                                    statusLabel = item.TrangThaiDonHang;
+                                }
+                                else
+                                {
+                                    badgeClass = "status-other";
+                                    badgeIcon = "fa-circle";
+                                    statusLabel = item.TrangThaiDonHang;
+                                }
+
+                                <div class="order-card">
+                                    <!-- Header -->
+                                    <div class="order-card-header">
+                                        <div>
+                                            <div class="order-id"># ĐH@item.MaDonHang</div>
+                                            <div class="order-date">
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                @item.NgayDat.ToString("dd/MM/yyyy HH:mm")
+                                            </div>
+                                        </div>
+                                        <span class="order-status-badge @badgeClass">
+                                            <i class="fas @badgeIcon"></i>
+                                            @statusLabel
+                                        </span>
+                                    </div>
+
+                                    <!-- Body -->
+                                    <div class="order-card-body">
+                                        <div class="order-meta-row">
+                                            <div class="order-meta-item">
+                                                <label>Tổng tiền</label>
+                                                <span class="val price">@item.TongTien.ToString("N0") đ</span>
+                                            </div>
+                                            <div class="order-meta-item">
+                                                <label>Phương thức</label>
+                                                <span class="val">@(item.PhuongThucThanhToan == "ChuyenKhoan" ? "Chuyển khoản" : "COD")</span>
+                                            </div>
+                                            <div class="order-meta-item">
+                                                <label>Thanh toán</label>
+                                                @if (item.TrangThaiThanhToan == "DaThanhToan")
+                                                {
+                                                    <span class="payment-badge payment-paid"><i class="fas fa-check-circle"></i> Đã thanh toán</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="payment-badge payment-unpaid"><i class="fas fa-hourglass-half"></i> Chưa thanh toán</span>
+                                                }
+                                            </div>
+                                            <div class="order-meta-item">
+                                                <label>Giao đến</label>
+                                                <span class="val" style="font-size:13px; max-width:200px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                                    @item.DiaChiGiaoHang
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="order-card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div>
+                                            @if (item.TrangThaiDonHang == "Chờ xác nhận")
+                                            {
+                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-0" onclick="openQuickCancelModal(@item.MaDonHang)">
+                                                    <i class="fas fa-ban me-1"></i> Hủy đơn
+                                                </button>
+                                            }
+                                        </div>
+                                        <a href="/KhachHangs/ChiTietDonHang/@item.MaDonHang" class="btn-order-detail">
+                                            <i class="fas fa-eye"></i> Xem chi tiết
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hủy Đơn Hàng Nhanh -->
+<div class="modal fade" id="quickCancelModal" tabindex="-1" aria-labelledby="quickCancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-0 border-0 shadow">
+            <form asp-action="HuyDonHang" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="maDonHang" id="quickCancelMaDonHang" value="0" />
+                
+                <div class="modal-header bg-dark text-white rounded-0">
+                    <h5 class="modal-title fw-bold" id="quickCancelModalLabel" style="font-size:14px; text-transform:uppercase; letter-spacing:1px;">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>Xác nhận hủy đơn hàng #<span id="quickCancelDisplayId"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-3">
+                        Bạn có chắc chắn muốn hủy đơn hàng này? Khi hủy, số lượng sản phẩm sẽ được hoàn trả lại kho và lượt khuyến mãi (nếu có) sẽ được phục hồi.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-dark">Lý do hủy đơn:</label>
+                        <select class="form-select rounded-0" name="lyDoHuy" required>
+                            <option value="Thay đổi địa chỉ nhận hàng">Thay đổi địa chỉ nhận hàng</option>
+                            <option value="Muốn thay đổi sản phẩm hoặc kích cỡ khác">Muốn thay đổi sản phẩm hoặc kích cỡ khác</option>
+                            <option value="Tìm thấy giá tốt hơn ở nơi khác">Tìm thấy giá tốt hơn ở nơi khác</option>
+                            <option value="Đổi ý, không muốn mua nữa">Đổi ý, không muốn mua nữa</option>
+                            <option value="Lý do khác">Lý do khác</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-0">
+                    <button type="button" class="btn btn-outline-secondary rounded-0 btn-sm" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-danger rounded-0 btn-sm fw-bold">
+                        <i class="fas fa-times me-1"></i> Xác nhận hủy đơn
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openQuickCancelModal(orderId) {
+        document.getElementById('quickCancelMaDonHang').value = orderId;
+        document.getElementById('quickCancelDisplayId').textContent = 'ĐH' + orderId;
+        var modal = new bootstrap.Modal(document.getElementById('quickCancelModal'));
+        modal.show();
+    }
+</script>
+}

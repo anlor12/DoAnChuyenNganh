@@ -1,0 +1,341 @@
+@model IEnumerable<DoAnCoSo.Services.AbandonedCartViewModel>
+@{
+    ViewData["Title"] = "Cứu giỏ hàng bị bỏ quên & Gửi Email kích cầu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int minHours = ViewBag.MinHours ?? 2;
+    var carts = Model ?? Enumerable.Empty<DoAnCoSo.Services.AbandonedCartViewModel>();
+    int totalCarts = ViewBag.TotalCarts ?? 0;
+    decimal totalPotentialValue = ViewBag.TotalPotentialValue != null ? (decimal)ViewBag.TotalPotentialValue : 0m;
+    int recoveredCount = ViewBag.RecoveredCount ?? 0;
+    int pendingCount = ViewBag.PendingCount ?? 0;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + AUTO RECOVER BUTTON -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="KhuyenMais" asp-action="Index" class="v22-pill-tab">
+                🎟️ Khuyến mãi &amp; Quà tặng
+            </a>
+            <a asp-controller="Marketing" asp-action="AbandonedCarts" class="v22-pill-tab active">
+                🛒 Giải cứu giỏ hàng (@totalCarts)
+            </a>
+            <a asp-controller="Vip" asp-action="Index" class="v22-pill-tab">
+                👑 Chính sách VIP 11 Bậc
+            </a>
+            <a asp-controller="Marketing" asp-action="LoyaltyProgram" class="v22-pill-tab">
+                🪙 Điểm thưởng &amp; Giới thiệu
+            </a>
+            <a asp-controller="NguoiDungs" asp-action="Index" class="v22-pill-tab">
+                👥 Hồ sơ khách hàng
+            </a>
+            <a asp-controller="DanhGias" asp-action="Index" class="v22-pill-tab">
+                ⭐ Đánh giá &amp; Gemini AI
+            </a>
+        </div>
+
+        <button class="v22-btn-primary" type="button" onclick="autoRecoverAll()" id="btnAutoRecover" style="border-radius: 9999px;">
+            <i class="bi bi-send-check"></i> Quét &amp; Gửi Email Toàn Bộ
+        </button>
+    </div>
+
+    <!-- HERO BANNER -->
+    <div class="v22-hero-forest p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <span class="font-mono text-uppercase" style="font-size: 11px; letter-spacing: 0.12em; color: #7DD3B6;">ABANDONED CART RECOVERY • TỰ ĐỘNG GỬI EMAIL KÍCH CẦU</span>
+            <h2 class="font-display fw-bold text-white mt-1 mb-1" style="font-size: 22px;">
+                Giải Cứu Giỏ Hàng Bị Bỏ Quên &amp; <span class="font-editorial" style="color: #F4A28C; font-size: 26px;">Gửi Voucher Email</span>
+            </h2>
+            <p class="text-white-50 mb-0" style="font-size: 12px; max-width: 640px;">
+                Tự động phát hiện khách hàng thêm sản phẩm vào giỏ nhưng chưa hoàn tất thanh toán sau <strong>@minHours giờ</strong> và gửi Email nhắc nhở kèm mã giảm giá kích cầu trực tiếp về hộp thư khách hàng.
+            </p>
+        </div>
+
+        <div class="p-3 rounded-4 text-end" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.14);">
+            <span class="font-mono text-white-50 d-block" style="font-size: 10px;">VOUCHER KÍCH CẦU MẶC ĐỊNH</span>
+            <div class="font-mono fw-bold mt-0.5" style="font-size: 20px; color: #FCD34D;">RECOVER10 (-10%)</div>
+            <span class="font-mono text-white-50" style="font-size: 10px;">Đính kèm trực tiếp trong Email HTML</span>
+        </div>
+    </div>
+
+    <!-- 4 THẺ THỐNG KÊ KPI -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="font-mono text-uppercase text-muted" style="font-size: 10px;">Giỏ bị bỏ quên</span>
+                    <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger font-mono" style="font-size: 10px;">&gt;= @minHours giờ</span>
+                </div>
+                <div class="font-display fw-bold mt-1" style="font-size: 26px;">@totalCarts <span class="text-muted fw-normal" style="font-size: 13px;">giỏ hàng</span></div>
+                <div class="text-muted mt-1" style="font-size: 11px;">Chưa hoàn tất bước thanh toán</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-sage p-3.5 rounded-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="font-mono text-uppercase text-muted" style="font-size: 10px;">Doanh thu tiềm năng</span>
+                    <span class="badge rounded-pill text-white font-mono" style="background: #0C3226; font-size: 10px;">Cần khôi phục</span>
+                </div>
+                <div class="font-mono fw-bold mt-1" style="font-size: 24px; color: #0C3226;">@totalPotentialValue.ToString("N0") ₫</div>
+                <div class="text-muted mt-1" style="font-size: 11px;">Tổng giá trị sản phẩm nằm trong giỏ</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-card p-3.5">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="font-mono text-uppercase text-muted" style="font-size: 10px;">Đã gửi Email nhắc</span>
+                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success font-mono" style="font-size: 10px;">Đã gửi</span>
+                </div>
+                <div class="font-display fw-bold text-success mt-1" style="font-size: 26px;">@recoveredCount <span class="text-muted fw-normal" style="font-size: 13px;">khách</span></div>
+                <div class="text-muted mt-1" style="font-size: 11px;">Đã gửi Email kèm mã RECOVER10</div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="v22-peach p-3.5 rounded-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <span class="font-mono text-uppercase text-muted" style="font-size: 10px;">Chờ gửi nhắc nhở</span>
+                    <span class="badge rounded-pill text-white font-mono" style="background: #E07A5F; font-size: 10px;">Ưu tiên</span>
+                </div>
+                <div class="font-display fw-bold mt-1" style="font-size: 26px; color: #9A3412;">@pendingCount <span class="fw-normal" style="font-size: 13px;">giỏ chờ</span></div>
+                <div class="text-muted mt-1" style="font-size: 11px;">Sẵn sàng kích hoạt gửi Email</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- THANH LỌC THỜI GIAN BỎ QUÊN -->
+    <div class="v22-card p-3 d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="font-mono text-uppercase text-muted fw-bold me-1" style="font-size: 11px;">
+                <i class="bi bi-funnel me-1"></i>Lọc theo thời gian bỏ quên:
+            </span>
+            <div class="v22-pill-tabs">
+                <a href="/Marketing/AbandonedCarts?minHours=2" class="v22-pill-tab @(minHours == 2 ? "active" : "")">Trên 2 giờ</a>
+                <a href="/Marketing/AbandonedCarts?minHours=4" class="v22-pill-tab @(minHours == 4 ? "active" : "")">Trên 4 giờ</a>
+                <a href="/Marketing/AbandonedCarts?minHours=12" class="v22-pill-tab @(minHours == 12 ? "active" : "")">Trên 12 giờ</a>
+                <a href="/Marketing/AbandonedCarts?minHours=24" class="v22-pill-tab @(minHours == 24 ? "active" : "")">Trên 24 giờ</a>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge rounded-pill bg-light text-dark border px-3 py-2 font-mono" style="font-size: 11px;">
+                <i class="bi bi-envelope-paper-heart text-danger me-1"></i>Mẫu Email tự động cá nhân hóa sản phẩm &amp; Voucher
+            </span>
+        </div>
+    </div>
+
+    <!-- BẢNG DANH SÁCH GIỎ HÀNG BỎ QUÊN -->
+    <div class="v22-card p-4">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+            <div>
+                <h3 class="font-display fw-bold mb-0" style="font-size: 15px;">Danh Sách Giỏ Hàng Cần Giải Cứu (@totalCarts)</h3>
+                <p class="text-muted mb-0" style="font-size: 11px;">Bấm "Gửi Email" để gửi thông báo nhắc nhở kèm mã giảm giá về hộp thư khách hàng hoặc bấm biểu tượng con mắt để xem trước nội dung Email</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="v22-table" id="abandonedCartTable">
+                <thead>
+                    <tr>
+                        <th>Khách hàng &amp; Email nhận</th>
+                        <th>Sản phẩm trong giỏ</th>
+                        <th class="text-end">Giá trị giỏ</th>
+                        <th>Thời gian bỏ quên</th>
+                        <th>Trạng thái gửi Email</th>
+                        <th class="text-end">Thao tác giải cứu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in carts)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-bold" style="font-size: 12.5px;">@item.TenKhachHang</div>
+                                <div class="font-mono text-muted mt-0.5" style="font-size: 11px;">
+                                    <i class="bi bi-envelope-at me-1 text-success"></i>@item.Email
+                                </div>
+                                @if (!string.IsNullOrEmpty(item.SoDienThoai))
+                                {
+                                    <div class="font-mono text-muted" style="font-size: 10.5px;">
+                                        <i class="bi bi-telephone me-1"></i>@item.SoDienThoai
+                                    </div>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1.5" style="max-width: 320px;">
+                                    @foreach (var prod in item.Items.Take(2))
+                                    {
+                                        var imgUrl = string.IsNullOrWhiteSpace(prod.HinhAnh) ? "/images/fashionstore/product_1.jpg" : prod.HinhAnh;
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img src="@imgUrl" alt="@prod.TenSanPham" style="width: 38px; height: 38px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(12,50,38,0.1); flex-shrink: 0;" onerror="this.src='/images/fashionstore/product_1.jpg'" />
+                                            <div class="min-w-0">
+                                                <div class="fw-semibold text-truncate" style="font-size: 11.5px; max-width: 240px;">@prod.TenSanPham</div>
+                                                <div class="font-mono text-muted" style="font-size: 10px;">Size: @prod.KichCo • SL: @prod.SoLuong</div>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (item.Items.Count > 2)
+                                    {
+                                        <span class="badge rounded-pill bg-light text-dark border font-mono" style="font-size: 10px; width: fit-content;">
+                                            +@(item.Items.Count - 2) sản phẩm khác...
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <div class="font-mono fw-bold text-success" style="font-size: 13.5px;">@item.TongTien.ToString("N0") ₫</div>
+                                <div class="font-mono text-muted" style="font-size: 10.5px;">@item.SoLuongSanPham sản phẩm</div>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-danger bg-opacity-10 text-danger font-mono px-2.5 py-1" style="font-size: 10.5px;">
+                                    <i class="bi bi-clock-history me-1"></i>@item.GioDaBoQuen giờ trước
+                                </span>
+                                <div class="font-mono text-muted mt-1" style="font-size: 10px;">
+                                    Cập nhật: @item.NgayCapNhat.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </td>
+                            <td>
+                                @if (item.DaGuiNhacNho)
+                                {
+                                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success font-mono px-2.5 py-1" style="font-size: 10.5px;">
+                                        ● Đã gửi Email (@item.SoLanNhacNho lần)
+                                    </span>
+                                    <div class="font-mono text-muted mt-1" style="font-size: 10px;">
+                                        Lần cuối: @(item.NgayGuiNhacNho.HasValue ? item.NgayGuiNhacNho.Value.ToString("dd/MM HH:mm") : "-")
+                                    </div>
+                                    <span class="badge rounded-pill bg-warning bg-opacity-20 text-dark font-mono mt-0.5" style="font-size: 9.5px;">
+                                        🎟️ @(item.MaVoucherCuuGio ?? "RECOVER10")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-warning bg-opacity-15 text-warning font-mono px-2.5 py-1" style="font-size: 10.5px;">
+                                        ● Chưa gửi Email
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex align-items-center gap-1.5">
+                                    <button type="button" class="v22-btn-primary py-1.5 px-3" onclick="sendRecoverySingle(@item.MaGioHang, '@Html.Raw(item.TenKhachHang?.Replace("'", "\\'"))')" title="Gửi Email nhắc nhở kèm mã giảm giá RECOVER10">
+                                        <i class="bi bi-envelope-paper-fill"></i> Gửi Email
+                                    </button>
+                                    <button type="button" class="v22-btn-secondary py-1.5 px-2.5" onclick="previewEmail(@item.MaGioHang)" title="Xem trước mẫu Email HTML gửi khách">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!carts.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                <i class="bi bi-cart-check fs-2 d-block mb-2 text-success"></i>
+                                <div class="fw-semibold">Hiện tại không có giỏ hàng nào bị bỏ quên quá @minHours giờ.</div>
+                                <div class="small mt-1">Bạn có thể chọn mốc lọc thời gian ngắn hơn (2 giờ) để kiểm tra các giỏ hàng mới phát sinh.</div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL XEM TRƯỚC EMAIL HTML -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white border-0" style="background: #0C3226;">
+                <h6 class="modal-title font-display fw-bold">
+                    <i class="bi bi-envelope-paper-heart me-2" style="color: #E07A5F;"></i>Xem Trước Mẫu Email Giải Cứu Giỏ Hàng Gửi Khách
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0" style="height: 600px; background: #f8fafc;">
+                <iframe id="emailPreviewFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="v22-btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function sendRecoverySingle(maGioHang, customerName) {
+        if (!confirm(`Bạn có chắc chắn muốn gửi Email nhắc nhở kèm Voucher RECOVER10 (-10%) tới khách hàng ${customerName}?`)) {
+            return;
+        }
+
+        fetch('/Marketing/SendRecoveryEmail', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `maGioHang=${maGioHang}&voucherCode=RECOVER10&discountPercent=10`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (typeof showToast === 'function') {
+                showToast(data.message);
+            } else {
+                alert(data.message);
+            }
+            if (data.success) {
+                setTimeout(() => location.reload(), 900);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Lỗi kết nối khi gửi Email giải cứu giỏ hàng.");
+        });
+    }
+
+    function autoRecoverAll() {
+        const btn = document.getElementById('btnAutoRecover');
+        if (!confirm("Hệ thống sẽ tự động quét tất cả giỏ hàng bỏ quên và gửi Email kích cầu hàng loạt. Tiếp tục?")) {
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang quét & gửi Email...';
+
+        fetch('/Marketing/AutoRecoverAll', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'minHours=@minHours&voucherCode=RECOVER10'
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (typeof showToast === 'function') {
+                showToast(data.message);
+            } else {
+                alert(data.message);
+            }
+            setTimeout(() => location.reload(), 1000);
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Lỗi khi chạy quét tự động.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-send-check"></i> Quét & Gửi Email Toàn Bộ';
+        });
+    }
+
+    function previewEmail(id) {
+        const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        const iframe = document.getElementById('emailPreviewFrame');
+        iframe.src = '/Marketing/PreviewRecoveryEmail/' + id;
+        modal.show();
+    }
+</script>
+}

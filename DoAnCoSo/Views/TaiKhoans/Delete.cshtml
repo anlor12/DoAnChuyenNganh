@@ -1,0 +1,51 @@
+@model DoAnCoSo.Models.TaiKhoan
+
+@{
+    ViewData["Title"] = "Xóa tài khoản";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="form-card" style="max-width: 600px;">
+    <div class="delete-box">
+        <div class="delete-icon">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <h4 class="content-title" style="color: var(--danger); margin-bottom: 8px;">Xác nhận xóa tài khoản</h4>
+        <p class="content-note" style="margin-bottom: 25px;">Hành động này không thể hoàn tác. Vui lòng kiểm tra kỹ thông tin bên dưới trước khi thực hiện.</p>
+    </div>
+
+    <div class="detail-grid mb-4">
+        <div class="detail-item">
+            <span class="detail-label">Tên đăng nhập</span>
+            <span class="detail-value fw-bold text-white">@Model.TenDangNhap</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-label">Họ và tên chủ tài khoản</span>
+            <span class="detail-value">@(string.IsNullOrEmpty(Model.HoTen) ? "Chưa cập nhật" : Model.HoTen)</span>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-6">
+                <div class="detail-item h-100">
+                    <span class="detail-label">Vai trò phân quyền</span>
+                    <span class="status-badge status-red mt-1">@Model.VaiTro</span>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="detail-item h-100">
+                    <span class="detail-label">Địa chỉ Email</span>
+                    <span class="detail-value">@Model.Email</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="MaTaiKhoan" />
+        <div class="d-flex justify-content-center gap-3" style="border-top: 1px solid var(--line); padding-top: 25px;">
+            <a asp-action="Index" class="btn-back">Hủy bỏ</a>
+            <button type="submit" class="btn-delete-solid" style="min-height: 42px;">
+                <i class="bi bi-trash"></i> Xác nhận xóa vĩnh viễn
+            </button>
+        </div>
+    </form>
+</div>

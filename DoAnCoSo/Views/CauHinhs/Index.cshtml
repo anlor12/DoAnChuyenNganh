@@ -1,0 +1,167 @@
+@{
+    ViewData["Title"] = "Cài đặt hệ thống & API Keys";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS (MATCHING DEMO #mod-settings) -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="CauHinhs" asp-action="Index" class="v22-pill-tab active">
+                🔑 Tích hợp AI &amp; Khóa API
+            </a>
+            <a asp-controller="AuditLogs" asp-action="Index" class="v22-pill-tab">
+                🛡️ Nhật ký kiểm soát (Audit Logs)
+            </a>
+        </div>
+
+        <span class="badge rounded-pill bg-light text-dark border px-3 py-2 font-mono" style="font-size: 11.5px;">
+            <i class="bi bi-shield-check text-success me-1"></i> Mã hóa bảo mật phía máy chủ
+        </span>
+    </div>
+
+    <!-- NOTIFICATION ALERTS -->
+    @if (TempData["SettingsSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.12); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SettingsSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["SettingsError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["SettingsError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="Save" method="post" class="d-flex flex-column gap-3.5 m-0">
+        @Html.AntiForgeryToken()
+
+        <!-- 2-COLUMN BENTO SECURITY VAULT FOR AI INTEGRATIONS -->
+        <div class="row g-3.5">
+            <!-- COLUMN 1: GOOGLE GEMINI AI -->
+            <div class="col-lg-6">
+                <div class="v22-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; background: #0C3226; font-size: 18px;">
+                                    🤖
+                                </div>
+                                <div>
+                                    <h3 class="font-display fw-bold mb-0" style="font-size: 15.5px;">Tích Hợp Google Gemini AI</h3>
+                                    <span class="font-mono text-muted" style="font-size: 10.5px;">Chatbot Tư Vấn &amp; Phân Tích Cảm Xúc</span>
+                                </div>
+                            </div>
+                            <span class="font-mono badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 10.5px;">● Đã kết nối</span>
+                        </div>
+
+                        <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.55;">
+                            Khóa API này cung cấp năng lực cho Chatbot thông minh tư vấn thời trang 24/7, tìm kiếm trang phục bằng hình ảnh và tự động phân loại cảm xúc đánh giá.
+                        </p>
+
+                        <div class="mb-3">
+                            <label for="geminiApiKey" class="font-mono text-muted text-uppercase mb-1.5 d-block" style="font-size: 10px;">Gemini API Key (AIzaSy...)</label>
+                            <div class="d-flex gap-1.5">
+                                <input type="password" name="geminiApiKey" id="geminiApiKey" class="v22-input font-mono flex-grow-1"
+                                       value="@ViewBag.GeminiApiKey" placeholder="AIzaSy..." style="font-size: 12px;" />
+                                <button type="button" class="v22-btn-outline px-2.5" onclick="toggleKeyVisibility('geminiApiKey')" title="Ẩn/Hiện khóa">👁</button>
+                                <button type="button" class="v22-btn-outline px-2.5" onclick="copyKeyField('geminiApiKey', 'Gemini API Key')" title="Sao chép nhanh">📋</button>
+                            </div>
+                            <span class="text-muted font-mono mt-1.5 d-block" style="font-size: 11px;">
+                                Lấy key miễn phí tại: <a href="https://aistudio.google.com/" target="_blank" class="text-decoration-underline text-dark fw-bold">aistudio.google.com</a>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded-3 border bg-light bg-opacity-50 mt-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-success"></i>
+                        <span class="font-mono text-muted" style="font-size: 11px;">Được lưu trữ an toàn trong cấu hình hệ thống.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMN 2: DECART AI ANYWEAR V-TON -->
+            <div class="col-lg-6">
+                <div class="v22-card h-100 p-4 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div class="d-flex align-items-center gap-2.5">
+                                <div class="rounded-3 d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px; background: #E07A5F; font-size: 18px;">
+                                    👗
+                                </div>
+                                <div>
+                                    <h3 class="font-display fw-bold mb-0" style="font-size: 15.5px;">Tích Hợp Decart AI (Phòng Thử Đồ Ảo)</h3>
+                                    <span class="font-mono text-muted" style="font-size: 10.5px;">AnyWear Live VTON • WebRTC Realtime</span>
+                                </div>
+                            </div>
+                            <span class="font-mono badge rounded-pill bg-success bg-opacity-10 text-success" style="font-size: 10.5px;">● Live VTON</span>
+                        </div>
+
+                        <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.55;">
+                            Khóa API Decart chạy mô hình Lucy V-TON thay đồ trực tiếp trên luồng webcam người dùng thời gian thực với độ trễ cực thấp.
+                        </p>
+
+                        <div class="mb-3">
+                            <label for="decartApiKey" class="font-mono text-muted text-uppercase mb-1.5 d-block" style="font-size: 10px;">Decart API Key</label>
+                            <div class="d-flex gap-1.5">
+                                <input type="password" name="decartApiKey" id="decartApiKey" class="v22-input font-mono flex-grow-1"
+                                       value="@ViewBag.DecartApiKey" placeholder="dct_live_..." style="font-size: 12px;" />
+                                <button type="button" class="v22-btn-outline px-2.5" onclick="toggleKeyVisibility('decartApiKey')" title="Ẩn/Hiện khóa">👁</button>
+                                <button type="button" class="v22-btn-outline px-2.5" onclick="copyKeyField('decartApiKey', 'Decart API Key')" title="Sao chép nhanh">📋</button>
+                            </div>
+                            <span class="text-muted font-mono mt-1.5 d-block" style="font-size: 11px;">
+                                Đăng ký nhận token tại: <a href="https://platform.decart.ai/" target="_blank" class="text-decoration-underline text-dark fw-bold">platform.decart.ai</a>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded-3 border bg-light bg-opacity-50 mt-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-camera-video text-primary"></i>
+                        <span class="font-mono text-muted" style="font-size: 11px;">Bảo mật phía máy chủ: Khách hàng không xem được khóa API này.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CSKH & GENERAL STORE CONFIGURATION CARD -->
+        <div class="v22-card p-4">
+            <h3 class="font-display fw-bold mb-3" style="font-size: 15.5px;">Liên Hệ Tư Vấn Zalo &amp; Thông Tin CSKH</h3>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="zaloLink" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Số điện thoại / Link Zalo Tư Vấn</label>
+                    <input type="text" name="zaloLink" id="zaloLink" class="v22-input font-mono"
+                           value="@ViewBag.ZaloLink" placeholder="https://zalo.me/0909888999" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="hotline" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Hotline CSKH</label>
+                    <input type="text" name="hotline" id="hotline" class="v22-input font-mono"
+                           value="@ViewBag.Hotline" placeholder="1900 6868" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="email" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Email Liên Hệ</label>
+                    <input type="email" name="email" id="email" class="v22-input font-mono"
+                           value="@ViewBag.Email" placeholder="cskh@fashionstore.com" />
+                </div>
+
+                <div class="col-md-6">
+                    <label for="address" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Địa Chỉ Cửa Hàng Chính</label>
+                    <input type="text" name="address" id="address" class="v22-input"
+                           value="@ViewBag.Address" placeholder="123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh" />
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end mt-3.5 pt-3 border-top">
+                <button type="submit" class="v22-btn-primary" style="border-radius: 9999px;">
+                    Lưu Toàn Bộ Cấu Hình Hệ Thống
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

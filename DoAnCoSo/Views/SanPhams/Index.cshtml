@@ -1,0 +1,277 @@
+@model IEnumerable<DoAnCoSo.Models.SanPham>
+@{
+    ViewData["Title"] = "Danh sách sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    int totalCount = Model?.Count() ?? 0;
+    int activeCount = Model?.Count(x => x.TrangThai == "Đang bán" || x.TrangThai == "Hoạt động" || string.IsNullOrWhiteSpace(x.TrangThai)) ?? 0;
+    int categoryCount = Model?.Select(x => x.MaLoaiSanPham).Distinct().Count() ?? 0;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP BAR: SUB-NAVIGATION PILL TABS + VIEW SWITCHER -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="SanPhams" asp-action="Index" class="v22-pill-tab active">
+                📦 Danh sách sản phẩm (@totalCount)
+            </a>
+            <a asp-controller="BienTheSanPhams" asp-action="Index" class="v22-pill-tab">
+                🎨 Biến thể SKU
+            </a>
+            <a asp-controller="LoaiSanPhams" asp-action="Index" class="v22-pill-tab">
+                🏷️ Quản lý danh mục
+            </a>
+            <a asp-controller="KhoHangs" asp-action="Index" class="v22-pill-tab">
+                🏭 Quản lý kho hàng
+            </a>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <div class="v22-view-switcher">
+                <button type="button" onclick="setProductDisplayMode('bento')" id="prodModeBento" class="v22-view-btn active">
+                    ⊞ Dạng Lưới
+                </button>
+                <button type="button" onclick="setProductDisplayMode('table')" id="prodModeTable" class="v22-view-btn">
+                    ☰ Dạng Bảng
+                </button>
+            </div>
+
+            <a asp-action="Create" class="v22-btn-primary" style="border-radius: 9999px;">
+                + Thêm Sản Phẩm Mới
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 py-2 px-3 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.14); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-1"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- 3 KPI METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase fw-bold" style="font-size: 10.5px;">Tổng sản phẩm</span>
+                    <div class="font-display fw-bold mt-1" style="font-size: 24px;">@totalCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">mã SP</span></div>
+                </div>
+                <span class="px-2.5 py-1 rounded-pill font-mono fw-bold" style="background: rgba(16, 185, 129, 0.14); color: #065f46; font-size: 11px;">100% Hoạt động</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-sage p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-uppercase fw-bold" style="font-size: 10.5px;">Đang kinh doanh</span>
+                    <div class="font-display fw-bold mt-1" style="font-size: 24px;">@activeCount <span style="font-size: 12px; font-weight: 500;">Đang bán</span></div>
+                </div>
+                <span class="px-2.5 py-1 rounded-pill text-white font-mono fw-bold" style="background: #0C3226; font-size: 11px;">Thử đồ 3D</span>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase fw-bold" style="font-size: 10.5px;">Danh mục</span>
+                    <div class="font-display fw-bold mt-1" style="font-size: 24px;">@categoryCount <span style="font-size: 12px; font-weight: 500;" class="text-muted">phân loại</span></div>
+                </div>
+                <a asp-controller="LoaiSanPhams" asp-action="Index" class="fw-bold text-decoration-none" style="color: #0C3226; font-size: 12px;">Xem danh mục →</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH FILTER BAR -->
+    <div class="v22-card p-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 440px;">
+            <i class="bi bi-search text-muted"></i>
+            <input type="text" id="searchInput" placeholder="Tìm nhanh theo mã SP (#252), tên sản phẩm, loại áo quần..." class="v22-input w-100" />
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            @if (Model != null && Model.Any())
+            {
+                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 font-mono" style="font-size: 11px;" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+                    <i class="bi bi-trash3 me-1"></i> Xóa tất cả
+                </button>
+            }
+            <span class="font-mono text-muted" style="font-size: 11px;">Hiển thị <strong>@totalCount</strong> sản phẩm</span>
+        </div>
+    </div>
+
+    <!-- 1. BENTO CARD GRID -->
+    <div id="productsBentoContainer" class="row g-3">
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var item in Model)
+            {
+                var cleanDesc = string.IsNullOrWhiteSpace(item.MoTa)
+                    ? "Thiết kế thời trang cao cấp sử dụng chất liệu thoáng mát, phom dáng hiện đại tôn dáng."
+                    : System.Text.RegularExpressions.Regex.Replace(item.MoTa, "<.*?>", string.Empty);
+
+                var prodImg = string.IsNullOrWhiteSpace(item.HinhAnh) || item.HinhAnh.Contains("ao-so-mi-trang.jpg.jpg")
+                    ? "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80"
+                    : item.HinhAnh;
+
+                <div class="col-md-6 col-xl-4 product-item-card">
+                    <div class="v22-popcard p-3 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <!-- Fixed-Aspect Media Box -->
+                            <div class="v22-card-media mb-3" style="height: 210px; max-height: 210px; border-radius: 16px; overflow: hidden; position: relative;">
+                                <img src="@prodImg"
+                                     onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80';"
+                                     alt="@item.TenSanPham"
+                                     style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                                <span class="position-absolute top-0 start-0 m-2 px-2.5 py-1 rounded-pill text-white font-mono fw-bold" style="background: rgba(0,0,0,0.72); font-size: 10px;">
+                                    #@item.MaSanPham • @(item.LoaiSanPham?.TenLoaiSanPham ?? "Thời trang")
+                                </span>
+                                @if (item.IsNoiBat)
+                                {
+                                    <span class="position-absolute top-0 end-0 m-2 px-2.5 py-1 rounded-pill text-white font-mono fw-bold" style="background: #E07A5F; font-size: 10px;">
+                                        Nổi bật
+                                    </span>
+                                }
+                            </div>
+
+                            <h4 class="font-display fw-bold clamp-2 mb-1" style="font-size: 14.5px; min-height: 40px;">@item.TenSanPham</h4>
+                            <p class="text-muted clamp-2 mb-0" style="font-size: 12px; min-height: 34px;">@cleanDesc</p>
+                        </div>
+
+                        <div class="pt-3 mt-3 border-top d-flex align-items-center justify-content-between gap-2">
+                            <div>
+                                <div class="font-mono fw-bold" style="font-size: 15px; color: #0C3226;">@item.Gia.ToString("N0") ₫</div>
+                                <a asp-controller="BienTheSanPhams" asp-action="Index" asp-route-maSanPham="@item.MaSanPham" class="text-decoration-none fw-bold" style="color: #469B82; font-size: 11px;">
+                                    Quản lý biến thể SKU →
+                                </a>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 flex-shrink-0">
+                                <a asp-action="Edit" asp-route-id="@item.MaSanPham" class="btn btn-sm btn-light border py-1 px-2" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.MaSanPham" class="btn btn-sm btn-light border py-1 px-2" title="Chi tiết"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.MaSanPham" class="btn btn-sm btn-outline-danger py-1 px-2" title="Xóa"><i class="bi bi-trash"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="v22-card p-5 text-center text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Chưa có sản phẩm nào trong hệ thống.
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- 2. COMPACT TABLE VIEW -->
+    <div id="productsTableContainer" class="v22-card overflow-hidden" style="display: none;">
+        <div class="table-responsive">
+            <table class="v22-table" id="productTable">
+                <thead>
+                    <tr>
+                        <th style="width: 85px;">Mã SP</th>
+                        <th style="width: 280px;">Ảnh &amp; Tên sản phẩm</th>
+                        <th>Mô tả sản phẩm</th>
+                        <th style="width: 140px;">Loại sản phẩm</th>
+                        <th style="width: 135px;">Giá bán</th>
+                        <th style="width: 115px;">Trạng thái</th>
+                        <th style="width: 140px;" class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            var cleanDesc = string.IsNullOrWhiteSpace(item.MoTa)
+                                ? "Chưa có mô tả chi tiết."
+                                : System.Text.RegularExpressions.Regex.Replace(item.MoTa, "<.*?>", string.Empty);
+
+                            var prodImg = string.IsNullOrWhiteSpace(item.HinhAnh) || item.HinhAnh.Contains("ao-so-mi-trang.jpg.jpg")
+                                ? "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80"
+                                : item.HinhAnh;
+
+                            <tr class="product-item-row">
+                                <td class="font-mono fw-bold" style="color: #047857;">#@item.MaSanPham</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <img src="@prodImg"
+                                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=300&q=80';"
+                                             alt="@item.TenSanPham"
+                                             class="v22-thumb"
+                                             style="width: 46px; height: 46px; object-fit: cover; border-radius: 12px; flex-shrink: 0;" />
+                                        <div class="fw-bold clamp-2" style="max-width: 210px;">@item.TenSanPham</div>
+                                    </div>
+                                </td>
+                                <td style="max-width: 300px;">
+                                    <div class="clamp-2 text-muted" style="font-size: 11.5px;">@cleanDesc</div>
+                                </td>
+                                <td class="fw-semibold">@(item.LoaiSanPham?.TenLoaiSanPham ?? "Chưa phân loại")</td>
+                                <td class="font-mono fw-bold" style="color: #0C3226;">@item.Gia.ToString("N0") ₫</td>
+                                <td>
+                                    <span class="px-2.5 py-1 rounded-pill fw-bold" style="background: rgba(16, 185, 129, 0.14); color: #065f46; font-size: 11px;">
+                                        @(string.IsNullOrWhiteSpace(item.TrangThai) ? "Đang bán" : item.TrangThai)
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="d-inline-flex align-items-center gap-1">
+                                        <a asp-action="Edit" asp-route-id="@item.MaSanPham" class="btn btn-sm btn-light border px-2 py-1" title="Sửa"><i class="bi bi-pencil"></i></a>
+                                        <a asp-action="Details" asp-route-id="@item.MaSanPham" class="btn btn-sm btn-light border px-2 py-1" title="Xem"><i class="bi bi-eye"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@item.MaSanPham" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">Chưa có sản phẩm nào</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- MODAL XÁC NHẬN XÓA TOÀN BỘ SẢN PHẨM -->
+<div class="modal fade" id="deleteAllModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 22px; overflow: hidden;">
+            <div class="modal-header bg-danger text-white border-0 py-3">
+                <h5 class="modal-title fw-bold" style="font-size: 16px;">Xác nhận xóa toàn bộ sản phẩm</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-0">Hành động này sẽ xóa vĩnh viễn tất cả sản phẩm, biến thể và tồn kho liên quan.</p>
+            </div>
+            <div class="modal-footer bg-light border-0 py-2.5 px-3.5">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Hủy</button>
+                <form asp-action="DeleteAll" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger rounded-3">Xóa tất cả</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput')?.addEventListener('keyup', function () {
+            let filter = this.value.toLowerCase();
+            document.querySelectorAll('.product-item-card').forEach(card => {
+                card.style.display = card.innerText.toLowerCase().includes(filter) ? '' : 'none';
+            });
+            document.querySelectorAll('.product-item-row').forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

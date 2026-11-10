@@ -1,0 +1,8 @@
+<svg width="210" height="26" viewBox="0 0 210 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .brand-bold { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 800; font-size: 19px; letter-spacing: 2.5px; fill: #ffffff; }
+    .brand-light { font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 300; font-size: 19px; letter-spacing: 2.5px; fill: #cbd5e1; }
+  </style>
+  <text x="0" y="20" class="brand-bold">FASHION</text>
+  <text x="112" y="20" class="brand-light">STORE</text>
+</svg>

@@ -1,0 +1,264 @@
+@model IEnumerable<DoAnCoSo.Models.DanhGia>
+@{
+    ViewData["Title"] = "Quản lý đánh giá & Gemini AI";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    var reviews = Model ?? Enumerable.Empty<DoAnCoSo.Models.DanhGia>();
+    int totalReviews = reviews.Count();
+    int fiveStars = reviews.Count(x => x.DiemDanhGia == 5);
+    double avgRating = totalReviews > 0 ? Math.Round(reviews.Average(x => x.DiemDanhGia), 1) : 0.0;
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + AI ACTION -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="KhuyenMais" asp-action="Index" class="v22-pill-tab">
+                🎟️ Khuyến mãi &amp; Quà tặng
+            </a>
+            <a asp-controller="Marketing" asp-action="AbandonedCarts" class="v22-pill-tab">
+                🛒 Giải cứu giỏ hàng
+            </a>
+            <a asp-controller="Vip" asp-action="Index" class="v22-pill-tab">
+                👑 Chính sách VIP 11 Bậc
+            </a>
+            <a asp-controller="Marketing" asp-action="LoyaltyProgram" class="v22-pill-tab">
+                🪙 Điểm thưởng &amp; Giới thiệu
+            </a>
+            <a asp-controller="NguoiDungs" asp-action="Index" class="v22-pill-tab">
+                👥 Hồ sơ khách hàng
+            </a>
+            <a asp-controller="DanhGias" asp-action="Index" class="v22-pill-tab active">
+                ⭐ Đánh giá &amp; Gemini AI (@totalReviews)
+            </a>
+        </div>
+
+        <button id="btnScanAi" class="v22-btn-primary" style="border-radius: 9999px;">
+            🤖 Quét Gemini AI Phân Tích Cảm Xúc
+        </button>
+    </div>
+
+    <!-- NOTIFICATION ALERTS -->
+    @if (TempData["AdminReviewSuccess"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.12); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["AdminReviewSuccess"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["AdminReviewError"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["AdminReviewError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- 3 KPI BENTO METRIC CARDS -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Tổng số đánh giá</span>
+                    <div class="font-display fw-bold" style="font-size: 24px;">@totalReviews <span style="font-size: 12px; font-weight: 500;" class="text-muted">phản hồi</span></div>
+                    <span class="text-muted" style="font-size: 11px;">Từ khách mua hàng thực tế</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-chat-square-text-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-card p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-muted text-uppercase" style="font-size: 10px;">Đánh giá 5 sao</span>
+                    <div class="font-display fw-bold text-warning" style="font-size: 24px;">@fiveStars <span style="font-size: 12px; font-weight: 500;" class="text-muted">lượt</span></div>
+                    <span class="text-warning" style="font-size: 11px;">★ Tỷ lệ hài lòng vượt trội</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-star-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="v22-sage p-3.5 d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="font-mono text-uppercase" style="font-size: 10px;">Điểm xếp hạng trung bình</span>
+                    <div class="font-display fw-bold text-success" style="font-size: 24px;">@avgRating <span style="font-size: 12px; font-weight: 500;" class="text-muted">/ 5.0</span></div>
+                    <span class="text-success" style="font-size: 11px;">✓ Chỉ số CSAT xuất sắc</span>
+                </div>
+                <div class="rounded-3 p-2.5 bg-dark text-white">
+                    <i class="bi bi-hand-thumbs-up-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVIEWS DATA TABLE -->
+    <div class="v22-card p-0 overflow-hidden">
+        <div class="p-3.5 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h3 class="font-display fw-bold mb-0.5" style="font-size: 15px;">Đánh Giá Sản Phẩm &amp; Phân Tích Cảm Xúc Bằng Google Gemini AI</h3>
+                <p class="text-muted mb-0" style="font-size: 11.5px;">Tự động phân loại cảm xúc (Tích cực / Tiêu cực / Trung lập) và trích xuất từ khóa nổi bật</p>
+            </div>
+            <div style="width: 300px; max-width: 100%;">
+                <input type="text" id="searchInput" class="v22-input py-1.5" placeholder="Tìm theo sản phẩm, bình luận, khách hàng..." style="font-size: 12px;" />
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="v22-table mb-0" id="reviewTable">
+                <thead>
+                    <tr>
+                        <th style="width: 85px;">Mã ĐG</th>
+                        <th style="width: 150px;">Khách hàng</th>
+                        <th style="width: 210px;">Sản phẩm</th>
+                        <th class="text-center" style="width: 110px;">Đánh giá</th>
+                        <th>Nội dung bình luận &amp; AI Tags</th>
+                        <th style="width: 135px;">Thời gian</th>
+                        <th class="text-end" style="width: 85px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!reviews.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                Chưa có đánh giá nào từ khách hàng.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in reviews)
+                        {
+                            <tr>
+                                <td class="font-mono fw-bold text-success">#@item.MaDanhGia</td>
+                                <td>
+                                    <div class="fw-bold font-display" style="font-size: 13px;">@item.NguoiDung?.HoTen</div>
+                                    <span class="font-mono text-muted" style="font-size: 10.5px;">ID: #@item.MaNguoiDung</span>
+                                </td>
+                                <td>
+                                    @if (item.SanPham != null)
+                                    {
+                                        <a href="/SanPham/Details/@item.MaSanPham" target="_blank" class="fw-semibold text-dark text-decoration-none clamp-2" style="font-size: 12.5px;">
+                                            @item.SanPham.TenSanPham
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic" style="font-size: 11.5px;">Sản phẩm đã gỡ bỏ</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    <div class="text-warning font-mono" style="font-size: 12px; white-space: nowrap;">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            if (i <= item.DiemDanhGia)
+                                            {
+                                                <i class="bi bi-star-fill"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-star text-muted"></i>
+                                            }
+                                        }
+                                    </div>
+                                    <span class="font-mono text-muted" style="font-size: 10px;">@item.DiemDanhGia.0 / 5.0</span>
+                                </td>
+                                <td>
+                                    <div class="mb-1 clamp-2" style="font-size: 12.5px; max-width: 420px;">
+                                        @(string.IsNullOrWhiteSpace(item.NoiDung) ? "—" : item.NoiDung)
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(item.Sentiment))
+                                    {
+                                        <div class="d-flex align-items-center flex-wrap gap-1.5 mt-1">
+                                            @if (item.Sentiment == "Tích cực")
+                                            {
+                                                <span class="badge bg-success bg-opacity-10 text-success font-mono" style="font-size: 10px;">😊 Tích cực</span>
+                                            }
+                                            else if (item.Sentiment == "Tiêu cực")
+                                            {
+                                                <span class="badge bg-danger bg-opacity-10 text-danger font-mono" style="font-size: 10px;">😟 Tiêu cực</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary bg-opacity-10 text-secondary font-mono" style="font-size: 10px;">😐 Trung lập</span>
+                                            }
+
+                                            @if (!string.IsNullOrEmpty(item.AiTags))
+                                            {
+                                                <span class="badge bg-light text-dark border font-mono" style="font-size: 10px;">🏷️ @item.AiTags</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted font-mono" style="font-size: 10.5px;">Chưa quét phân tích</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="font-mono text-muted" style="font-size: 11px;">@item.NgayTao.ToString("dd/MM/yyyy HH:mm")</span>
+                                </td>
+                                <td class="text-end">
+                                    <form asp-action="Delete" asp-route-id="@item.MaDanhGia" method="post" onsubmit="return confirm('Xóa đánh giá này?');" class="d-inline m-0">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-2 py-1" title="Xóa đánh giá">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById("searchInput")?.addEventListener("keyup", function () {
+            const keyword = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#reviewTable tbody tr");
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(keyword) ? "" : "none";
+            });
+        });
+
+        document.getElementById("btnScanAi")?.addEventListener("click", function () {
+            const btn = this;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang kết nối Gemini AI...';
+            btn.disabled = true;
+
+            fetch('/api/Ai/AnalyzeAllReviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || "Hoàn tất quét cảm xúc AI");
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    alert("Lỗi: " + data.message);
+                    btn.innerHTML = '🤖 Quét Gemini AI Phân Tích Cảm Xúc';
+                    btn.disabled = false;
+                }
+            })
+            .catch(() => {
+                alert("Đã xảy ra lỗi kết nối với mô hình AI.");
+                btn.innerHTML = '🤖 Quét Gemini AI Phân Tích Cảm Xúc';
+                btn.disabled = false;
+            });
+        });
+    </script>
+}

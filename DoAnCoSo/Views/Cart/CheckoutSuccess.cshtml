@@ -1,0 +1,321 @@
+@model DoAnCoSo.Models.DonHang
+@{
+    Layout = "_LayoutCustomer";
+    ViewData["Title"] = "Đặt hàng thành công";
+    var totalText = Model.TongTien.ToString("N0");
+    var memo = Uri.EscapeDataString($"DH{Model.MaDonHang} FASHIONSTORE");
+    var qrUrl = $"https://img.vietqr.io/image/970436-1025586942-compact2.png?amount={(long)Model.TongTien}&addInfo={memo}&accountName=FASHION%20STORE";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-9 col-lg-8">
+            <div class="card border-0 shadow-sm p-4 p-md-5 bg-white">
+                
+                <!-- SUCCESS ICON & HEADER -->
+                <div class="text-center mb-4">
+                    <div class="mb-3">
+                        <i class="fas fa-check-circle text-success" style="font-size: 72px;"></i>
+                    </div>
+                    <h2 class="fw-bold text-uppercase" style="letter-spacing: 2px; font-size: 28px;">Đặt hàng thành công!</h2>
+                    <p class="text-muted fs-6">
+                        Cảm ơn bạn đã mua sắm tại <strong>Fashion Store</strong>. Đơn hàng của bạn đã được ghi nhận.
+                    </p>
+                </div>
+
+                <!-- ORDER GENERAL DETAILS -->
+                <div class="border p-3 mb-3 bg-light">
+                    <div class="row g-3">
+                        <div class="col-6 col-sm-3">
+                            <span class="text-muted d-block" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Mã đơn hàng</span>
+                            <strong class="fs-5">#@Model.MaDonHang</strong>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <span class="text-muted d-block" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Ngày đặt hàng</span>
+                            <strong>@Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</strong>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <span class="text-muted d-block" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Tổng thanh toán</span>
+                            <strong class="text-danger">@totalText ₫</strong>
+                        </div>
+                        <div class="col-6 col-sm-3">
+                            <span class="text-muted d-block" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Thanh toán</span>
+                            <strong>@(Model.PhuongThucThanhToan == "ChuyenKhoan" ? "Chuyển khoản" : "COD (Nhận hàng)")</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIP, GIFT & LOYALTY POINTS HIGHLIGHT -->
+                @if (Model.ChietKhauVip > 0 || !string.IsNullOrEmpty(Model.QuaTangKem) || Model.DiemSuDung > 0)
+                {
+                    <div class="p-3 mb-4 rounded-3 border bg-white shadow-sm">
+                        <div class="row g-2 align-items-center">
+                            @if (Model.ChietKhauVip > 0)
+                            {
+                                <div class="col-sm-4">
+                                    <span class="badge bg-warning text-dark px-2 py-1"><i class="fas fa-crown me-1"></i>Chiết khấu VIP @Model.ChietKhauVip%</span>
+                                    <div class="small text-muted mt-1">Tiết kiệm: <strong class="text-danger">-@Model.SoTienGiamVip.ToString("N0") ₫</strong></div>
+                                </div>
+                            }
+                            @if (Model.DiemSuDung > 0)
+                            {
+                                <div class="col-sm-4">
+                                    <span class="badge bg-warning text-dark px-2 py-1"><i class="fas fa-coins me-1"></i>Điểm thưởng đã dùng</span>
+                                    <div class="small text-muted mt-1">Dùng: <strong>@Model.DiemSuDung.ToString("N0") điểm</strong> (<strong class="text-danger">-@Model.SoTienGiamDiem.ToString("N0") ₫</strong>)</div>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.QuaTangKem))
+                            {
+                                <div class="col-sm-4">
+                                    <span class="badge bg-danger text-white px-2 py-1"><i class="fas fa-gift me-1"></i>Quà tặng kèm</span>
+                                    <div class="small fw-bold text-dark mt-1">@Model.QuaTangKem</div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <!-- PAYMENT INSTRUCTIONS -->
+                @if (Model.PhuongThucThanhToan == "ChuyenKhoan")
+                {
+                    <div class="card border-2 border-dark mb-4">
+                        <div class="card-header bg-dark text-white text-center py-3 fw-bold text-uppercase" style="letter-spacing: 2px; font-size: 13px;">
+                            Hướng dẫn thanh toán chuyển khoản nhanh qua VietQR
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center g-4">
+                                <!-- QR Code column -->
+                                <div class="col-md-5 text-center">
+                                    @{
+                                        qrUrl = $"https://img.vietqr.io/image/Vietcombank-1041323524-compact2.png?amount={(long)Model.TongTien}&addInfo=DH{Model.MaDonHang}&accountName=HA%20PHUONG%20BINH";
+                                    }
+                                    <div class="p-2 border bg-white d-inline-block rounded shadow-sm">
+                                        <img src="@qrUrl" alt="Mã chuyển khoản VietQR" class="img-fluid" style="max-height: 240px;" />
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-qrcode me-1"></i> Quét mã bằng ứng dụng ngân hàng (Banking App) để tự động điền thông tin
+                                    </small>
+                                </div>
+                                
+                                <!-- Bank details column -->
+                                <div class="col-md-7">
+                                    <h6 class="fw-bold text-uppercase border-bottom pb-2 mb-3" style="font-size: 12px; letter-spacing: 1px;">
+                                        Thông tin tài khoản thủ công
+                                    </h6>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Ngân hàng thụ hưởng</small>
+                                            <strong>Vietcombank (Ngân hàng Ngoại thương Việt Nam)</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Số tài khoản</small>
+                                            <strong id="accNo" class="fs-6">1041323524</strong>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-dark py-1" onclick="copyText('1041323524', this)">
+                                            <i class="fas fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Chủ tài khoản</small>
+                                            <strong class="text-uppercase">HA PHUONG BINH</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Số tiền chuyển khoản</small>
+                                            <strong class="text-danger fs-6">@totalText ₫</strong>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-dark py-1" onclick="copyText('@((long)Model.TongTien)', this)">
+                                            <i class="fas fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Nội dung chuyển khoản (bắt buộc ghi đúng)</small>
+                                            <strong class="text-primary fs-6">DH@(Model.MaDonHang)</strong>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-dark py-1" onclick="copyText('DH@(Model.MaDonHang)', this)">
+                                            <i class="fas fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning border-0 bg-light-warning mt-3 mb-0" style="border-left: 4px solid #ffc107 !important; border-radius: 0;">
+                                <i class="fas fa-info-circle me-2"></i> <strong>Lưu ý:</strong> Đơn hàng sẽ tự động chuyển sang trạng thái <em>Đang chuẩn bị hàng</em> sau khi cửa hàng xác nhận giao dịch chuyển khoản thành công của bạn.
+                            </div>
+                        </div>
+                    </div>
+                }
+                @if (TempData["PaymentSuccessMessage"] != null)
+                {
+                    <div class="alert alert-success border-0 shadow-sm p-3 mb-4 rounded-3 d-flex align-items-center gap-3">
+                        <i class="fas fa-check-circle fs-3 text-success"></i>
+                        <div>
+                            <div class="fw-bold">Thanh toán trực tuyến thành công!</div>
+                            <div class="small">@TempData["PaymentSuccessMessage"]</div>
+                        </div>
+                    </div>
+                }
+                else if (Model.PhuongThucThanhToan == "VNPAY" || Model.PhuongThucThanhToan == "MOMO")
+                {
+                    <div class="card border-0 bg-light p-4 mb-4 text-center">
+                        <i class="fas fa-shield-alt text-success fa-2x mb-3"></i>
+                        <h5 class="fw-bold mb-2">Thanh toán qua Cổng @Model.PhuongThucThanhToan</h5>
+                        <p class="text-muted mb-0" style="font-size: 14px;">
+                            Trạng thái thanh toán: <strong class="@(Model.TrangThaiThanhToan == "DaThanhToan" ? "text-success" : "text-danger")">@(Model.TrangThaiThanhToan == "DaThanhToan" ? "Đã thanh toán thành công" : "Chờ hoàn tất thanh toán")</strong>
+                            @if (!string.IsNullOrEmpty(Model.MaGiaoDichThanhToan))
+                            {
+                                <span class="d-block mt-1">Mã giao dịch: <code>@Model.MaGiaoDichThanhToan</code></span>
+                            }
+                        </p>
+                    </div>
+                }
+                else if (Model.PhuongThucThanhToan == "ChuyenKhoan")
+                {
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-dark text-white p-3 text-center">
+                            <h5 class="mb-0 fw-bold fs-6 text-uppercase" style="letter-spacing: 1px;">
+                                <i class="fas fa-qrcode me-2"></i> Thông tin thanh toán Chuyển khoản (VietQR)
+                            </h5>
+                        </div>
+                        <div class="card-body p-4 bg-white">
+                            <div class="row align-items-center g-4">
+                                <!-- Mã QR -->
+                                <div class="col-md-5 text-center border-end-md">
+                                    <div class="p-2 border d-inline-block rounded bg-light mb-2">
+                                        <img src="@qrUrl" alt="VietQR Payment" class="img-fluid rounded" style="max-height: 220px;" />
+                                    </div>
+                                    <p class="small text-muted mb-0">Mở App Ngân Hàng bất kỳ quét mã thanh toán 24/7</p>
+                                </div>
+
+                                <!-- Chi tiết ngân hàng -->
+                                <div class="col-md-7">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Ngân hàng</small>
+                                            <strong>Vietcombank (Ngân hàng Ngoại thương Việt Nam)</strong>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Số tài khoản</small>
+                                            <strong id="accNo" class="fs-6">1041323524</strong>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-dark py-1" onclick="copyText('1041323524', this)">
+                                            <i class="fas fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Chủ tài khoản</small>
+                                            <strong class="text-uppercase">HA PHUONG BINH</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-light">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Số tiền chuyển khoản</small>
+                                            <strong class="text-danger fs-6">@totalText ₫</strong>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-dark py-1" onclick="copyText('@((long)Model.TongTien)', this)">
+                                            <i class="fas fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <div>
+                                            <small class="text-muted d-block" style="font-size: 11px;">Nội dung chuyển khoản (bắt buộc ghi đúng)</small>
+                                            <strong class="text-primary fs-6">DH@(Model.MaDonHang)</strong>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-dark py-1" onclick="copyText('DH@(Model.MaDonHang)', this)">
+                                            <i class="fas fa-copy me-1"></i> Sao chép
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning border-0 bg-light-warning mt-3 mb-0" style="border-left: 4px solid #ffc107 !important; border-radius: 0;">
+                                <i class="fas fa-info-circle me-2"></i> <strong>Lưu ý:</strong> Đơn hàng sẽ tự động chuyển sang trạng thái <em>Đang chuẩn bị hàng</em> sau khi cửa hàng xác nhận giao dịch chuyển khoản thành công của bạn.
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card border-0 bg-light p-4 mb-4 text-center">
+                        <i class="fas fa-truck-moving text-muted fa-2x mb-3"></i>
+                        <h5 class="fw-bold mb-2">Thanh toán bằng tiền mặt (COD)</h5>
+                        <p class="text-muted mb-0" style="font-size: 14px;">
+                            Cửa hàng đã ghi nhận phương thức thanh toán khi nhận hàng. Quý khách vui lòng chuẩn bị số tiền <strong>@totalText ₫</strong> để thanh toán cho nhân viên giao hàng. Cửa hàng sẽ gọi điện xác nhận đơn hàng trước khi vận chuyển.
+                        </p>
+                    </div>
+                }
+
+                <!-- SHIPPING INFO & LOGISTICS SUMMARY -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-4">
+                        <div class="card h-100 border p-3">
+                            <span class="text-muted text-uppercase mb-2 d-block" style="font-size: 11px; letter-spacing: 1px; font-weight: 600;">Thông tin người nhận</span>
+                            <strong>@Model.NguoiDung?.HoTen</strong>
+                            <span class="text-muted d-block small">SĐT: @Model.SoDienThoaiNhan</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="card h-100 border p-3">
+                            <span class="text-muted text-uppercase mb-2 d-block" style="font-size: 11px; letter-spacing: 1px; font-weight: 600;">Địa chỉ giao hàng</span>
+                            <span class="text-dark small">@Model.DiaChiGiaoHang</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="card h-100 border p-3">
+                            <span class="text-muted text-uppercase mb-2 d-block" style="font-size: 11px; letter-spacing: 1px; font-weight: 600;">Vận chuyển &amp; Tra cứu</span>
+                            <strong class="text-primary small d-block">@(Model.DonViVanChuyen ?? "GHTK")</strong>
+                            <span class="small d-block text-muted">Mã vận đơn: <strong class="text-dark">@(Model.MaVanDon ?? "Đang khởi tạo")</strong></span>
+                            <span class="badge @(Model.PhiGiaoHang == 0 ? "bg-success" : "bg-secondary") mt-1" style="font-size: 10px;">
+                                Phí ship: @(Model.PhiGiaoHang == 0 ? "Miễn phí (0₫)" : Model.PhiGiaoHang.ToString("N0") + "₫")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTIONS -->
+                <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 border-top pt-4">
+                    <a href="/KhachHangs/LichSuDonHang" class="btn btn-outline-dark py-2 px-4 text-uppercase fw-bold" style="font-size: 12px; letter-spacing: 1.5px;">
+                        <i class="fas fa-history me-2"></i> Lịch sử đơn hàng
+                    </a>
+                    <a href="/SanPham" class="btn btn-dark py-2 px-4 text-uppercase fw-bold" style="font-size: 12px; letter-spacing: 1.5px;">
+                        Tiếp tục mua sắm <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyText(text, buttonElement) {
+        navigator.clipboard.writeText(text).then(function() {
+            var originalHtml = buttonElement.innerHTML;
+            buttonElement.className = "btn btn-sm btn-success py-1 text-white";
+            buttonElement.innerHTML = '<i class="fas fa-check me-1"></i> Đã chép';
+            setTimeout(function() {
+                buttonElement.className = "btn btn-sm btn-outline-dark py-1";
+                buttonElement.innerHTML = originalHtml;
+            }, 1500);
+        }).catch(function(err) {
+            console.error('Không thể sao chép: ', err);
+        });
+    }
+</script>

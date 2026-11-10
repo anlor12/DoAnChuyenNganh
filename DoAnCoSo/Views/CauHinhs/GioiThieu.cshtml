@@ -1,0 +1,280 @@
+@model DoAnCoSo.Models.CauHinhGioiThieuViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa trang Giới thiệu";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex flex-column gap-3.5">
+
+    <!-- TOP SUB-NAVIGATION PILL TABS + ACTION -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2.5">
+        <div class="v22-pill-tabs">
+            <a asp-controller="BoSuuTaps" asp-action="Index" class="v22-pill-tab">
+                📸 Bộ sưu tập &amp; Lookbook
+            </a>
+            <a asp-controller="BaiViets" asp-action="Index" class="v22-pill-tab">
+                📰 Bài viết &amp; Tin tức
+            </a>
+            <a asp-controller="CauHinhs" asp-action="GioiThieu" class="v22-pill-tab active">
+                🏛️ Trang Giới thiệu
+            </a>
+        </div>
+
+        <a href="/Home/GioiThieu" target="_blank" class="v22-btn-outline" style="border-radius: 9999px;">
+            <i class="bi bi-box-arrow-up-right"></i> Xem Trang Thực Tế
+        </a>
+    </div>
+
+    <!-- NOTIFICATION ALERT -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-4 mb-0" role="alert" style="background: rgba(70, 155, 130, 0.12); color: #0C3226; border-left: 4px solid #469B82 !important;">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="SaveGioiThieu" method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3 m-0">
+        @Html.AntiForgeryToken()
+
+        <!-- 5-STEP NAVIGATION PILL TABS -->
+        <ul class="nav nav-pills gap-2 p-1.5 rounded-4 v22-card mb-0" id="pills-tab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold px-3 py-2 rounded-3 font-display" id="pills-hero-tab" data-bs-toggle="pill" data-bs-target="#pills-hero" type="button" role="tab" style="font-size: 13px;">
+                    1. Banner Hero
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold px-3 py-2 rounded-3 font-display" id="pills-stats-tab" data-bs-toggle="pill" data-bs-target="#pills-stats" type="button" role="tab" style="font-size: 13px;">
+                    2. Chỉ số ấn tượng
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold px-3 py-2 rounded-3 font-display" id="pills-mission-tab" data-bs-toggle="pill" data-bs-target="#pills-mission" type="button" role="tab" style="font-size: 13px;">
+                    3. Sứ mệnh
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold px-3 py-2 rounded-3 font-display" id="pills-story-tab" data-bs-toggle="pill" data-bs-target="#pills-story" type="button" role="tab" style="font-size: 13px;">
+                    4. Câu chuyện thương hiệu
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold px-3 py-2 rounded-3 font-display" id="pills-values-tab" data-bs-toggle="pill" data-bs-target="#pills-values" type="button" role="tab" style="font-size: 13px;">
+                    5. Giá trị cốt lõi
+                </button>
+            </li>
+        </ul>
+
+        <!-- TAB CONTENT PANELS -->
+        <div class="tab-content" id="pills-tabContent">
+            <!-- TAB 1: HERO -->
+            <div class="tab-pane fade show active" id="pills-hero" role="tabpanel">
+                <div class="v22-card p-4">
+                    <h4 class="font-display fw-bold mb-3" style="font-size: 15.5px;">Banner Đầu Trang (Hero Banner &amp; Xem Trước Trực Quan)</h4>
+                    <div class="row g-4">
+                        <div class="col-md-7">
+                            <div class="mb-3">
+                                <label asp-for="HeroEyebrow" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Dòng chữ phụ trên tiêu đề (Eyebrow)</label>
+                                <input asp-for="HeroEyebrow" class="v22-input" oninput="document.getElementById('previewEyebrow').innerText=this.value" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="HeroTitle" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tiêu đề chính Hero (Title)</label>
+                                <input asp-for="HeroTitle" class="v22-input fw-bold" oninput="document.getElementById('previewTitle').innerText=this.value" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tải lên tệp ảnh nền mới</label>
+                                <input type="file" name="heroImageFile" class="v22-input" accept="image/*" onchange="previewHeroFile(this)" />
+                            </div>
+                            <div>
+                                <label asp-for="HeroImage" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Hoặc dán URL ảnh nền</label>
+                                <input asp-for="HeroImage" id="heroImageUrl" class="v22-input font-mono" oninput="document.getElementById('heroPreviewImg').src=this.value" />
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="font-mono text-muted text-uppercase mb-1.5 d-block" style="font-size: 10px;">Xem trước trực quan (Live Preview)</label>
+                            <div class="rounded-4 overflow-hidden position-relative shadow-sm v22-hero-forest" style="height: 235px;">
+                                <img id="heroPreviewImg" src="@Model.HeroImage" alt="Hero Preview" class="w-100 h-100" style="object-fit: cover; opacity: 0.55;" onerror="this.onerror=null;this.src='/images/store-interior.jpg.jpg';" />
+                                <div class="position-absolute bottom-0 start-0 p-3.5 text-white">
+                                    <div class="font-mono text-uppercase fw-bold" style="font-size: 10.5px; color: #7DD3B6;" id="previewEyebrow">@Model.HeroEyebrow</div>
+                                    <div class="font-display fw-bold" style="font-size: 20px;" id="previewTitle">@Model.HeroTitle</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: STATS -->
+            <div class="tab-pane fade" id="pills-stats" role="tabpanel">
+                <div class="v22-card p-4">
+                    <h4 class="font-display fw-bold mb-1" style="font-size: 15.5px;">Thanh Chỉ Số Ấn Tượng (4 Stat KPIs)</h4>
+                    <p class="text-muted small mb-3.5">Các chỉ số thống kê thể hiện năng lực và uy tín, hiển thị nổi bật dưới banner chính.</p>
+                    
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50">
+                                <label asp-for="StatProducts" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Số lượng sản phẩm</label>
+                                <input asp-for="StatProducts" class="v22-input fw-bold font-mono text-primary" style="font-size: 16px;" placeholder="50+" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50">
+                                <label asp-for="StatCustomers" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Khách hàng tin tưởng</label>
+                                <input asp-for="StatCustomers" class="v22-input fw-bold font-mono text-success" style="font-size: 16px;" placeholder="10.000+" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50">
+                                <label asp-for="StatYears" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Số năm kinh nghiệm</label>
+                                <input asp-for="StatYears" class="v22-input fw-bold font-mono text-warning" style="font-size: 16px;" placeholder="5+" />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50">
+                                <label asp-for="StatProvinces" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tỉnh thành giao hàng</label>
+                                <input asp-for="StatProvinces" class="v22-input fw-bold font-mono text-danger" style="font-size: 16px;" placeholder="63+" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MISSION -->
+            <div class="tab-pane fade" id="pills-mission" role="tabpanel">
+                <div class="v22-card p-4">
+                    <h4 class="font-display fw-bold mb-3" style="font-size: 15.5px;">Sứ Mệnh &amp; Triết Lý Thương Hiệu</h4>
+                    <div class="mb-3">
+                        <label asp-for="MissionTitle" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tiêu đề khối Sứ mệnh</label>
+                        <input asp-for="MissionTitle" class="v22-input fw-bold" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="MissionP1" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Đoạn văn 1 - Bản sắc &amp; Tầm nhìn</label>
+                        <textarea asp-for="MissionP1" rows="3" class="v22-input"></textarea>
+                    </div>
+                    <div>
+                        <label asp-for="MissionP2" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Đoạn văn 2 - Cam kết cùng khách hàng</label>
+                        <textarea asp-for="MissionP2" rows="3" class="v22-input"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: STORY -->
+            <div class="tab-pane fade" id="pills-story" role="tabpanel">
+                <div class="v22-card p-4">
+                    <h4 class="font-display fw-bold mb-3" style="font-size: 15.5px;">Câu Chuyện Khởi Nghiệp &amp; Thương Hiệu</h4>
+                    <div class="row g-4">
+                        <div class="col-md-7">
+                            <div class="mb-3">
+                                <label asp-for="StoryTitle" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tiêu đề câu chuyện</label>
+                                <input asp-for="StoryTitle" class="v22-input fw-bold" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="StoryP1" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Nội dung đoạn 1</label>
+                                <textarea asp-for="StoryP1" rows="3" class="v22-input"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="StoryP2" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Nội dung đoạn 2</label>
+                                <textarea asp-for="StoryP2" rows="3" class="v22-input"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Chọn ảnh từ máy tính</label>
+                                <input type="file" name="storyImageFile" class="v22-input" accept="image/*" onchange="previewStoryFile(this)" />
+                            </div>
+                            <div>
+                                <label asp-for="StoryImage" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Hoặc URL ảnh trực tiếp</label>
+                                <input asp-for="StoryImage" id="storyImageUrl" class="v22-input font-mono" oninput="document.getElementById('storyPreviewImg').src=this.value" />
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <label class="font-mono text-muted text-uppercase mb-1.5 d-block" style="font-size: 10px;">Xem trước ảnh câu chuyện</label>
+                            <div class="rounded-4 overflow-hidden border shadow-sm" style="height: 300px;">
+                                <img id="storyPreviewImg" src="@Model.StoryImage" alt="Story Preview" class="w-100 h-100" style="object-fit: cover;" onerror="this.onerror=null;this.src='/images/store-interior.jpg.jpg';" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: VALUES -->
+            <div class="tab-pane fade" id="pills-values" role="tabpanel">
+                <div class="v22-card p-4">
+                    <h4 class="font-display fw-bold mb-3" style="font-size: 15.5px;">3 Giá Trị Cốt Lõi (Core Values)</h4>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50 h-100">
+                                <span class="badge bg-primary font-mono mb-2">Giá trị 01</span>
+                                <div class="mb-3">
+                                    <label asp-for="Value1Title" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tiêu đề</label>
+                                    <input asp-for="Value1Title" class="v22-input fw-bold" />
+                                </div>
+                                <div>
+                                    <label asp-for="Value1Desc" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Mô tả chi tiết</label>
+                                    <textarea asp-for="Value1Desc" rows="4" class="v22-input"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50 h-100">
+                                <span class="badge bg-success font-mono mb-2">Giá trị 02</span>
+                                <div class="mb-3">
+                                    <label asp-for="Value2Title" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tiêu đề</label>
+                                    <input asp-for="Value2Title" class="v22-input fw-bold" />
+                                </div>
+                                <div>
+                                    <label asp-for="Value2Desc" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Mô tả chi tiết</label>
+                                    <textarea asp-for="Value2Desc" rows="4" class="v22-input"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-4 border bg-light bg-opacity-50 h-100">
+                                <span class="badge bg-warning text-dark font-mono mb-2">Giá trị 03</span>
+                                <div class="mb-3">
+                                    <label asp-for="Value3Title" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Tiêu đề</label>
+                                    <input asp-for="Value3Title" class="v22-input fw-bold" />
+                                </div>
+                                <div>
+                                    <label asp-for="Value3Desc" class="font-mono text-muted text-uppercase mb-1 d-block" style="font-size: 10px;">Mô tả chi tiết</label>
+                                    <textarea asp-for="Value3Desc" rows="4" class="v22-input"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION BAR -->
+        <div class="v22-card p-3.5 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-muted" style="font-size: 12px;">Mọi thay đổi sẽ được đồng bộ ngay lập tức sang trang Về Chúng Tôi trên cửa hàng.</span>
+            <button type="submit" class="v22-btn-primary" style="border-radius: 9999px;">
+                Lưu Toàn Bộ Cấu Hình Giới Thiệu
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    function previewHeroFile(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('heroPreviewImg').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function previewStoryFile(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('storyPreviewImg').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+}

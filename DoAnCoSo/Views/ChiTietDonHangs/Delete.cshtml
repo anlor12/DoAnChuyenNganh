@@ -1,0 +1,36 @@
+﻿@model DoAnCoSo.Models.ChiTietDonHang
+
+@{
+    ViewData["Title"] = "Xóa chi tiết đơn hàng";
+}
+
+<h2>Xóa chi tiết đơn hàng</h2>
+
+<h4>Bạn có chắc muốn xóa chi tiết đơn hàng này không?</h4>
+<hr />
+
+<dl class="row">
+    <dt class="col-sm-3">Mã đơn hàng</dt>
+    <dd class="col-sm-9">@Model.MaDonHang</dd>
+
+    <dt class="col-sm-3">Sản phẩm</dt>
+    <dd class="col-sm-9">@Model.BienTheSanPham?.SanPham?.TenSanPham</dd>
+
+    <dt class="col-sm-3">Size</dt>
+    <dd class="col-sm-9">@Model.BienTheSanPham?.KichCo</dd>
+
+    <dt class="col-sm-3">Màu</dt>
+    <dd class="col-sm-9">@Model.BienTheSanPham?.MauSac</dd>
+
+    <dt class="col-sm-3">Số lượng</dt>
+    <dd class="col-sm-9">@Model.SoLuong</dd>
+
+    <dt class="col-sm-3">Đơn giá</dt>
+    <dd class="col-sm-9">@Model.DonGia</dd>
+</dl>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="MaChiTietDonHang" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>
